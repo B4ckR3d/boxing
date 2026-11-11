@@ -1,0 +1,1030 @@
+// =============================================================================
+// Boxing Championship Platform — Prisma schema (MySQL 8)
+// Docs: docs/DATABASE.md (ERD + relationships)
+// Conventions:
+//   - String cuid primary keys
+//   - createdAt / updatedAt on mutable tables
+//   - Soft delete (deletedAt) ONLY on Fighter, MediaAsset (referenced by history)
+//   - Critical state transitions run inside $transaction in the service layer
+// =============================================================================
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// -----------------------------------------------------------------------------
+// ENUMS
+// -----------------------------------------------------------------------------
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Stance {
+  ORTHODOX
+  SOUTHPAW
+  SWITCH
+}
+
+enum FighterStatus {
+  ACTIVE
+  INACTIVE
+  RETIRED
+  SUSPENDED
+}
+
+enum RankingType {
+  DIVISION
+  POUND_FOR_POUND
+}
+
+enum RankingVersionStatus {
+  DRAFT
+  PENDING_APPROVAL
+  PUBLISHED
+  SUPERSEDED
+  REJECTED
+}
+
+enum RankingChangeAction {
+  CREATED
+  ADDED
+  REMOVED
+  MOVED
+  CHAMPION_SET
+  CHAMPION_REMOVED
+  POINTS_CHANGED
+  NOTE_CHANGED
+  SUBMITTED
+  REJECTED
+  PUBLISHED
+}
+
+enum BeltStatus {
+  ACTIVE
+  VACANT
+  SUSPENDED
+  RETIRED
+}
+
+enum BeltReignStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  ENDED
+  REJECTED
+}
+
+enum BeltReignEndReason {
+  LOST
+  VACATED
+  STRIPPED
+  RETIRED
+  OTHER
+}
+
+enum EventStatus {
+  DRAFT
+  SCHEDULED
+  LIVE
+  COMPLETED
+  POSTPONED
+  CANCELLED
+}
+
+enum FightStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  POSTPONED
+}
+
+enum Corner {
+  RED
+  BLUE
+}
+
+enum FightOutcome {
+  WIN
+  DRAW
+  NO_CONTEST
+}
+
+enum FightResultStatus {
+  DRAFT
+  PENDING_VERIFICATION
+  VERIFIED
+  OFFICIAL
+  REJECTED
+}
+
+enum ApprovalAction {
+  SUBMITTED
+  VERIFIED
+  APPROVED
+  REJECTED
+}
+
+enum TournamentFormat {
+  SINGLE_ELIMINATION
+  DOUBLE_ELIMINATION
+}
+
+enum TournamentStatus {
+  DRAFT
+  REGISTRATION
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TournamentParticipantStatus {
+  ACTIVE
+  ELIMINATED
+  WITHDRAWN
+  WINNER
+}
+
+enum BracketType {
+  WINNERS
+  LOSERS
+  GRAND_FINAL
+}
+
+enum BoutSlot {
+  A
+  B
+}
+
+enum TournamentBoutStatus {
+  PENDING
+  READY
+  COMPLETED
+  BYE
+}
+
+enum HeroOverlay {
+  DARK
+  GOLD
+  CRIMSON
+}
+
+enum PageSectionType {
+  HERO_SLIDER
+  RANKINGS
+  GRAND_PRIX
+  CHAMPIONSHIP_BELT
+  FEATURED_FIGHTERS
+  FIGHT_HISTORY
+  UPCOMING_EVENTS
+  SPONSORS
+  CTA
+  FOOTER
+}
+
+enum MediaKind {
+  IMAGE
+  VIDEO
+  MODEL
+}
+
+enum RoleRequestAction {
+  GRANT
+  REVOKE
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+// -----------------------------------------------------------------------------
+// AUTH & RBAC
+// -----------------------------------------------------------------------------
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique @db.VarChar(191)
+  name              String    @db.VarChar(120)
+  passwordHash      String    @db.VarChar(255)
+  isActive          Boolean   @default(true)
+  mfaEnabled        Boolean   @default(false)
+  /// AES-256-GCM encrypted TOTP secret (never stored in plain text)
+  mfaSecretEnc      String?   @db.VarChar(512)
+  failedLoginCount  Int       @default(0)
+  lockedUntil       DateTime?
+  lastLoginAt       DateTime?
+  passwordChangedAt DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  roles         UserRole[]       @relation("UserRoles")
+  rolesAssigned UserRole[]       @relation("UserRoleAssigner")
+  sessions      Session[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  media         MediaAsset[]
+  roleRequests  RoleRequest[]    @relation("RoleRequestTarget")
+  roleRequested RoleRequest[]    @relation("RoleRequestRequester")
+  roleReviewed  RoleRequest[]    @relation("RoleRequestReviewer")
+
+  @@index([isActive])
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  key         String   @unique @db.VarChar(64)
+  name        String   @db.VarChar(120)
+  description String?  @db.VarChar(500)
+  /// System roles cannot be deleted; super_admin permissions are immutable
+  isSystem    Boolean  @default(false)
+  /// Holders must enrol TOTP MFA before using the dashboard
+  requiresMfa Boolean  @default(false)
+  /// Granting/revoking requires an approved RoleRequest (four-eyes)
+  isSensitive Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions RolePermission[]
+  users       UserRole[]
+  requests    RoleRequest[]
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  key         String   @unique @db.VarChar(64)
+  description String   @db.VarChar(255)
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+}
+
+model UserRole {
+  userId       String
+  roleId       String
+  assignedById String?
+  createdAt    DateTime @default(now())
+
+  user       User  @relation("UserRoles", fields: [userId], references: [id], onDelete: Cascade)
+  role       Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  assignedBy User? @relation("UserRoleAssigner", fields: [assignedById], references: [id], onDelete: SetNull)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  createdAt    DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+}
+
+/// Approval workflow for sensitive role grants/revocations (user role escalation)
+model RoleRequest {
+  id            String            @id @default(cuid())
+  userId        String
+  roleId        String
+  action        RoleRequestAction
+  status        RequestStatus     @default(PENDING)
+  reason        String            @db.VarChar(500)
+  reviewNote    String?           @db.VarChar(500)
+  requestedById String
+  reviewedById  String?
+  reviewedAt    DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  user        User  @relation("RoleRequestTarget", fields: [userId], references: [id], onDelete: Cascade)
+  role        Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  requestedBy User  @relation("RoleRequestRequester", fields: [requestedById], references: [id], onDelete: Cascade)
+  reviewedBy  User? @relation("RoleRequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([userId])
+}
+
+model Session {
+  id          String    @id @default(cuid())
+  /// SHA-256 of the opaque session token (raw token only lives in the cookie)
+  tokenHash   String    @unique @db.Char(64)
+  userId      String
+  mfaVerified Boolean   @default(false)
+  ipAddress   String?   @db.VarChar(64)
+  userAgent   String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  lastSeenAt  DateTime  @default(now())
+  expiresAt   DateTime
+  revokedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+}
+
+/// Login monitoring & brute-force detection (never stores passwords)
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String   @db.VarChar(191)
+  ipAddress String?  @db.VarChar(64)
+  userAgent String?  @db.VarChar(255)
+  success   Boolean
+  reason    String?  @db.VarChar(64)
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+  @@index([success, createdAt])
+}
+
+// -----------------------------------------------------------------------------
+// FIGHTERS & DIVISIONS
+// -----------------------------------------------------------------------------
+
+model WeightClass {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(80)
+  slug      String   @unique @db.VarChar(80)
+  gender    Gender
+  limitLbs  Decimal  @db.Decimal(6, 2)
+  limitKg   Decimal  @db.Decimal(6, 2)
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fighters        Fighter[]
+  fights          Fight[]
+  rankingVersions RankingVersion[]
+  belts           ChampionshipBelt[]
+  tournaments     Tournament[]
+
+  @@unique([gender, name])
+  @@index([gender, isActive, sortOrder])
+}
+
+model Fighter {
+  id            String        @id @default(cuid())
+  slug          String        @unique @db.VarChar(120)
+  firstName     String        @db.VarChar(80)
+  lastName      String        @db.VarChar(80)
+  ringName      String?       @db.VarChar(80)
+  gender        Gender
+  /// ISO 3166-1 alpha-2
+  nationality   String        @db.Char(2)
+  hometown      String?       @db.VarChar(120)
+  dateOfBirth   DateTime?     @db.Date
+  /// Date of birth is only shown publicly when explicitly allowed
+  showDateOfBirth Boolean     @default(false)
+  heightCm      Int?
+  reachCm       Int?
+  stance        Stance        @default(ORTHODOX)
+  weightClassId String
+  status        FighterStatus @default(ACTIVE)
+  bio           String?       @db.Text
+  /// JSON string[] — validated by Zod
+  achievements  Json?
+  portraitId    String?
+  debutDate     DateTime?     @db.Date
+
+  /// Record accrued BEFORE platform tracking (documented manual baseline)
+  baseWins       Int @default(0)
+  baseLosses     Int @default(0)
+  baseDraws      Int @default(0)
+  baseNoContests Int @default(0)
+  baseKoWins     Int @default(0)
+
+  /// Denormalized totals = base + OFFICIAL results. Recomputed in a transaction on result approval.
+  wins       Int @default(0)
+  losses     Int @default(0)
+  draws      Int @default(0)
+  noContests Int @default(0)
+  koWins     Int @default(0)
+
+  /// PRIVATE — never exposed by public DTOs
+  contactEmail String?  @db.VarChar(191)
+  contactPhone String?  @db.VarChar(40)
+  privateNotes String?  @db.Text
+
+  isDemo    Boolean   @default(false)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  weightClass       WeightClass             @relation(fields: [weightClassId], references: [id])
+  portrait          MediaAsset?             @relation("FighterPortrait", fields: [portraitId], references: [id], onDelete: SetNull)
+  fightParticipants FightParticipant[]
+  rankingEntries    RankingEntry[]
+  currentRankings   FighterRanking[]
+  rankingChanges    RankingChangeLog[]
+  beltReigns        BeltReign[]
+  beltDefenses      BeltDefense[]           @relation("DefenseChallenger")
+  tournamentEntries TournamentParticipant[]
+  tournamentsWon    Tournament[]            @relation("TournamentWinner")
+
+  @@index([weightClassId, status])
+  @@index([nationality])
+  @@index([status, deletedAt])
+  @@index([lastName, firstName])
+}
+
+// -----------------------------------------------------------------------------
+// RANKINGS (manual official ranking, versioned publication)
+// -----------------------------------------------------------------------------
+
+model RankingVersion {
+  id            String               @id @default(cuid())
+  type          RankingType
+  /// DIVISION rankings reference a weight class
+  weightClassId String?
+  /// POUND_FOR_POUND rankings are split by gender
+  gender        Gender?
+  /// "DIV:<weightClassId>" | "P4P:MALE" | "P4P:FEMALE" — groups versions of one ranking
+  scopeKey      String               @db.VarChar(80)
+  versionNumber Int
+  status        RankingVersionStatus @default(DRAFT)
+  effectiveDate DateTime             @db.Date
+  notes         String?              @db.Text
+  /// Reserved for future scoring engine; MVP is always MANUAL
+  method        String               @default("MANUAL") @db.VarChar(32)
+
+  createdById     String?
+  submittedById   String?
+  submittedAt     DateTime?
+  approvedById    String?
+  publishedAt     DateTime?
+  rejectedById    String?
+  rejectionReason String?   @db.VarChar(500)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  weightClass WeightClass?       @relation(fields: [weightClassId], references: [id])
+  entries     RankingEntry[]
+  changes     RankingChangeLog[]
+  current     FighterRanking[]
+
+  @@unique([scopeKey, versionNumber])
+  @@index([scopeKey, status])
+  @@index([status, publishedAt])
+}
+
+model RankingEntry {
+  id           String   @id @default(cuid())
+  versionId    String
+  fighterId    String
+  /// null when the fighter is listed as the champion
+  rank         Int?
+  isChampion   Boolean  @default(false)
+  points       Decimal? @db.Decimal(10, 2)
+  /// Filled at publication time, relative to the previously published version
+  previousRank Int?
+  movement     Int?
+  isNew        Boolean  @default(false)
+  note         String?  @db.VarChar(255)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  version RankingVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  fighter Fighter        @relation(fields: [fighterId], references: [id])
+
+  @@unique([versionId, fighterId])
+  @@unique([versionId, rank])
+  @@index([fighterId])
+}
+
+/// Denormalized "current published rank" per fighter per ranking scope
+model FighterRanking {
+  id         String   @id @default(cuid())
+  fighterId  String
+  scopeKey   String   @db.VarChar(80)
+  versionId  String
+  rank       Int?
+  isChampion Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
+
+  fighter Fighter        @relation(fields: [fighterId], references: [id], onDelete: Cascade)
+  version RankingVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@unique([fighterId, scopeKey])
+  @@index([scopeKey, rank])
+}
+
+model RankingChangeLog {
+  id        String              @id @default(cuid())
+  versionId String
+  fighterId String?
+  action    RankingChangeAction
+  fromRank  Int?
+  toRank    Int?
+  reason    String              @db.VarChar(500)
+  actorId   String?
+  createdAt DateTime            @default(now())
+
+  version RankingVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  fighter Fighter?       @relation(fields: [fighterId], references: [id], onDelete: SetNull)
+
+  @@index([versionId, createdAt])
+  @@index([fighterId])
+}
+
+// -----------------------------------------------------------------------------
+// CHAMPIONSHIP BELTS
+// -----------------------------------------------------------------------------
+
+model ChampionshipBelt {
+  id            String     @id @default(cuid())
+  name          String     @db.VarChar(120)
+  slug          String     @unique @db.VarChar(120)
+  weightClassId String
+  description   String?    @db.Text
+  status        BeltStatus @default(VACANT)
+  imageId       String?
+  /// Optional GLB model uploaded via media library
+  modelId       String?
+  nextDefenseAt DateTime?
+  nextDefenseNote String?  @db.VarChar(255)
+  sortOrder     Int        @default(0)
+  isDemo        Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  weightClass WeightClass @relation(fields: [weightClassId], references: [id])
+  image       MediaAsset? @relation("BeltImage", fields: [imageId], references: [id], onDelete: SetNull)
+  model       MediaAsset? @relation("BeltModel", fields: [modelId], references: [id], onDelete: SetNull)
+  reigns      BeltReign[]
+  fights      Fight[]
+
+  @@index([weightClassId])
+  @@index([status, sortOrder])
+}
+
+model BeltReign {
+  id           String              @id @default(cuid())
+  beltId       String
+  fighterId    String
+  status       BeltReignStatus     @default(PENDING_APPROVAL)
+  /// Equals beltId while ACTIVE, null otherwise → DB-level guarantee of ONE active reign per belt
+  activeKey    String?             @unique @db.VarChar(191)
+  wonAt        DateTime            @db.Date
+  wonFightId   String?
+  endedAt      DateTime?           @db.Date
+  endReason    BeltReignEndReason?
+  notes        String?             @db.VarChar(500)
+  proposedById String?
+  approvedById String?
+  approvedAt   DateTime?
+  rejectedById String?
+  rejectionReason String?          @db.VarChar(500)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  belt     ChampionshipBelt @relation(fields: [beltId], references: [id], onDelete: Cascade)
+  fighter  Fighter          @relation(fields: [fighterId], references: [id])
+  wonFight Fight?           @relation("ReignWonFight", fields: [wonFightId], references: [id], onDelete: SetNull)
+  defenses BeltDefense[]
+
+  @@index([beltId, status])
+  @@index([fighterId])
+}
+
+model BeltDefense {
+  id           String   @id @default(cuid())
+  reignId      String
+  fightId      String?  @unique
+  challengerId String?
+  defendedAt   DateTime @db.Date
+  notes        String?  @db.VarChar(255)
+  createdAt    DateTime @default(now())
+
+  reign      BeltReign @relation(fields: [reignId], references: [id], onDelete: Cascade)
+  fight      Fight?    @relation(fields: [fightId], references: [id], onDelete: SetNull)
+  challenger Fighter?  @relation("DefenseChallenger", fields: [challengerId], references: [id], onDelete: SetNull)
+
+  @@index([reignId, defendedAt])
+}
+
+// -----------------------------------------------------------------------------
+// EVENTS & FIGHTS
+// -----------------------------------------------------------------------------
+
+model Event {
+  id          String      @id @default(cuid())
+  name        String      @db.VarChar(160)
+  slug        String      @unique @db.VarChar(160)
+  description String?     @db.Text
+  venue       String?     @db.VarChar(160)
+  city        String?     @db.VarChar(120)
+  country     String?     @db.Char(2)
+  /// Stored in UTC; rendered with `timezone`
+  startsAt    DateTime
+  timezone    String      @default("UTC") @db.VarChar(64)
+  status      EventStatus @default(DRAFT)
+  posterId    String?
+  /// Only published events are visible publicly
+  isPublished Boolean     @default(false)
+  isDemo      Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  poster MediaAsset? @relation("EventPoster", fields: [posterId], references: [id], onDelete: SetNull)
+  fights Fight[]
+
+  @@index([isPublished, startsAt])
+  @@index([status, startsAt])
+}
+
+/// Configurable result methods (KO, TKO, UD, SD, ...)
+model FightMethod {
+  id          String   @id @default(cuid())
+  code        String   @unique @db.VarChar(16)
+  name        String   @db.VarChar(80)
+  /// counts as KO win for statistics
+  isStoppage  Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  results FightResult[]
+}
+
+model Fight {
+  id              String      @id @default(cuid())
+  eventId         String?
+  weightClassId   String
+  scheduledAt     DateTime
+  scheduledRounds Int         @default(10)
+  boutOrder       Int         @default(0)
+  isMainEvent     Boolean     @default(false)
+  isTitleFight    Boolean     @default(false)
+  beltId          String?
+  status          FightStatus @default(SCHEDULED)
+  notes           String?     @db.VarChar(500)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  event          Event?             @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  weightClass    WeightClass        @relation(fields: [weightClassId], references: [id])
+  belt           ChampionshipBelt?  @relation(fields: [beltId], references: [id], onDelete: SetNull)
+  participants   FightParticipant[]
+  result         FightResult?
+  tournamentBout TournamentBout?
+  reignsWon      BeltReign[]        @relation("ReignWonFight")
+  defense        BeltDefense?
+
+  @@index([eventId, boutOrder])
+  @@index([scheduledAt])
+  @@index([weightClassId, scheduledAt])
+  @@index([status])
+}
+
+model FightParticipant {
+  id        String   @id @default(cuid())
+  fightId   String
+  fighterId String
+  corner    Corner
+  weighInKg Decimal? @db.Decimal(6, 2)
+  createdAt DateTime @default(now())
+
+  fight      Fight         @relation(fields: [fightId], references: [id], onDelete: Cascade)
+  fighter    Fighter       @relation(fields: [fighterId], references: [id])
+  wonResults FightResult[] @relation("ResultWinner")
+
+  @@unique([fightId, corner])
+  @@unique([fightId, fighterId])
+  @@index([fighterId])
+}
+
+model FightResult {
+  id                  String            @id @default(cuid())
+  fightId             String            @unique
+  outcome             FightOutcome
+  /// Required when outcome = WIN
+  winnerParticipantId String?
+  methodId            String
+  endRound            Int?
+  /// "m:ss" — time in the ending round
+  endTime             String?           @db.VarChar(5)
+  /// JSON [{ judge: string, red: number, blue: number }]
+  scorecards          Json?
+  referee             String?           @db.VarChar(120)
+  sourceUrl           String?           @db.VarChar(500)
+  verificationNote    String?           @db.VarChar(500)
+  status              FightResultStatus @default(DRAFT)
+  enteredById         String?
+  verifiedById        String?
+  verifiedAt          DateTime?
+  approvedById        String?
+  approvedAt          DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  fight     Fight             @relation(fields: [fightId], references: [id], onDelete: Cascade)
+  winner    FightParticipant? @relation("ResultWinner", fields: [winnerParticipantId], references: [id], onDelete: SetNull)
+  method    FightMethod       @relation(fields: [methodId], references: [id])
+  approvals FightResultApproval[]
+
+  @@index([status])
+}
+
+model FightResultApproval {
+  id        String         @id @default(cuid())
+  resultId  String
+  action    ApprovalAction
+  actorId   String?
+  comment   String?        @db.VarChar(500)
+  createdAt DateTime       @default(now())
+
+  result FightResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+
+  @@index([resultId, createdAt])
+}
+
+// -----------------------------------------------------------------------------
+// GRAND PRIX / TOURNAMENTS
+// -----------------------------------------------------------------------------
+
+model Tournament {
+  id            String           @id @default(cuid())
+  name          String           @db.VarChar(160)
+  slug          String           @unique @db.VarChar(160)
+  weightClassId String
+  format        TournamentFormat @default(SINGLE_ELIMINATION)
+  status        TournamentStatus @default(DRAFT)
+  /// Bracket size (power of two: 4, 8, 16, 32)
+  size          Int              @default(8)
+  prize         String?          @db.VarChar(255)
+  titleAwarded  String?          @db.VarChar(160)
+  description   String?          @db.Text
+  posterId      String?
+  startDate     DateTime?        @db.Date
+  endDate       DateTime?        @db.Date
+  winnerId      String?
+  isPublished   Boolean          @default(false)
+  isDemo        Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  weightClass  WeightClass             @relation(fields: [weightClassId], references: [id])
+  poster       MediaAsset?             @relation("TournamentPoster", fields: [posterId], references: [id], onDelete: SetNull)
+  winner       Fighter?                @relation("TournamentWinner", fields: [winnerId], references: [id], onDelete: SetNull)
+  participants TournamentParticipant[]
+  brackets     TournamentBracket[]
+
+  @@index([isPublished, status])
+}
+
+model TournamentParticipant {
+  id           String                      @id @default(cuid())
+  tournamentId String
+  fighterId    String
+  seed         Int
+  status       TournamentParticipantStatus @default(ACTIVE)
+  createdAt    DateTime                    @default(now())
+
+  tournament Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  fighter    Fighter          @relation(fields: [fighterId], references: [id])
+  boutsAsA   TournamentBout[] @relation("BoutParticipantA")
+  boutsAsB   TournamentBout[] @relation("BoutParticipantB")
+  boutsWon   TournamentBout[] @relation("BoutWinner")
+
+  @@unique([tournamentId, fighterId])
+  @@unique([tournamentId, seed])
+}
+
+model TournamentBracket {
+  id           String      @id @default(cuid())
+  tournamentId String
+  type         BracketType @default(WINNERS)
+  name         String      @db.VarChar(80)
+  rounds       Int
+  createdAt    DateTime    @default(now())
+
+  tournament Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  bouts      TournamentBout[]
+
+  @@unique([tournamentId, type])
+}
+
+model TournamentBout {
+  id                  String               @id @default(cuid())
+  bracketId           String
+  round               Int
+  position            Int
+  participantAId      String?
+  participantBId      String?
+  winnerParticipantId String?
+  /// Link to the official fight record (one bout ↔ one fight)
+  fightId             String?              @unique
+  nextBoutId          String?
+  nextSlot            BoutSlot?
+  status              TournamentBoutStatus @default(PENDING)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  bracket      TournamentBracket      @relation(fields: [bracketId], references: [id], onDelete: Cascade)
+  participantA TournamentParticipant? @relation("BoutParticipantA", fields: [participantAId], references: [id], onDelete: SetNull)
+  participantB TournamentParticipant? @relation("BoutParticipantB", fields: [participantBId], references: [id], onDelete: SetNull)
+  winner       TournamentParticipant? @relation("BoutWinner", fields: [winnerParticipantId], references: [id], onDelete: SetNull)
+  fight        Fight?                 @relation(fields: [fightId], references: [id], onDelete: SetNull)
+  nextBout     TournamentBout?        @relation("BoutProgression", fields: [nextBoutId], references: [id], onDelete: SetNull)
+  feederBouts  TournamentBout[]       @relation("BoutProgression")
+
+  @@unique([bracketId, round, position])
+}
+
+// -----------------------------------------------------------------------------
+// CMS
+// -----------------------------------------------------------------------------
+
+model HeroSlide {
+  id                 String      @id @default(cuid())
+  eventTitle         String      @db.VarChar(160)
+  category           String?     @db.VarChar(80)
+  headline           String      @db.VarChar(200)
+  description        String?     @db.VarChar(600)
+  eventDate          DateTime?
+  backgroundId       String?
+  backgroundVideoId  String?
+  fighterImageId     String?
+  ctaPrimaryLabel    String?     @db.VarChar(40)
+  ctaPrimaryHref     String?     @db.VarChar(500)
+  ctaSecondaryLabel  String?     @db.VarChar(40)
+  ctaSecondaryHref   String?     @db.VarChar(500)
+  show3dBelt         Boolean     @default(false)
+  overlay            HeroOverlay @default(DARK)
+  sortOrder          Int         @default(0)
+  isActive           Boolean     @default(true)
+  publishAt          DateTime?
+  unpublishAt        DateTime?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  background      MediaAsset? @relation("HeroBackground", fields: [backgroundId], references: [id], onDelete: SetNull)
+  backgroundVideo MediaAsset? @relation("HeroVideo", fields: [backgroundVideoId], references: [id], onDelete: SetNull)
+  fighterImage    MediaAsset? @relation("HeroFighter", fields: [fighterImageId], references: [id], onDelete: SetNull)
+
+  @@index([isActive, sortOrder])
+}
+
+model Page {
+  id                  String   @id @default(cuid())
+  slug                String   @unique @db.VarChar(80)
+  title               String   @db.VarChar(160)
+  seoTitle            String?  @db.VarChar(160)
+  seoDescription      String?  @db.VarChar(320)
+  publishedRevisionId String?  @unique
+  draftUpdatedAt      DateTime @default(now())
+  draftUpdatedById    String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  sections          PageSection[]
+  revisions         PageRevision[] @relation("PageRevisions")
+  publishedRevision PageRevision?  @relation("PagePublished", fields: [publishedRevisionId], references: [id], onDelete: SetNull)
+}
+
+/// Working DRAFT copy of the page's sections. Public site renders the published revision snapshot.
+model PageSection {
+  id        String          @id @default(cuid())
+  pageId    String
+  type      PageSectionType
+  sortOrder Int
+  isEnabled Boolean         @default(true)
+  /// Validated JSON config (see src/features/cms/section-schemas.ts). No HTML/JS allowed.
+  config    Json
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, sortOrder])
+}
+
+model PageRevision {
+  id          String   @id @default(cuid())
+  pageId      String
+  version     Int
+  /// Immutable snapshot: { title, seoTitle, seoDescription, sections: [...] }
+  snapshot    Json
+  note        String?  @db.VarChar(255)
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  page          Page  @relation("PageRevisions", fields: [pageId], references: [id], onDelete: Cascade)
+  publishedPage Page? @relation("PagePublished")
+
+  @@unique([pageId, version])
+}
+
+model MediaAsset {
+  id           String    @id @default(cuid())
+  /// Randomized storage key, never derived from user input
+  storageKey   String    @unique @db.VarChar(255)
+  url          String    @db.VarChar(500)
+  kind         MediaKind
+  mimeType     String    @db.VarChar(80)
+  sizeBytes    Int
+  width        Int?
+  height       Int?
+  /// Sanitized original filename (display only)
+  originalName String    @db.VarChar(255)
+  alt          String?   @db.VarChar(255)
+  checksum     String    @db.Char(64)
+  uploadedById String?
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  uploadedBy        User?              @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  fighterPortraits  Fighter[]          @relation("FighterPortrait")
+  beltImages        ChampionshipBelt[] @relation("BeltImage")
+  beltModels        ChampionshipBelt[] @relation("BeltModel")
+  eventPosters      Event[]            @relation("EventPoster")
+  tournamentPosters Tournament[]       @relation("TournamentPoster")
+  heroBackgrounds   HeroSlide[]        @relation("HeroBackground")
+  heroVideos        HeroSlide[]        @relation("HeroVideo")
+  heroFighters      HeroSlide[]        @relation("HeroFighter")
+  sponsorLogos      Sponsor[]          @relation("SponsorLogo")
+
+  @@index([kind, deletedAt, createdAt])
+}
+
+model Sponsor {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(120)
+  logoId    String?
+  url       String?  @db.VarChar(500)
+  tier      String   @default("PARTNER") @db.VarChar(32)
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logo MediaAsset? @relation("SponsorLogo", fields: [logoId], references: [id], onDelete: SetNull)
+
+  @@index([isActive, sortOrder])
+}
+
+// -----------------------------------------------------------------------------
+// SYSTEM
+// -----------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String   @db.VarChar(80)
+  entityType String   @db.VarChar(64)
+  entityId   String?  @db.VarChar(191)
+  summary    String   @db.VarChar(500)
+  /// Redacted metadata — secrets/passwords/tokens are stripped before persisting
+  metadata   Json?
+  ipAddress  String?  @db.VarChar(64)
+  userAgent  String?  @db.VarChar(255)
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      String    @db.VarChar(64)
+  title     String    @db.VarChar(160)
+  body      String?   @db.VarChar(500)
+  link      String?   @db.VarChar(255)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+}
+
+/// Key/value settings. Each key's JSON value is validated by a Zod schema (src/features/settings/schemas.ts)
+model OrganizationSetting {
+  key         String   @id @db.VarChar(64)
+  value       Json
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+}
+

@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+/*
+ * Theme architecture
+ * ------------------
+ * All brand colors are CSS variables that flip between dark and light mode.
+ * html.dark / html.light is set before first paint by public/theme-init.js
+ * and toggled by ThemeContext. Components only ever reference the token
+ * (bg-canvas, text-white/ink, border-neutral-800, ...) so the whole UI
+ * switches consistently — no per-element overrides, no !important hacks.
+ */
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-canvas-deep: var(--canvas-deep);
+  --color-charcoal: var(--charcoal);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-hard: var(--border-hard);
+  --color-fight-red: var(--fight-red);
+  --color-fight-red-hover: var(--fight-red-hover);
+  --color-crimson: var(--fight-red);
+  --color-crimson-hover: var(--fight-red-hover);
+  --color-bone: var(--ink);
+  --color-muted: var(--muted);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+}
+
+/* Dark theme (default) */
+:root,
+html.dark {
+  --canvas: #0b0b0d;
+  --canvas-deep: #0e0e11;
+  --charcoal: #141417;
+  --surface: #18181c;
+  --surface-elevated: #222228;
+  --border-subtle: #27272e;
+  --border-hard: #ffffff;
+  --fight-red: #e50914;
+  --fight-red-hover: #c40812;
+  /* "white" text in dark mode */
+  --ink: #ffffff;
+  --ink-muted: #a1a1aa;
+  --ink-subtle: #8e8e99;
+  --muted: #8e8e99;
+  --overlay-scrim: rgba(11, 11, 13, 0.85);
+  --shadow-tint: rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+/* Light theme */
+html.light {
+  --canvas: #f4f5f8;
+  --canvas-deep: #e9ecf1;
+  --charcoal: #ffffff;
+  --surface: #f8f9fb;
+  --surface-elevated: #eef0f4;
+  --border-subtle: #d8dde5;
+  --border-hard: #101014;
+  --fight-red: #c40812;
+  --fight-red-hover: #a00710;
+  /* near-black text in light mode */
+  --ink: #101014;
+  --ink-muted: #52607a;
+  --ink-subtle: #64748b;
+  --muted: #64748b;
+  --overlay-scrim: rgba(244, 245, 248, 0.88);
+  --shadow-tint: rgba(15, 23, 42, 0.08);
+  color-scheme: light;
+}
+
+:root {
+  --font-display: "Oswald", "Impact", "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  overflow-x: hidden;
+  min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Semantic helper: text that always contrasts against fight-red / ink fills.
+   Used on badges, buttons and chips in both themes. */
+.text-on-accent {
+  color: #ffffff;
+}
+html.light .text-on-accent {
+  color: #ffffff;
+}
+
+/* Custom Display Typography Utility */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.font-mono-data {
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+}
+
+/* Slanted Banner & Button Clip Paths */
+.clip-slanted-r {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 100%, 0 100%);
+}
+
+.clip-slanted-l {
+  clip-path: polygon(14px 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.clip-badge-angled {
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+/* Red / Black Athletic Shadows */
+.shadow-fight-red {
+  box-shadow: 4px 4px 0px var(--fight-red);
+}
+
+.shadow-fight-black {
+  box-shadow: 4px 4px 0px var(--canvas);
+}
+
+.shadow-card-elevated {
+  box-shadow: 0 10px 30px -10px var(--shadow-tint);
+}
+
+.shadow-brutal-white {
+  box-shadow: 6px 6px 0px var(--border-hard);
+}
+
+.shadow-brutal-red {
+  box-shadow: 6px 6px 0px var(--fight-red);
+}
+
+.shadow-brutal-crimson {
+  box-shadow: 6px 6px 0px var(--fight-red);
+}
+
+/* Interactive Lift Effect */
+@media (prefers-reduced-motion: no-preference) {
+  .hover-lift {
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-3px);
+  }
+
+  .hover-lift:active {
+    transform: translateY(0px);
+  }
+}
+
+/* Fight Night Spotlight Background Gradient */
+.bg-spotlight {
+  background: radial-gradient(ellipse 70% 60% at 50% 20%, var(--surface-elevated) 0%, var(--canvas-deep) 40%, var(--canvas) 85%);
+}
+
+/* Technical Blueprint Grid Pattern */
+.bg-grid-lines {
+  background-image: linear-gradient(color-mix(in srgb, var(--ink) 4%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--ink) 4%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Hero image scrims follow the theme */
+.bg-scrim-x {
+  background-image: linear-gradient(to right, var(--overlay-scrim), color-mix(in srgb, var(--overlay-scrim) 80%, transparent), transparent);
+}
+
+.bg-scrim-y {
+  background-image: linear-gradient(to top, var(--overlay-scrim), transparent, color-mix(in srgb, var(--overlay-scrim) 40%, transparent));
+}
