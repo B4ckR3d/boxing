@@ -5,7 +5,7 @@ import { ALL_PERMISSIONS, DEFAULT_ROLES, PERMISSIONS } from "../src/lib/permissi
 import { hashPassword } from "../src/lib/security/password";
 
 const adapter = new PrismaMariaDb({
-  host: process.env.MYSQL_HOST || "localhost",
+  host: process.env.MYSQL_HOST || "127.0.0.1",
   port: Number(process.env.MYSQL_PORT) || 3307,
   user: process.env.MYSQL_USER || "boxing",
   password: process.env.MYSQL_PASSWORD || "",
