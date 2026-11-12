@@ -4,12 +4,29 @@ import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { ALL_PERMISSIONS, DEFAULT_ROLES, PERMISSIONS } from "../src/lib/permissions/catalog";
 import { hashPassword } from "../src/lib/security/password";
 
+let dbHost = process.env.MYSQL_HOST || "127.0.0.1";
+let dbPort = Number(process.env.MYSQL_PORT) || 3306;
+let dbUser = process.env.MYSQL_USER || "boxing";
+let dbPass = process.env.MYSQL_PASSWORD || "";
+let dbName = process.env.MYSQL_DATABASE || "boxing";
+
+if (process.env.DATABASE_URL) {
+  try {
+    const u = new URL(process.env.DATABASE_URL);
+    if (u.hostname) dbHost = u.hostname;
+    if (u.port) dbPort = Number(u.port);
+    if (u.username) dbUser = decodeURIComponent(u.username);
+    if (u.password) dbPass = decodeURIComponent(u.password);
+    if (u.pathname) dbName = u.pathname.replace(/^\//, "");
+  } catch {}
+}
+
 const adapter = new PrismaMariaDb({
-  host: process.env.MYSQL_HOST || "127.0.0.1",
-  port: Number(process.env.MYSQL_PORT) || 3307,
-  user: process.env.MYSQL_USER || "boxing",
-  password: process.env.MYSQL_PASSWORD || "",
-  database: process.env.MYSQL_DATABASE || "boxing",
+  host: dbHost,
+  port: dbPort,
+  user: dbUser,
+  password: dbPass,
+  database: dbName,
   connectionLimit: 5,
   allowPublicKeyRetrieval: true,
 });

@@ -67,6 +67,19 @@ let cached: ServerEnv | null = null;
 
 export function env(): ServerEnv {
   if (cached) return cached;
+
+  // Auto-populate MySQL fields from DATABASE_URL if present
+  if (process.env.DATABASE_URL) {
+    try {
+      const u = new URL(process.env.DATABASE_URL);
+      if (!process.env.MYSQL_HOST && u.hostname) process.env.MYSQL_HOST = u.hostname;
+      if (!process.env.MYSQL_PORT && u.port) process.env.MYSQL_PORT = u.port;
+      if (!process.env.MYSQL_USER && u.username) process.env.MYSQL_USER = decodeURIComponent(u.username);
+      if (!process.env.MYSQL_PASSWORD && u.password) process.env.MYSQL_PASSWORD = decodeURIComponent(u.password);
+      if (!process.env.MYSQL_DATABASE && u.pathname) process.env.MYSQL_DATABASE = u.pathname.replace(/^\//, "");
+    } catch {}
+  }
+
   const parsed = schema.safeParse(process.env);
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
