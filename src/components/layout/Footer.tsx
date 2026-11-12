@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { Shield } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export function Footer() {
@@ -12,7 +11,7 @@ export function Footer() {
     <footer className="bg-canvas border-t border-subtle text-ink select-none transition-colors">
       {/* Main Footer Directory */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Brand Info */}
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center tracking-tighter">
@@ -30,11 +29,6 @@ export function Footer() {
             <p className="text-xs sm:text-sm text-ink-muted max-w-md leading-relaxed font-sans">
               {t("footerDescription")}
             </p>
-
-            <div className="flex items-center gap-2.5 pt-2 font-mono-data text-xs text-fight-red">
-              <Shield className="w-4 h-4 shrink-0" />
-              <span>{t("footerSanctionedNotice")}</span>
-            </div>
 
             {/* Social Icons Row */}
             <div className="flex items-center gap-2 pt-2 text-ink-muted">
@@ -88,35 +82,6 @@ export function Footer() {
                 <Link href="/events" className="hover:text-fight-red transition-colors">
                   → {t("navEvents")}
                 </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Governance & Admin */}
-          <div className="space-y-3 font-mono-data text-xs">
-            <p className="font-bold text-ink uppercase tracking-wider border-b border-subtle pb-2">
-              {t("footerGovTitle")}
-            </p>
-            <ul className="space-y-2 text-ink-muted">
-              <li>
-                <Link href="/admin/login" className="text-fight-red font-bold hover:underline">
-                  → {t("footerCmsLogin")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin/rankings" className="hover:text-ink transition-colors">
-                  → {t("footerRankEngine")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin/audit-logs" className="hover:text-ink transition-colors">
-                  → {t("footerAuditLog")}
-                </Link>
-              </li>
-              <li>
-                <span className="text-ink-subtle">
-                  TFN OFFICIAL SYSTEM v2.5 (TEMANGGUNG)
-                </span>
               </li>
             </ul>
           </div>
