@@ -16,6 +16,7 @@ export default async function PublicHomePage() {
   // 1. Fetch Active Hero Slides
   const heroSlides = await prisma.heroSlide.findMany({
     where: { isActive: true },
+    include: { fighterImage: true, background: true },
     orderBy: { sortOrder: "asc" },
   });
 
@@ -260,10 +261,29 @@ export default async function PublicHomePage() {
     },
   ];
 
+  const activeHeroSlides =
+    heroSlides.length > 0
+      ? heroSlides.map((s) => ({
+          id: s.id,
+          eventTitle: s.eventTitle,
+          category: s.category,
+          headline: s.headline,
+          description: s.description,
+          eventDate: s.eventDate ? s.eventDate.toISOString() : null,
+          fighterImageUrl: s.fighterImage?.url || "/images/hero/hero_fighter_1_marcus.jpg",
+          backgroundImageUrl: s.background?.url || "/images/hero/boxing-ring-arena.jpg",
+          ctaPrimaryLabel: s.ctaPrimaryLabel || "BACA SELENGKAPNYA",
+          ctaPrimaryHref: s.ctaPrimaryHref || "/events",
+          ctaSecondaryLabel: s.ctaSecondaryLabel || "LIHAT FIGHT CARD",
+          ctaSecondaryHref: s.ctaSecondaryHref || "/rankings",
+          overlay: s.overlay,
+        }))
+      : defaultHeroSlides;
+
   return (
     <div className="space-y-0">
       {/* 1. Cinematic Hero Slider (Reference Image 2 & 3 with 5 Fighter Slides) */}
-      <HeroSlider slides={defaultHeroSlides} />
+      <HeroSlider slides={activeHeroSlides} />
 
       {/* 2. Sponsor Logos Ribbon (Reference Image 2) */}
       <SponsorRibbon />

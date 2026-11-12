@@ -12,6 +12,8 @@ import {
   Trophy,
   Swords,
   Award,
+  CalendarDays,
+  Sliders,
   ClipboardList,
   UserCog,
   ShieldCheck,
@@ -43,6 +45,8 @@ export default async function AdminDashboardLayout({
     { label: "Peringkat Resmi", href: "/admin/rankings", icon: Trophy },
     { label: "Turnamen Grand Prix", href: "/admin/grand-prix", icon: Swords },
     { label: "Sabuk Kejuaraan", href: "/admin/belts", icon: Award },
+    { label: "Jadwal Event", href: "/admin/events", icon: CalendarDays },
+    { label: "Hero Banner", href: "/admin/hero-slides", icon: Sliders },
     ...(can("users.manage") || can("roles.manage")
       ? [
         { label: "Pengguna & Hak Akses", href: "/admin/users", icon: UserCog },
