@@ -72,15 +72,9 @@ export function MatchupShowcase() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Matchup Header */}
         <div className="text-center max-w-xl mx-auto">
-          <span className="font-mono-data text-xs text-fight-red font-bold tracking-widest uppercase">
-            {t("matchupEyebrow")}
-          </span>
-          <h2 className="font-display text-4xl sm:text-5xl text-ink uppercase tracking-tight mt-1 font-black">
+          <h2 className="font-display text-4xl sm:text-5xl text-ink uppercase tracking-tight font-black">
             {t("matchupTitle")}
           </h2>
-          <p className="text-xs sm:text-sm text-ink-muted mt-2 font-sans">
-            {t("matchupSubtitle")}
-          </p>
         </div>
 
         {/* 1. VS Matchup Cards (From Reference Image 3) */}

@@ -66,14 +66,6 @@ export function Belt3DViewer({ belt }: BeltViewerProps) {
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 select-none"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
-
-            {/* Caption on Bottom */}
-            <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-neutral-400 font-mono-data text-[10px] pointer-events-none">
-              <span className="text-white font-bold uppercase tracking-wider">
-                INSPEKSI VISUAL RESMI KOMISI TFN
-              </span>
-              <span className="text-fight-red font-bold">8K RESOLUTION</span>
-            </div>
           </div>
         ) : (
           /* 3D Interactive Gold Mesh View */
