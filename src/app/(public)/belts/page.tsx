@@ -52,7 +52,7 @@ export default async function PublicBeltsPage() {
 
           const beltProps = {
             id: belt.id,
-            name: belt.name.replace("WBC-X", "TFN"),
+            name: belt.name.replace("WBC-X", "TFN").replace(/\bworld\b\s*/gi, ""),
             division: belt.weightClass.name,
             status: belt.status,
             holderName: activeReign?.fighter

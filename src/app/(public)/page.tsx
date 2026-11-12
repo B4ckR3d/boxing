@@ -89,7 +89,11 @@ export default async function PublicHomePage() {
   const activeReign = hwBelt?.reigns[0];
   const beltProps = {
     id: hwBelt?.id || "hw-belt",
-    name: hwBelt?.name.replace("WBC-X", "TFN") || "TFN World Heavyweight Championship",
+    name:
+      (hwBelt?.name.replace("WBC-X", "TFN") || "TFN Heavyweight Championship").replace(
+        /\bworld\b\s*/gi,
+        ""
+      ),
     division: hwBelt?.weightClass?.name || "Heavyweight",
     status: hwBelt?.status || "ACTIVE",
     holderName: activeReign?.fighter

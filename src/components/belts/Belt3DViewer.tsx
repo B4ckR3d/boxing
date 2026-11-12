@@ -2,10 +2,9 @@
 
 import React, { useState, Suspense } from "react";
 import dynamic from "next/dynamic";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Belt2DFallback } from "./BeltCanvas";
-import { Pause, Play, Award, Sparkles, Image as ImageIcon, Box } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 
 // Dynamically import Three.js Canvas to avoid SSR issues
 const BeltCanvas = dynamic(
@@ -56,40 +55,6 @@ export function Belt3DViewer({ belt }: BeltViewerProps) {
 
       {/* Belt Focal Viewport (7 cols on desktop) */}
       <div className="lg:col-span-7 relative h-[440px] lg:h-[500px] bg-neutral-950 border border-border overflow-hidden flex flex-col justify-between group shadow-xl">
-        {/* View Mode Toggle Bar (Top Right) */}
-        <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
-          <Badge className="pointer-events-auto bg-fight-red text-white font-mono-data text-[10px] font-bold uppercase tracking-wider shadow-md">
-            <Award className="w-3.5 h-3.5 mr-1" />
-            SABUK RESMI TFN
-          </Badge>
-
-          {/* Mode Switcher: Foto Studio 8K vs 3D Interaktif */}
-          <div className="pointer-events-auto flex items-center bg-black/80 backdrop-blur border border-neutral-700 p-0.5 rounded-none shadow-lg">
-            <button
-              onClick={() => setViewMode("photo")}
-              className={`flex items-center gap-1.5 px-3 py-1 font-mono-data text-[10px] font-bold uppercase transition-all ${
-                viewMode === "photo"
-                  ? "bg-fight-red text-white shadow"
-                  : "text-neutral-400 hover:text-white"
-              }`}
-            >
-              <ImageIcon className="w-3.5 h-3.5" />
-              <span>FOTO STUDIO 8K</span>
-            </button>
-            <button
-              onClick={() => setViewMode("3d")}
-              className={`flex items-center gap-1.5 px-3 py-1 font-mono-data text-[10px] font-bold uppercase transition-all ${
-                viewMode === "3d"
-                  ? "bg-[#F5C542] text-black shadow font-black"
-                  : "text-neutral-400 hover:text-white"
-              }`}
-            >
-              <Box className="w-3.5 h-3.5" />
-              <span>3D INTERAKTIF</span>
-            </button>
-          </div>
-        </div>
-
         {/* Viewport Content */}
         {viewMode === "photo" ? (
           /* High-Resolution Studio Photograph View */
@@ -101,16 +66,6 @@ export function Belt3DViewer({ belt }: BeltViewerProps) {
               className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 select-none"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
-
-            {/* Inspection Hotspot Tags */}
-            <div className="absolute bottom-14 left-4 flex flex-wrap gap-2 pointer-events-none">
-              <span className="inline-flex items-center gap-1 bg-black/70 backdrop-blur border border-[#F5C542]/50 text-[#F5C542] font-mono-data text-[9px] font-bold px-2 py-0.5 uppercase">
-                <Sparkles className="w-3 h-3 text-[#F5C542]" /> PELAT EMAS 24K FILIGREE
-              </span>
-              <span className="inline-flex items-center gap-1 bg-black/70 backdrop-blur border border-neutral-600 text-neutral-300 font-mono-data text-[9px] font-bold px-2 py-0.5 uppercase">
-                KULIT ASLI HANDCRAFTED
-              </span>
-            </div>
 
             {/* Caption on Bottom */}
             <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-neutral-400 font-mono-data text-[10px] pointer-events-none">
@@ -161,23 +116,8 @@ export function Belt3DViewer({ belt }: BeltViewerProps) {
       {/* Belt Telemetry & Holder Data (5 cols on desktop) */}
       <div className="lg:col-span-5 flex flex-col justify-between h-full space-y-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="bg-canvas border border-border text-foreground font-mono-data text-xs font-bold px-2 py-0.5 uppercase tracking-wide">
-              DIVISI {belt.division}
-            </span>
-            <span
-              className={`font-mono-data text-xs font-bold px-2 py-0.5 uppercase tracking-wide ${
-                belt.status === "ACTIVE"
-                  ? "bg-fight-red text-white"
-                  : "bg-neutral-700 text-neutral-300"
-              }`}
-            >
-              STATUS: {belt.status}
-            </span>
-          </div>
-
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black uppercase text-foreground leading-tight tracking-tight">
-            {belt.name}
+            {belt.name.replace(/\bworld\b\s*/gi, "")}
           </h2>
 
           <p className="font-sans text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed">
@@ -197,11 +137,6 @@ export function Belt3DViewer({ belt }: BeltViewerProps) {
             <p className="font-mono-data text-[11px] text-fight-red font-bold tracking-widest uppercase">
               {isVacant ? "STATUS GELAR SAAT INI" : "JUARA BERTAHAN SAAT INI"}
             </p>
-            {!isVacant && (
-              <span className="font-mono-data text-[10px] bg-fight-red text-white font-bold px-2 py-0.5 uppercase">
-                REIGNING CHAMPION
-              </span>
-            )}
           </div>
 
           <div className="flex items-center justify-between mt-2.5">
