@@ -183,3 +183,4 @@ Setelah website aktif, login ke Control Room Admin:
 ### C. Error `Access denied for user` saat deploy database
 * **Penyebab:** Password atau username database tidak cocok dengan yang terdaftar di aaPanel.
 * **Solusi:** Buka menu **Databases** di aaPanel, klik ikon kunci (Password) pada database `boxing`, lalu salin ulang password tersebut ke baris `MYSQL_PASSWORD` dan `DATABASE_URL` di file `.env`.
+

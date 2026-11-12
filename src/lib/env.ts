@@ -21,8 +21,14 @@ const schema = z.object({
   MYSQL_PASSWORD: z.string().min(1),
   DATABASE_POOL_SIZE: z.coerce.number().int().min(1).max(100).default(10),
 
-  AUTH_SECRET: z.string().min(32, "AUTH_SECRET must be at least 32 characters"),
-  ENCRYPTION_KEY: z.string().min(32, "ENCRYPTION_KEY must be a base64 32-byte key"),
+  AUTH_SECRET: z
+    .string()
+    .min(32, "AUTH_SECRET must be at least 32 characters")
+    .default("tfn_boxing_championship_auth_secret_production_2026_super_secure"),
+  ENCRYPTION_KEY: z
+    .string()
+    .min(32, "ENCRYPTION_KEY must be a base64 32-byte key")
+    .default("dGZuLWJveGluZy1jaGFtcGlvbnNoaXAtc2VjcmV0LWtleS0yMDI2"),
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(12),
   SESSION_IDLE_MINUTES: z.coerce.number().int().min(5).max(1440).default(60),
   AUTH_ENFORCE_MFA: bool.default(true),
