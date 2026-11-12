@@ -27,17 +27,11 @@ export function FeaturedFighters({ fighters }: { fighters: FeaturedFighterData[]
   return (
     <section className="py-20 bg-canvas border-b border-subtle text-ink transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        {/* Section Header (Image 1 style: Red Eyebrow + Bold Title) */}
+        {/* Section Header */}
         <div className="text-center max-w-xl mx-auto">
-          <span className="font-mono-data text-xs text-fight-red font-bold tracking-widest uppercase">
-            {t("rosterEyebrow")}
-          </span>
-          <h2 className="font-display text-4xl sm:text-6xl text-ink uppercase tracking-tight font-black mt-1">
+          <h2 className="font-display text-4xl sm:text-6xl text-ink uppercase tracking-tight font-black">
             {t("rosterTitleMain")} <span className="text-fight-red">{t("rosterTitleHighlight")}</span>
           </h2>
-          <p className="font-sans text-xs sm:text-sm text-ink-muted mt-2">
-            {t("rosterSubtitle")}
-          </p>
         </div>
 
         {/* 4-Column Fighter Grid (From Reference Image 1) */}
