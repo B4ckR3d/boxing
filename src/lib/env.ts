@@ -12,13 +12,13 @@ const bool = z
 
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  APP_URL: z.url().default("http://localhost:3000"),
+  APP_URL: z.string().default("http://localhost:3000"),
 
-  MYSQL_HOST: z.string().min(1).default("127.0.0.1"),
-  MYSQL_PORT: z.coerce.number().int().positive().default(3307),
-  MYSQL_DATABASE: z.string().min(1),
-  MYSQL_USER: z.string().min(1),
-  MYSQL_PASSWORD: z.string().min(1),
+  MYSQL_HOST: z.string().default("127.0.0.1"),
+  MYSQL_PORT: z.coerce.number().int().positive().default(3306),
+  MYSQL_DATABASE: z.string().default("boxing"),
+  MYSQL_USER: z.string().default("boxing"),
+  MYSQL_PASSWORD: z.string().default(""),
   DATABASE_POOL_SIZE: z.coerce.number().int().min(1).max(100).default(10),
 
   AUTH_SECRET: z

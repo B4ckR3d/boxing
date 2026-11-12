@@ -28,7 +28,10 @@ export interface AuthenticatedUser {
 /** Resolves the current session from incoming HTTP cookies */
 export async function getSession(): Promise<AuthenticatedUser | null> {
   const cookieStore = await cookies();
-  const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const rawToken =
+    cookieStore.get(SESSION_COOKIE_NAME)?.value ||
+    cookieStore.get("bx_session")?.value ||
+    cookieStore.get("__Host-bx_session")?.value;
   if (!rawToken) return null;
 
   const tokenHash = sha256Hex(rawToken);
@@ -300,12 +303,24 @@ export async function setSessionCookie(rawToken: string): Promise<void> {
     path: "/",
     maxAge: env().SESSION_TTL_HOURS * 3600,
   });
+  if (SESSION_COOKIE_NAME !== "bx_session") {
+    cookieStore.set("bx_session", rawToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: env().SESSION_TTL_HOURS * 3600,
+    });
+  }
 }
 
 /** Revokes the current session and clears the cookie */
 export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();
-  const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const rawToken =
+    cookieStore.get(SESSION_COOKIE_NAME)?.value ||
+    cookieStore.get("bx_session")?.value ||
+    cookieStore.get("__Host-bx_session")?.value;
   if (rawToken) {
     const tokenHash = sha256Hex(rawToken);
     await prisma.session.updateMany({
@@ -313,6 +328,8 @@ export async function destroySession(): Promise<void> {
       data: { revokedAt: new Date() },
     });
     cookieStore.delete(SESSION_COOKIE_NAME);
+    cookieStore.delete("bx_session");
+    cookieStore.delete("__Host-bx_session");
   }
 }
 

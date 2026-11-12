@@ -33,9 +33,10 @@ export default function AdminLoginPage() {
 
       if (!res.ok) {
         const errorText =
-          lang === "id"
+          data.error ||
+          (lang === "id"
             ? "Autentikasi gagal. Periksa kembali email dan kata sandi."
-            : data.error || "Authentication failed";
+            : "Authentication failed");
         setErrorMsg(errorText);
         toast.error(errorText);
         setIsLoading(false);
@@ -58,12 +59,6 @@ export default function AdminLoginPage() {
       toast.error(netError);
       setIsLoading(false);
     }
-  };
-
-  const fillDemoAccount = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword("Demo-Ringside-2026!");
-    setErrorMsg(null);
   };
 
   return (
@@ -157,53 +152,7 @@ export default function AdminLoginPage() {
           </div>
         </form>
 
-        {/* Quick Demo Accounts Helper */}
-        <div className="mt-8 pt-6 border-t border-subtle">
-          <p className="font-mono-data text-[10px] text-ink-muted uppercase tracking-wider mb-2 font-bold flex items-center justify-between">
-            <span>⚡ {t("adminDemoTitle")}</span>
-            <span className="text-fight-red">Demo-Ringside-2026!</span>
-          </p>
-
-          <div className="grid grid-cols-2 gap-2 font-mono-data text-xs">
-            <button
-              type="button"
-              onClick={() => fillDemoAccount("superadmin@boxing.local")}
-              className="p-2 bg-canvas border border-subtle hover:border-fight-red text-ink hover:text-fight-red text-left transition-colors cursor-pointer"
-            >
-              <span className="block font-bold text-[11px]">Super Admin</span>
-              <span className="text-[9px] text-ink-subtle truncate block">superadmin@boxing.local</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => fillDemoAccount("admin@boxing.local")}
-              className="p-2 bg-canvas border border-subtle hover:border-fight-red text-ink hover:text-fight-red text-left transition-colors cursor-pointer"
-            >
-              <span className="block font-bold text-[11px]">Platform Admin</span>
-              <span className="text-[9px] text-ink-subtle truncate block">admin@boxing.local</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => fillDemoAccount("rankings@boxing.local")}
-              className="p-2 bg-canvas border border-subtle hover:border-fight-red text-ink hover:text-fight-red text-left transition-colors cursor-pointer"
-            >
-              <span className="block font-bold text-[11px]">{lang === "id" ? "Manajer Peringkat" : "Ranking Manager"}</span>
-              <span className="text-[9px] text-ink-subtle truncate block">rankings@boxing.local</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => fillDemoAccount("tournaments@boxing.local")}
-              className="p-2 bg-canvas border border-subtle hover:border-fight-red text-ink hover:text-fight-red text-left transition-colors cursor-pointer"
-            >
-              <span className="block font-bold text-[11px]">{lang === "id" ? "Manajer Turnamen" : "Tournament Mgr"}</span>
-              <span className="text-[9px] text-ink-subtle truncate block">tournaments@boxing.local</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-6 text-center">
+        <div className="mt-8 pt-4 border-t border-subtle text-center">
           <Link
             href="/"
             className="font-mono-data text-xs text-ink-muted hover:text-ink transition-colors"

@@ -570,43 +570,50 @@ async function main() {
     });
   }
 
-  // 12. Seed Demo Users (if enabled in .env)
-  if (process.env.SEED_DEMO_USERS === "true") {
-    const rawPass = process.env.DEMO_USER_PASSWORD || "Demo-Ringside-2026!";
-    console.log(`  → Seeding demo users with shared password (${rawPass.slice(0, 4)}***)...`);
-    const passwordHash = await hashPassword(rawPass);
+  // 12. Seed Core Administrators and Staff (Always seeded so admin login is guaranteed)
+  const rawPass =
+    process.env.ADMIN_PASSWORD ||
+    process.env.DEMO_USER_PASSWORD ||
+    "Demo-Ringside-2026!";
+  console.log(`  → Seeding core administrator & staff accounts (${rawPass.slice(0, 4)}***)...`);
+  const passwordHash = await hashPassword(rawPass);
 
-    const demoUsers = [
-      { email: "superadmin@boxing.local", name: "Super Admin", roleKey: "super_admin" },
-      { email: "admin@boxing.local", name: "Platform Admin", roleKey: "administrator" },
-      { email: "rankings@boxing.local", name: "Chief Ranking Officer", roleKey: "ranking_manager" },
-      { email: "tournaments@boxing.local", name: "Grand Prix Director", roleKey: "tournament_manager" },
-      { email: "editor@boxing.local", name: "Lead Content Editor", roleKey: "editor" },
-      { email: "data@boxing.local", name: "Fight Record Keeper", roleKey: "fight_data_manager" },
-      { email: "reviewer@boxing.local", name: "Sanctioning Reviewer", roleKey: "reviewer" },
-      { email: "viewer@boxing.local", name: "Broadcast Guest", roleKey: "viewer" },
-    ];
+  const coreUsers = [
+    { email: "superadmin@boxing.local", name: "Super Admin", roleKey: "super_admin" },
+    { email: "admin@boxing.local", name: "Platform Admin", roleKey: "administrator" },
+    { email: "rankings@boxing.local", name: "Chief Ranking Officer", roleKey: "ranking_manager" },
+    { email: "tournaments@boxing.local", name: "Grand Prix Director", roleKey: "tournament_manager" },
+    { email: "editor@boxing.local", name: "Lead Content Editor", roleKey: "editor" },
+    { email: "data@boxing.local", name: "Fight Record Keeper", roleKey: "fight_data_manager" },
+    { email: "reviewer@boxing.local", name: "Sanctioning Reviewer", roleKey: "reviewer" },
+    { email: "viewer@boxing.local", name: "Broadcast Guest", roleKey: "viewer" },
+  ];
 
-    for (const u of demoUsers) {
-      const user = await prisma.user.upsert({
-        where: { email: u.email },
-        update: { name: u.name, isActive: true },
-        create: {
-          email: u.email,
-          name: u.name,
-          passwordHash,
-          isActive: true,
-        },
+  for (const u of coreUsers) {
+    const user = await prisma.user.upsert({
+      where: { email: u.email },
+      update: {
+        name: u.name,
+        isActive: true,
+        passwordHash,
+        failedLoginCount: 0,
+        lockedUntil: null,
+      },
+      create: {
+        email: u.email,
+        name: u.name,
+        passwordHash,
+        isActive: true,
+      },
+    });
+
+    const role = await prisma.role.findUnique({ where: { key: u.roleKey } });
+    if (role) {
+      await prisma.userRole.upsert({
+        where: { userId_roleId: { userId: user.id, roleId: role.id } },
+        update: {},
+        create: { userId: user.id, roleId: role.id },
       });
-
-      const role = await prisma.role.findUnique({ where: { key: u.roleKey } });
-      if (role) {
-        await prisma.userRole.upsert({
-          where: { userId_roleId: { userId: user.id, roleId: role.id } },
-          update: {},
-          create: { userId: user.id, roleId: role.id },
-        });
-      }
     }
   }
 

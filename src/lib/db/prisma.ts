@@ -16,7 +16,7 @@ function createClient(): PrismaClient {
     password: e.MYSQL_PASSWORD,
     database: e.MYSQL_DATABASE,
     connectionLimit: e.DATABASE_POOL_SIZE,
-    allowPublicKeyRetrieval: e.NODE_ENV !== "production",
+    allowPublicKeyRetrieval: true,
   });
   return new PrismaClient({
     adapter,
