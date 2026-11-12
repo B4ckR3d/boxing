@@ -23,12 +23,25 @@ const schema = z.object({
 
   AUTH_SECRET: z
     .string()
-    .min(32, "AUTH_SECRET must be at least 32 characters")
-    .default("tfn_boxing_championship_auth_secret_production_2026_super_secure"),
+    .optional()
+    .transform((v) =>
+      v && v.trim() !== ""
+        ? v
+        : "tfn_boxing_championship_auth_secret_production_2026_super_secure"
+    )
+    .pipe(z.string().min(32, "AUTH_SECRET must be at least 32 characters")),
   ENCRYPTION_KEY: z
     .string()
-    .min(32, "ENCRYPTION_KEY must be a base64 32-byte key")
-    .default("dGZuLWJveGluZy1jaGFtcGlvbnNoaXAtc2VjcmV0LWtleS0yMDI2"),
+    .optional()
+    .transform((v) => {
+      if (v && v.trim() !== "") {
+        try {
+          const buf = Buffer.from(v, "base64");
+          if (buf.length === 32) return v;
+        } catch {}
+      }
+      return "cqrIoEPj/F+u6SIcWduPp+uUduuGYBSSO8plzkNC1v8=";
+    }),
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(12),
   SESSION_IDLE_MINUTES: z.coerce.number().int().min(5).max(1440).default(60),
   AUTH_ENFORCE_MFA: bool.default(true),

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Calendar, Flame } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export interface HeroSlideData {
@@ -133,7 +133,7 @@ export function HeroSlider({ slides, autoplayIntervalMs = 7000 }: HeroSliderProp
       {/* 3. Main Text Content Stage (Left Half) */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 w-full z-20">
         <div className="max-w-xl sm:max-w-2xl lg:max-w-2xl">
-          {/* Red Date / Category Pill */}
+          {/* Red Date Pill */}
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-fight-red text-white font-mono-data text-xs font-bold uppercase tracking-wider shadow-lg">
               <Calendar className="w-3.5 h-3.5" />
@@ -150,13 +150,6 @@ export function HeroSlider({ slides, autoplayIntervalMs = 7000 }: HeroSliderProp
                   : t("heroDatePill")}
               </span>
             </div>
-
-            {slide.category && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-black/60 backdrop-blur border border-neutral-700 text-[#F5C542] font-mono-data text-[11px] font-bold uppercase tracking-wider">
-                <Flame className="w-3 h-3 text-fight-red" />
-                {slide.category}
-              </span>
-            )}
           </div>
 
           {/* Subtitle / Venue Pill */}

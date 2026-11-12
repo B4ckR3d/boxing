@@ -61,8 +61,8 @@ MYSQL_PASSWORD=BoxingTfn2026Pass
 DATABASE_URL="mysql://boxing_user:BoxingTfn2026Pass@127.0.0.1:3306/boxing"
 
 # --- Security Keys ---
-AUTH_SECRET=pimpom_tfn_boxing_championship_production_secret_key_2026_32char
-ENCRYPTION_KEY=dGZuLWJveGluZy1jaGFtcGlvbnNoaXAtc2VjcmV0LWtleS0yMDI2
+AUTH_SECRET=tfn_boxing_championship_auth_secret_production_2026_super_secure
+ENCRYPTION_KEY=cqrIoEPj/F+u6SIcWduPp+uUduuGYBSSO8plzkNC1v8=
 STORAGE_DRIVER=local
 ```
 *Simpan perubahan file `.env`.*
