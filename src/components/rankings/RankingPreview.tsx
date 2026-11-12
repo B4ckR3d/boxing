@@ -29,8 +29,6 @@ export interface RankingPreviewProps {
 
 export function RankingPreview({
   divisionName,
-  versionNumber,
-  effectiveDate,
   entries,
 }: RankingPreviewProps) {
   const { t, lang } = useLanguage();
@@ -45,23 +43,12 @@ export function RankingPreview({
   return (
     <section className="py-16 bg-canvas border-b border-subtle text-ink select-none transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        {/* Header (From Reference Image 4) */}
+        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-subtle pb-6">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="bg-fight-red text-ink font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
-                {t("rankingsEyebrow")}
-              </span>
-              <span className="border border-subtle text-ink-muted font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
-                {t("rankingsVersion")} {versionNumber}.0
-              </span>
-            </div>
             <h2 className="font-display text-4xl sm:text-6xl text-ink uppercase tracking-tight font-black">
               {divisionDisplay} <span className="text-fight-red">{t("rankingsTitleSuffix")}</span>
             </h2>
-            <p className="font-mono-data text-xs text-ink-muted mt-1">
-              {t("rankingsEffective")}: {effectiveDate} · {t("rankingsRatifiedBy")}
-            </p>
           </div>
 
           <Link href="/rankings">
