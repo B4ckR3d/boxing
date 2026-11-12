@@ -120,6 +120,7 @@ npm run test:all
 
 ## 📚 Documentation Reference
 
+- [Tutorial Deploy aaPanel (Linux VPS)](docs/TUTORIAL_DEPLOY_AAPANEL.md)
 - [Architecture Plan](docs/ARCHITECTURE.md)
 - [Database Schema & ERD](docs/DATABASE.md)
 - [Role-Based Access Control & Permission Matrix](docs/RBAC.md)
