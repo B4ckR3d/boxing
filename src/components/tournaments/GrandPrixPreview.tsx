@@ -38,25 +38,9 @@ export function GrandPrixPreview({ tournament }: GrandPrixPreviewProps) {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-subtle pb-6">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="bg-fight-red text-ink font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
-                {t("gpEyebrow")}
-              </span>
-              <span className="border border-subtle text-ink-muted font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
-                {tournament.division}
-              </span>
-              <span className="border border-subtle text-fight-red font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
-                {tournament.status}
-              </span>
-            </div>
             <h2 className="font-display text-4xl sm:text-6xl text-ink uppercase tracking-tight font-black">
               {lang === "id" ? "TFN WORLD GRAND PRIX TOURNAMENT" : tournament.name}
             </h2>
-            {tournament.prize && (
-              <p className="font-mono-data text-xs text-ink-muted mt-1">
-                {t("gpPurse")}: <span className="text-fight-red font-bold">{tournament.prize}</span> · {t("gpFormat")}
-              </p>
-            )}
           </div>
 
           <Link href="/grand-prix">
