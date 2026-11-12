@@ -39,3 +39,4 @@ export default async function AdminEventsPage() {
 
   return <EventManager events={events} canManage={canManage} />;
 }
+

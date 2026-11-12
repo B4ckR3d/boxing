@@ -40,3 +40,4 @@ export default async function AdminHeroSlidesPage() {
 
   return <HeroSlideManager slides={slides} canManage={canManage} />;
 }
+
