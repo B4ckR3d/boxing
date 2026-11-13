@@ -65,6 +65,14 @@ git reset --hard "origin/$BRANCH"
 echo "HEAD: $(git log -1 --oneline)"
 
 # ---------------------------------------------------------------------------
+# 2b. Optional DB snapshot before migrations (BACKUP=1 ./scripts/deploy.sh)
+# ---------------------------------------------------------------------------
+if [ "${BACKUP:-0}" = "1" ]; then
+  step "2b/8 Backing up the database"
+  npm run db:backup
+fi
+
+# ---------------------------------------------------------------------------
 # 3. Dependencies — devDeps are required (tailwind, eslint config, prisma CLI)
 # ---------------------------------------------------------------------------
 step "3/8 Installing dependencies"
