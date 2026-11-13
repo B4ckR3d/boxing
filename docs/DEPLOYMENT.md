@@ -150,6 +150,35 @@ to release, so cron mail only arrives when seats were freed or something broke.
 
 ---
 
+## 3.2 Admin credentials & password reset
+
+Login keeps failing with the password from `.env`? Then the row in the database holds an older
+hash. `prisma db seed` and `scripts/bootstrap-admin.ts` used `update: {}` — they only ever created
+accounts, so an existing account *never* picked up a new password. Fixed on `main`; both paths
+now write the hash and clear `failedLoginCount` / `lockedUntil`.
+
+```bash
+cd /www/wwwroot/boxing
+
+# Primary admin → password from BOOTSTRAP_ADMIN_PASSWORD (also unlocks the account)
+RUN_BOOTSTRAP=1 npm run admin:bootstrap
+
+# Any single account
+npm run user:reset-password -- --email=admin@boxing.local --password='Strong-Pass-2026!'
+
+# All seeded persona accounts → DEMO_USER_PASSWORD
+npm run user:reset-password -- --all-demo
+```
+
+Passwords must pass `passwordPolicy` (min 12 chars, upper + lower + digit). Neither command prints
+the password back. `prisma db seed` refuses to run when `NODE_ENV=production` while
+`SEED_DEMO`/`SEED_DEMO_USERS` is `true`, so on the production box the reset path is the only way in.
+
+> `TEST_DATABASE_URL` must never point at the production schema — the test projects truncate
+> tables. Use a separate `boxing_test` database.
+
+---
+
 ## 4. Nginx Reverse Proxy Configuration
 
 ```nginx

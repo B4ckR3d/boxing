@@ -89,7 +89,7 @@ async function main() {
   for (const acc of accounts) {
     const user = await prisma.user.upsert({
       where: { email: acc.email },
-      update: {},
+      update: { passwordHash, isActive: true, failedLoginCount: 0, lockedUntil: null, passwordChangedAt: new Date() },
       create: {
         email: acc.email,
         name: acc.name,
@@ -113,7 +113,8 @@ async function main() {
   console.log("\n=======================================================");
   console.log("✅ Admin accounts successfully bootstrapped & unlocked!");
   console.log(`   Email: ${account.email}`);
-  console.log("   Existing accounts are preserved. Passwords are never printed.");
+  console.log("   Password reset to BOOTSTRAP_ADMIN_PASSWORD and account unlocked.");
+  console.log("   Demo/persona accounts are untouched; use user:reset-password for those.");
   console.log("=======================================================\n");
 }
 

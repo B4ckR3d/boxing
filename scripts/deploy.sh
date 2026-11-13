@@ -11,7 +11,11 @@ set -euo pipefail
 
 APP_DIR="${APP_DIR:-/www/wwwroot/boxing}"
 PM2_NAME="${PM2_NAME:-boxing-tfn}"
-APP_PORT="${APP_PORT:-3000}"
+# Port to smoke-test: APP_PORT env > PORT from .env > 3000
+if [ -z "${APP_PORT:-}" ]; then
+  APP_PORT="$(grep -E '^PORT=' .env 2>/dev/null | tail -1 | cut -d= -f2 | tr -d '\r' )"
+  APP_PORT="${APP_PORT:-3000}"
+fi
 BRANCH="${BRANCH:-main}"
 
 cd "$APP_DIR"

@@ -23,6 +23,7 @@
     "db:reset": "prisma migrate reset",
     "db:studio": "prisma studio",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
+    "user:reset-password": "tsx scripts/reset-password.ts",
     "db:backup": "node scripts/db-backup.mjs",
     "test": "vitest run --project unit",
     "test:unit": "vitest run --project unit",
