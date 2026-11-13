@@ -12,6 +12,12 @@
  */
 
 @theme inline {
+  --color-subtle: var(--border-subtle);
+  --color-border: var(--border-subtle);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-foreground: var(--ink);
+  --color-muted-foreground: var(--ink-muted);
   --color-canvas: var(--canvas);
   --color-canvas-deep: var(--canvas-deep);
   --color-charcoal: var(--charcoal);
@@ -21,6 +27,8 @@
   --color-border-hard: var(--border-hard);
   --color-fight-red: var(--fight-red);
   --color-fight-red-hover: var(--fight-red-hover);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
   --color-crimson: var(--fight-red);
   --color-crimson-hover: var(--fight-red-hover);
   --color-bone: var(--ink);
@@ -42,6 +50,9 @@ html.dark {
   --border-hard: #ffffff;
   --fight-red: #e50914;
   --fight-red-hover: #c40812;
+  /* Certificate gold — used only for official/endorsement surfaces */
+  --gold: #d4a017;
+  --gold-soft: #f5c542;
   /* "white" text in dark mode */
   --ink: #ffffff;
   --ink-muted: #a1a1aa;
@@ -63,6 +74,9 @@ html.light {
   --border-hard: #101014;
   --fight-red: #c40812;
   --fight-red-hover: #a00710;
+  /* Gold needs to darken on light surfaces to stay legible */
+  --gold: #8a6100;
+  --gold-soft: #a8790f;
   /* near-black text in light mode */
   --ink: #101014;
   --ink-muted: #52607a;
@@ -181,4 +195,32 @@ html.light .text-on-accent {
 
 .bg-scrim-y {
   background-image: linear-gradient(to top, var(--overlay-scrim), transparent, color-mix(in srgb, var(--overlay-scrim) 40%, transparent));
+}
+
+/* Public surfaces: keep cinematic contrast in both themes. */
+.tfn-hero-portrait { opacity: .38; }
+.tfn-hero-scrim { background: linear-gradient(90deg, #0b0b0df5 0%, #0b0b0dce 48%, #0b0b0d55 100%), linear-gradient(0deg, #0b0b0d 0%, transparent 55%); }
+@media (min-width: 1024px) {
+  .tfn-hero-portrait { opacity: .9; }
+  .tfn-hero-scrim { background: linear-gradient(90deg, #0b0b0d 0%, #0b0b0dec 34%, #0b0b0d88 57%, #0b0b0d14 100%), linear-gradient(0deg, #0b0b0d 0%, transparent 40%); }
+}
+.tfn-public-content { min-width: 0; scroll-margin-top: 136px; }
+.tfn-public-content :is(h1, h2, h3) { overflow-wrap: break-word; }
+.tfn-public-content .select-none { user-select: text; }
+:is(header, footer, .tfn-public-content) :is(a, button, input, select, textarea):focus-visible { outline: 3px solid #d7a830; outline-offset: 4px; }
+header button { min-height: 44px; min-width: 44px; }
+.tfn-skip-link { position: fixed; top: 8px; left: 16px; z-index: 100; padding: 12px 20px; background: #f5c542; color: #0b0b0d; font-weight: 700; transform: translateY(-160%); }
+.tfn-skip-link:focus { transform: translateY(0); }
+
+/* Marquee strip for the official-support block (home). Two identical halves → seamless loop. */
+.tfn-ticker { display: flex; width: max-content; animation: tfn-ticker 42s linear infinite; will-change: transform; }
+@keyframes tfn-ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tfn-ticker { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(header, footer, .tfn-public-content), :is(header, footer, .tfn-public-content) * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
