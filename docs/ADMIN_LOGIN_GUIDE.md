@@ -1,6 +1,6 @@
 # Panduan & Arsitektur Login Panel Admin (WBC-X)
 
-> **Status:** v1.0 — Production Ready  
+> **Status:** v1.1 — Production Ready (kredensial demo dipindah ke env, audit 13 Nov 2026)  
 > **Source of Truth:** [prd.md](../prd.md) & [docs/RBAC.md](./RBAC.md)  
 > **Akses Endpoint:** `/admin/login`  
 
@@ -8,20 +8,34 @@
 
 ## 1. Cara Mengakses Login Panel
 
-1. **URL Akses:** Buka browser dan arahkan ke:  
-   `http://localhost:3000/admin/login`  
-   *(Atau klik link **"🔐 ADMIN DASHBOARD LOGIN"** di footer public landing page).*
-2. **Dashboard URL:** Setelah login berhasil, Anda akan langsung dialihkan ke:  
-   `http://localhost:3000/admin`
+1. **URL Akses:** `{APP_URL}/admin/login`  
+   - Development: `http://localhost:3015/admin/login` (nilai `APP_URL` di `.env`)  
+   - Production: `https://<domain-produksi>/admin/login`
+2. **Tidak ada link login admin di footer** public site — ini disengaja agar panel tidak diiklankan. Buka URL langsung dari browser.
+3. **Dashboard URL:** setelah login berhasil, operator dialihkan ke `{APP_URL}/admin`.
 
 ---
 
 ## 2. Akun & Kredensial Demo (Siap Pakai)
 
-Semua akun demo di-seed otomatis dengan password yang seragam:  
-👉 **Password:** `Demo-Ringside-2026!`
+Password akun demo **seragam** dan **tidak ditulis di dokumentasi ini** — nilainya diambil dari environment variable:
 
-Di halaman `/admin/login`, tersedia tombol **"⚡ ONE-CLICK DEMO ACCOUNTS"** di bagian bawah form login. Klik tombol nama role yang diinginkan untuk otomatis mengisi email & password tanpa perlu mengetik manual.
+👉 **Password:** nilai `DEMO_USER_PASSWORD` di `.env` (baris 15 pada environment dev saat ini)
+
+Kenapa tidak ditulis literal di sini:
+
+- Password demo dirotasi per environment (dev / staging / demo laptop), jadi angka di dokumen akan cepat basi.
+- Dokumentasi ikut ter-commit; kredensial literal di repo = kredensial di semua clone.
+
+Cara membaca nilainya:
+
+```bash
+grep DEMO_USER_PASSWORD .env
+```
+
+**Kapan akun demo ini ada:** seed hanya dijalankan bila `SEED_DEMO_USERS=true` **dan** `NODE_ENV` bukan `production`. `scripts/account-policy.ts` melempar error bila dipaksa di production, jadi akun demo tidak akan pernah ter-seed di server live. Untuk production, buat super admin lewat prosedur bootstrap terpisah, bukan lewat seed demo.
+
+**Form login diketik manual.** Tidak ada tombol *"⚡ ONE-CLICK DEMO ACCOUNTS"* di halaman login — fitur itu ada di draft desain awal dan **tidak pernah diimplementasikan**. Isi email + password sendiri di `/admin/login`.
 
 ### Matriks Akun Demo Berdasarkan Role:
 
@@ -35,6 +49,20 @@ Di halaman `/admin/login`, tersedia tombol **"⚡ ONE-CLICK DEMO ACCOUNTS"** di 
 | `data@boxing.local` | **Fight Data Manager** | Mencatat ronde, metode kemenangan (KO/TKO/UD), dan detail pertandingan sebagai draft. |
 | `reviewer@boxing.local` | **Sanctioning Reviewer** | Memverifikasi hasil pertandingan resmi dan mengesahkan publikasi ranking (Kebijakan Four-Eyes berlaku). |
 | `viewer@boxing.local` | **Broadcast Guest** | Hak akses read-only untuk melihat data dan dashboard tanpa izin mengubah data. |
+
+> **Catatan hasil audit (13 Nov 2026):** delapan akun di atas terverifikasi ada di database `tfn_local`, semuanya `isActive = 1`, `mfaEnabled = 0`, `failedLoginCount = 0`, `lockedUntil = NULL`. Ada satu akun tambahan `e2e-ticketing@tfn.local` (super_admin) yang dibuat oleh test suite E2E — **jangan dipakai untuk login manual** dan jangan dipromosikan ke staging/production.
+
+### Verifikasi kredensial tanpa membuka browser
+
+```bash
+set -a && . ./.env && set +a
+curl -s -o /tmp/login.json -w "HTTP %{http_code}\n" \
+  -X POST "http://localhost:3015/api/auth/login" \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"superadmin@boxing.local","password":"'"$DEMO_USER_PASSWORD"'"}'
+```
+
+`HTTP 200` + body berisi `"roles":["super_admin"]` = kredensial valid. `401` = password salah, `429` = kena rate limit (10/15 menit per IP+email) atau akun terkunci 15 menit setelah 5 kegagalan.
 
 ---
 
