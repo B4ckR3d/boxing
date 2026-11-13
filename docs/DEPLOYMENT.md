@@ -90,9 +90,24 @@ pm2 startup
 
 ### Option B: aaPanel + PM2 (the actual production box)
 
-`scripts/deploy.sh` in this repo assumes `cd /www/wwwroot/boxing`, `npm install`, `prisma generate`,
-`npm run build`, then `pm2 restart boxing-tfn`. aaPanel's own Cron UI is where the scheduled job
-below goes.
+`scripts/deploy.sh` is the deploy entrypoint on the box. It assumes `APP_DIR=/www/wwwroot/boxing`
+and PM2 process `boxing-tfn`, both overridable by env var (`APP_DIR=… PM2_NAME=… ./scripts/deploy.sh`).
+
+```bash
+cd /www/wwwroot/boxing
+./scripts/deploy.sh
+```
+
+The script runs, in order: **env preflight** (fails loudly if `APP_URL`, `DATABASE_URL`,
+`AUTH_SECRET` or `ENCRYPTION_KEY` are empty — the dev fallbacks were removed) → `git reset --hard
+origin/main` → `npm ci --include=dev` → `prisma generate` → **`prisma migrate deploy`** (required:
+without it the ticketing/check-in tables never appear and the first write 500s) → `rm -rf .next` +
+`npm run build` → `pm2 restart boxing-tfn --update-env` → HTTP smoke test on `127.0.0.1:3000` →
+idempotent `scripts/cron/install.sh`.
+
+`admin:bootstrap` is **opt-in** (`RUN_BOOTSTRAP=1 ./scripts/deploy.sh`) because it resets admin
+passwords; a normal deploy must not change credentials. aaPanel's own Cron UI is where the
+scheduled hold-expiry job goes (see 3.1).
 
 ---
 
