@@ -2,8 +2,9 @@ import "server-only";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db/prisma";
 import { env } from "@/lib/env";
-import { sha256Hex, randomToken } from "@/lib/security/crypto";
+import { sha256Hex, randomToken, decryptSecret } from "@/lib/security/crypto";
 import { verifyPassword, verifyAgainstDummy } from "@/lib/security/password";
+import { verifyTotp } from "@/lib/security/totp";
 import { logAudit } from "./audit.service";
 import type { PermissionKey } from "@/lib/permissions/catalog";
 
@@ -19,6 +20,7 @@ export interface AuthenticatedUser {
   name: string;
   isActive: boolean;
   mfaEnabled: boolean;
+  mfaRequired?: boolean;
   roles: string[];
   permissions: Set<PermissionKey>;
   sessionId: string;
@@ -28,10 +30,7 @@ export interface AuthenticatedUser {
 /** Resolves the current session from incoming HTTP cookies */
 export async function getSession(): Promise<AuthenticatedUser | null> {
   const cookieStore = await cookies();
-  const rawToken =
-    cookieStore.get(SESSION_COOKIE_NAME)?.value ||
-    cookieStore.get("bx_session")?.value ||
-    cookieStore.get("__Host-bx_session")?.value;
+  const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!rawToken) return null;
 
   const tokenHash = sha256Hex(rawToken);
@@ -96,6 +95,7 @@ export async function getSession(): Promise<AuthenticatedUser | null> {
     name: session.user.name,
     isActive: session.user.isActive,
     mfaEnabled: session.user.mfaEnabled,
+    mfaRequired: session.user.mfaEnabled || (env().AUTH_ENFORCE_MFA && session.user.roles.some((r) => r.role.requiresMfa)),
     roles: roleKeys,
     permissions: permissionKeys,
     sessionId: session.id,
@@ -107,7 +107,6 @@ export interface LoginResult {
   success: boolean;
   user?: AuthenticatedUser;
   requiresMfa?: boolean;
-  tempToken?: string;
   error?: string;
   lockedUntil?: Date;
 }
@@ -116,7 +115,7 @@ export interface LoginResult {
 export async function authenticateCredentials(
   email: string,
   plainPassword: string,
-  meta?: { ip?: string; userAgent?: string }
+  meta?: { ip?: string; userAgent?: string; totpCode?: string }
 ): Promise<LoginResult> {
   const normEmail = email.trim().toLowerCase();
   const now = new Date();
@@ -198,7 +197,38 @@ export async function authenticateCredentials(
     };
   }
 
-  // Password valid! Reset lockout counters
+  // Enrolled MFA is never disabled by the development role-enforcement switch.
+  const mfaRequired = user.mfaEnabled || (env().AUTH_ENFORCE_MFA && user.roles.some((r) => r.role.requiresMfa));
+  let mfaVerified = false;
+  if (mfaRequired) {
+    if (!user.mfaEnabled || !user.mfaSecretEnc) {
+      return { success: false, error: "MFA is required but not configured. Contact an administrator." };
+    }
+    if (!meta?.totpCode) {
+      return { success: false, requiresMfa: true, error: "Enter your authenticator code." };
+    }
+    try {
+      const secret = decryptSecret(user.mfaSecretEnc);
+      mfaVerified = /^[A-Z2-7]{16,128}$/.test(secret) && verifyTotp(secret, meta.totpCode);
+    } catch {
+      return { success: false, error: "MFA is unavailable. Contact an administrator." };
+    }
+    if (!mfaVerified) {
+      const failedLoginCount = user.failedLoginCount + 1;
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginCount,
+          lockedUntil: failedLoginCount >= env().AUTH_MAX_FAILED_LOGINS
+            ? new Date(now.getTime() + env().AUTH_LOCKOUT_MINUTES * 60 * 1000) : null,
+        },
+      });
+      await prisma.loginAttempt.create({ data: { email: normEmail, ipAddress: meta?.ip, userAgent: meta?.userAgent, success: false, reason: "INVALID_MFA" } });
+      return { success: false, requiresMfa: true, error: "Invalid authenticator code." };
+    }
+  }
+
+  // Reset lockout only after all required credentials are verified.
   await prisma.user.update({
     where: { id: user.id },
     data: {
@@ -217,23 +247,8 @@ export async function authenticateCredentials(
     },
   });
 
-  // Check if any assigned role requires MFA or if user has MFA enabled
-  const anyRoleRequiresMfa = user.roles.some((r) => r.role.requiresMfa);
-  const mfaRequired = (user.mfaEnabled || anyRoleRequiresMfa) && env().AUTH_ENFORCE_MFA;
-
-  if (mfaRequired && user.mfaEnabled) {
-    // Generate temporary pre-auth token valid for 5 minutes
-    const tempToken = randomToken(32);
-    // Return tempToken for the MFA verification step
-    return {
-      success: true,
-      requiresMfa: true,
-      tempToken,
-    };
-  }
-
-  // Create full authenticated session
-  const session = await createSession(user.id, meta, false);
+  // Create full authenticated session only after all required credentials pass.
+  const session = await createSession(user.id, meta, mfaVerified);
   await setSessionCookie(session.rawToken);
 
   await logAudit({
@@ -259,10 +274,11 @@ export async function authenticateCredentials(
       name: user.name,
       isActive: user.isActive,
       mfaEnabled: user.mfaEnabled,
+      mfaRequired,
       roles: user.roles.map((r) => r.role.key),
       permissions,
       sessionId: session.id,
-      mfaVerified: false,
+      mfaVerified,
     },
   };
 }
@@ -303,24 +319,12 @@ export async function setSessionCookie(rawToken: string): Promise<void> {
     path: "/",
     maxAge: env().SESSION_TTL_HOURS * 3600,
   });
-  if (SESSION_COOKIE_NAME !== "bx_session") {
-    cookieStore.set("bx_session", rawToken, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      path: "/",
-      maxAge: env().SESSION_TTL_HOURS * 3600,
-    });
-  }
 }
 
 /** Revokes the current session and clears the cookie */
 export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();
-  const rawToken =
-    cookieStore.get(SESSION_COOKIE_NAME)?.value ||
-    cookieStore.get("bx_session")?.value ||
-    cookieStore.get("__Host-bx_session")?.value;
+  const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (rawToken) {
     const tokenHash = sha256Hex(rawToken);
     await prisma.session.updateMany({

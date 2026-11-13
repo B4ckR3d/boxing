@@ -70,8 +70,8 @@ S3_PUBLIC_URL=https://media.boxing.org
 # 1. Install Node.js 20+ and PM2
 npm install -g pm2
 
-# 2. Deploy Code and Install Production Packages
-npm ci --only=production
+# 2. Deploy Code and Install Packages
+npm ci          # NOT `--only=production`: the Next build needs devDeps (typescript, tailwind, eslint)
 
 # 3. Generate Prisma Client
 npm run db:generate
@@ -87,6 +87,51 @@ pm2 start npm --name "boxing-championship" -- run start
 pm2 save
 pm2 startup
 ```
+
+### Option B: aaPanel + PM2 (the actual production box)
+
+`scripts/deploy.sh` in this repo assumes `cd /www/wwwroot/boxing`, `npm install`, `prisma generate`,
+`npm run build`, then `pm2 restart boxing-tfn`. aaPanel's own Cron UI is where the scheduled job
+below goes.
+
+---
+
+## 3.1 Scheduled jobs (required — seat holds expire here)
+
+Ticket orders sit in `PENDING_CONFIRMATION` until a human verifies the transfer. Unverified holds
+must be released by a **cron job**, or those seats stay locked forever. On the production box:
+
+```bash
+cd /www/wwwroot/boxing
+
+./scripts/cron/install.sh print      # 17 * * * *  /www/wwwroot/boxing/scripts/cron/expire-holds.sh  # TFN-EXPIRE-HOLDS
+./scripts/cron/install.sh            # install for the deploy user (root on most aaPanel boxes)
+./scripts/cron/install.sh status     # confirm the line + last runs
+```
+
+**aaPanel path:** Cron → Add Task → *Shell Script* → paste the `print` output (or just the script
+path) → period **N Minutes = 60**. Keep the `:17` minute offset so the sweep never lands at the
+top of the hour alongside log rotation and backups.
+
+Why a wrapper and not `npm run` directly: cron's PATH has no `npm`, and two overlapping sweeps can
+double-release capacity. `expire-holds.sh` provides PATH hardening, a `flock` single-instance
+guard, an append-only log at `storage/logs/expire-holds.log` (self-rotating past 2 MB), and honest
+exit codes (`0` ok · `1` failed · `3` unparsable output). It prints nothing when there is nothing
+to release, so cron mail only arrives when seats were freed or something broke.
+
+| Check | Command |
+|---|---|
+| Did it run? | `./scripts/cron/install.sh status` or `tail -5 storage/logs/expire-holds.log` |
+| Is a sweep already holding? | `ls -l storage/expire-holds.lock` |
+| Manual run (same code path) | `./scripts/cron/expire-holds.sh` |
+| Is the window right? | `grep TICKET_HOLD_EXPIRY_HOURS .env` (default 24, max 720) |
+
+> `tsx` is a **runtime dependency** in this project, so `npm ci --only=production` still leaves the
+> sweep runnable. The wrapper checks for `node_modules/.bin/tsx` and fails with a clear message
+> instead of a silent no-op if it is ever missing.
+
+> PM2 does not need restarting for this job — cron runs it out of process. Conversely, restarting
+> PM2 through `scripts/deploy.sh` never touches the crontab, so the schedule survives deploys.
 
 ---
 

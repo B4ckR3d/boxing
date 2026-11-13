@@ -16,7 +16,14 @@
    - **Verified Fight History:** Certified contest outcomes (`KO`, `TKO`, `UD`, `SD`, `NC`) with official sanctioning references.
    - **Event Fight Cards:** Real-time fight night schedule with main event pairings, venues, and local timezones.
 
-2. **Admin Command Dashboard (`/admin`):**
+2. **Ticketing (`/tickets`, `/tickets/status`):**
+   - **Guest checkout, no account:** pick a category card, adjust quantity (1–10), see a live total, and get an order number plus a one-time capability token.
+   - **Atomic capacity guard:** seats are reserved with `UPDATE … WHERE sold <= quota - qty` inside a transaction — pending holds count, so concurrent buyers can never oversell (verified with 50 parallel requests).
+   - **Manual admin verification:** buyers transfer/QRIS/cash and an authorized admin confirms (payment → `VERIFIED`) or rejects with a reason (capacity released).
+   - **Self-service status page:** order number + token (or a deep link from the receipt) shows status, line items, and the payment reference. Wrong token = `404`, no order enumeration.
+
+
+3. **Admin Command Dashboard (`/admin`):**
    - **Overview:** Real-time metrics queried live from MySQL (Fighters, Rankings, Events, Belts, Tournaments, Audit logs).
    - **Roster Management (`/admin/fighters`):** Create, update, search, filter by division, and maintain combat records.
    - **Rankings Staging & Versioning (`/admin/rankings`):** Prepare draft revisions, reorder contenders, designate champions, and enforce **Four-Eyes** approval before publishing.
@@ -24,7 +31,7 @@
    - **Grand Prix Brackets (`/admin/grand-prix`):** Seed athletes and advance bracket bouts linked directly to certified fight records.
    - **Cryptographic Audit Logs (`/admin/audit-logs`):** Tamper-evident operational audit trail capturing actor, action, timestamp, and pre-redacted metadata.
 
-3. **Enterprise Security & RBAC Engine:**
+4. **Enterprise Security & RBAC Engine:**
    - **Session-Based Authentication:** Opaque tokens stored in `HttpOnly`, `Secure`, `SameSite=Lax` cookies; database-backed SHA-256 token hashing for instant revocation.
    - **Argon2id Password Hashing:** OWASP-compliant parameter configuration resistant to GPU attacks.
    - **RFC 6238 TOTP Multi-Factor Authentication:** AES-256-GCM encrypted secrets; mandatory step-up for sensitive roles.
@@ -77,6 +84,9 @@ npm run db:up
 ```
 *Note: MySQL runs on port `3307` mapped to container `3306` to prevent collisions with existing local databases.*
 
+> **Already running a local MySQL/MariaDB?** Skip `db:up` and point `MYSQL_*` in `.env` at that
+> server. On this machine the development schema is `tfn_local` and the steps below work as-is.
+
 ### 4. Run Migrations & Seed Demo Data
 ```bash
 npm run db:migrate
@@ -120,6 +130,9 @@ npm run test:all
 
 ## 📚 Documentation Reference
 
+> **New to the project (human or AI)? Start with [docs/CONTINUATION.md](docs/CONTINUATION.md)** — repo map, verified baseline, ticketing invariants, open gaps, and pre-"done" verification commands.
+
+- [Continuation / Handover Guide](docs/CONTINUATION.md)
 - [Tutorial Deploy aaPanel (Linux VPS)](docs/TUTORIAL_DEPLOY_AAPANEL.md)
 - [Architecture Plan](docs/ARCHITECTURE.md)
 - [Database Schema & ERD](docs/DATABASE.md)

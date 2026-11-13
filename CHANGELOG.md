@@ -7,6 +7,221 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.8.0] - 2026-11-13
+
+### Changed — Official-event block redesigned, richer on the landing page
+- **`variant` prop** on `OfficialSupport` (`"home"` | default compact). The landing page now gets
+  a marquee strip, an oversized outlined `TEMANGGUNG` watermark, a 48 px headline, and a four-row
+  "official facts" ledger (penyelenggara · dukungan · jalur tiket · verifikasi). `/tickets` keeps
+  the quiet compact form directly above the purchase panel.
+- Supporter card rebuilt as a seal plaque: double-ring monogram seal, red corner brackets, rotated
+  `RESMI` stamp, tier label, and an outbound link only when a verified URL exists.
+- Trust points became numbered cells (`01`–`03`) in a bordered grid with `hover-lift`, so the three
+  answers to *"is this the official channel?"* read as one block instead of loose bullets.
+- Marquee animation lives in `globals.css` (`.tfn-ticker` + `@keyframes tfn-ticker`, seamless
+  two-half loop) and stops under `prefers-reduced-motion`. The strip is `aria-hidden` — the `<h2>`
+  carries the claim once for assistive tech.
+- New probe `scripts/verify/official-support.cjs`: asserts no horizontal overflow at 390/834/1440 px,
+  uniform trust-tile heights, animated marquee, stable ledger rows, and clips a screenshot per
+  breakpoint (falls back to `/usr/bin/google-chrome` when Playwright's bundled shell is absent).
+
+---
+
+## [1.7.1] - 2026-11-13
+
+### Added — Official-event & government-support block
+- **`src/lib/site/partners.ts`** — partner registry as the single source of truth. Only entries
+  listed here can render; the government supporter is `Pemerintah Kabupaten Temanggung`
+  (`tier: SUPPORTED_BY`, `kind: GOVERNMENT`).
+- **`src/components/landing/OfficialSupport.tsx`** — bilingual (ID/EN) trust section: eyebrow
+  badge, headline, three provenance points (official channel / no middlemen / held with the
+  regency), a spotted-monogram supporter card with a rotated “Resmi” stamp, and tier groups
+  (presented by · official partner · media partner) that self-hide when empty.
+- Landed on **`/tickets`** (directly above the purchase panel) and **`/** (after the identity ribbon) —
+  the two screens where a buyer decides.
+- Missing logos fall back to a monogram tile, so the block never ships a broken image;
+  `public/images/partners/` takes the real files.
+
+---
+
+## [1.7.0] - 2026-11-13
+
+### Added — Seat-hold expiry is now actually scheduled
+- **`scripts/cron/expire-holds.sh`** — cron entry point wrapping `npm run ticketing:expire-holds`.
+  Until now the sweep existed but nothing ran it, so every unverified transfer held seats forever.
+  Four things a bare crontab line cannot give you: a usable `PATH` (cron has no `npm`), `flock`
+  single-instance protection (two overlapping sweeps can double-release capacity), an append-only,
+  self-rotating log at `storage/logs/expire-holds.log`, and honest exit codes (`0` ok/skipped ·
+  `1` failed · `3` ran but emitted no `expired=` summary).
+- **`scripts/cron/install.sh`** — `install | print | status | uninstall`, idempotent via a
+  `# TFN-EXPIRE-HOLDS` tag, so repeat installs never duplicate the job and `uninstall` removes only
+  the managed line. `print` emits the exact crontab line for aaPanel's Cron UI.
+- **Default cadence is hourly (`17 * * * *`), not daily.** With a 24h window, a daily 03:17 run
+  leaves seats locked for up to 48h — on a ticket launch that is lost inventory. An idle run costs
+  ~100 ms.
+- **Silent-when-nothing stdout contract**: nothing released → no output; seats released or a failure
+  → the summary is printed, so cron mail means something happened.
+- `scripts/verify/db-sql.sh` — one-statement SQL helper for dev/test DBs, guarded by expected
+  database name so it can never point at production.
+
+### Changed
+- `docs/DEPLOYMENT.md` gained §3.1 "Scheduled jobs (required)" with the aaPanel steps and the
+  operational checks; its `npm ci --only=production` line is corrected to `npm ci` (the Next build
+  needs devDeps).
+- `scripts/expire-holds.ts` docstring now points at the wrapper instead of a raw cron line.
+
+### Verified
+- Live cron daemon, `* * * * *`: fired at 11:54:02 and 11:55:02, log `exit=0 elapsed=1s
+  node=/usr/bin/node` — cron's own minimal environment resolved node through the wrapper.
+- Sweep end-to-end: a 48h-old `PENDING_CONFIRMATION` order → `scanned=1 expired=1 seatsReleased=2`,
+  row `CANCELLED`, `TicketType.sold` 2 → 0, audit `TICKET_HOLD_EXPIRED` with `actorId=NULL` and
+  `{hours:24, orderNumber, seats:2}`; immediate rerun `scanned=0` (idempotent).
+- Guards: `flock` overlap → `skipped…` exit 0; missing `node_modules/.bin/tsx` → exit 1 with a
+  readable message; `install.sh` twice → exactly one crontab line; `uninstall` → zero entries.
+
+---
+
+## [1.6.0] - 2026-11-13
+
+### Added — Onsite gate check-in (ticket scanner)
+- **`checkInTicket()`** (`src/server/services/ticketing.service.ts`) validates a scanned ticket and
+  consumes it (`CONFIRMED` → `USED`). The QR payload is verified **offline** with
+  `verifyTicketPayload()` before any database call, so a forged QR never touches the orders table.
+- **Idempotency is enforced by the database**: the flip is a guarded `updateMany` on
+  `status = CONFIRMED`, so two operators scanning the same ticket at the same second produce exactly
+  one admission and one `ALREADY_USED` — never two entries.
+- **Refusals carry the sentence the usher needs**: `ALREADY_USED` names the time of the first entry,
+  `NOT_CONFIRMED` says payment is unresolved, `WRONG_EVENT` names the event the ticket belongs to.
+  A forged signature and an unknown order number return the *same* generic message, so the scanner
+  is not an oracle for guessing valid order numbers.
+- **Manual fallback**: typing a bare order number works when a camera fails, and is audited with
+  `method: "MANUAL"` / `signatureVerified: false` so a supervisor can review manual admissions.
+- **Audit**: every admission writes `TICKET_CHECKED_IN` with the operator id, seat count, event and
+  method. New columns `checkedInAt` / `checkedInById` plus relation `TicketOrderScanner`
+  (migration `20261113120000_ticket_checkin`).
+- **Admin UI**: `/admin/ticketing/scan` — big code field, optional camera QR (BarcodeDetector, no new
+  dependency), event scope selector, green "Silakan masuk" / red "Jangan izinkan masuk" banners, and
+  a session log of the last 8 scans so an usher can see the last few people they admitted.
+  Entry point: "Scan check-in" button on `/admin/ticketing`.
+- **Admin panel**: new `Sudah masuk` filter and stat, plus a check-in line (time + operator) on each
+  used order. Confirmed revenue now counts `CONFIRMED + USED`.
+- **Buyer view**: status page shows "Sudah masuk" and still serves the PDF (re-downloading cannot
+  admit anyone twice — admission is driven by the database, not the PDF).
+
+### Tests
+- `tests/integration/check-in.integration.test.ts` (9) — admission + audit, double scan, concurrent
+  scan race, forged vs unknown (identical message), pending, rejected, wrong event, manual fallback.
+  Total suite: **94 tests / 19 files**.
+
+### Verification
+- Gates: `tsc --noEmit` clean, `eslint .` 0 findings, `npm run build` succeeds (`/admin/ticketing/scan`
+  in the route table).
+- Live probe against the production build (`node scripts/verify/checkin-e2e.cjs`): buy → admin confirm
+  → scan signed QR **ADMITTED** → re-scan **REFUSED** `ALREADY_USED` with the first entry time →
+  forged QR **REFUSED** with the generic message → `?status=used` shows the order → buyer status page
+  reads "SUDAH MASUK" and the PDF still returns `200 application/pdf`. Zero JS errors.
+
+---
+
+## [1.5.0] - 2026-11-13
+
+### Added — Per-buyer, per-category purchase cap (anti-scalping)
+- **`assertBuyerCap()`** (`src/server/services/ticketing.service.ts`) runs inside
+  `createGuestOrder`'s transaction and refuses any request that would push a single buyer above
+  `MAX_TICKETS_PER_BUYER_PER_CATEGORY = 10` tickets in one category of one event. Error code
+  `PURCHASE_LIMIT` → **HTTP 409** with a buyer-readable sentence naming the category and the
+  number already purchased. Nothing is reserved on refusal (`sold` and the order table untouched).
+- **`src/lib/ticketing/buyer-identity.ts`** — guest orders have no account, so identity is derived
+  from the typed contact details: email is case-folded, phone is canonicalised to `08…`
+  (`+62 812-3456-7890`, `812 3456 7890`, `628123456789` and `081234567890` are one buyer). Values
+  too short to be a phone never match, so a junk entry can't swallow the next buyer.
+- Counted statuses are the ones still holding seats: `PENDING_CONFIRMATION` and `CONFIRMED`.
+  `REJECTED` and auto-expired `CANCELLED` orders release the budget — a rejected buyer may retry.
+
+### Tests
+- `tests/unit/buyer-identity.test.ts` (5) — phone/email canonicalisation, junk and short values.
+- `tests/integration/buyer-cap.integration.test.ts` (6) — exact boundary at 10, readable message,
+  phone/email re-spelling bypass blocked, holdings counted, rejected + expired freed, category and
+  event isolation. Total suite: **85 tests / 18 files**.
+
+### Verification
+- Live probe against the production build (`node scripts/verify/probe-buyer-cap.mts`): buy 6 → 201,
+  buy 4 with re-cased email → 201, buy 1 with `+62` phone → **409** `PURCHASE_LIMIT`, DB shows
+  `sold=10` and 2 orders.
+
+### Known limitation
+- The check is read-then-write inside the order transaction, so two truly simultaneous requests from
+  the same buyer can both pass; manual admin confirmation still allows rejecting the duplicate.
+  Documented in `docs/API.md`.
+
+---
+
+## [1.4.0] - 2026-11-13
+
+### Added — Ticket artifact (PDF + signed QR)
+- **`getTicketArtifact(orderNumber, capabilityToken)`** (`src/server/services/ticketing.service.ts`) renders
+  the entry ticket for **confirmed** orders only; pending/rejected/expired orders raise
+  `INVALID_STATE`, and a wrong or missing token is indistinguishable from an unknown order
+  (`NOT_FOUND` → 404, no enumeration).
+- **`buildTicketPdf()`** (`src/server/services/ticket-pdf.service.ts`) draws a one-page A4 ticket with
+  `pdf-lib` + `qrcode` — dark header (event, date in `Asia/Jakarta`, venue), QR card, order/buyer block,
+  line items, total, legality note, and issuance stamp. Text is WinAnsi-sanitised so an emoji or
+  non-Latin buyer name can never crash issuance.
+- **Signed QR payload** (`src/lib/ticketing/ticket-token.ts`): `TFN1.<orderNumber>.<HMAC-SHA256(AUTH_SECRET)[:12]>`,
+  verified with `verifyTicketPayload()` using `timingSafeEqual`. Swapping the order number or the
+  signature fails verification, so a screenshot of someone else's ticket can't be re-pointed at another
+  order. Deterministic per order — repeat downloads are byte-identical.
+- **Guest download route** `GET /tickets/[orderNumber]/ticket?token=…` streams `application/pdf` with
+  `Content-Disposition: attachment` and `Cache-Control: private, no-store`; 401 without a token, 404
+  wrong token, 409 unconfirmed.
+- **Buyer UI:** the status page now shows a crimson **"Unduh tiket (PDF)"** button beside
+  "Pesan tiket lagi" once the order is `CONFIRMED`.
+- **Tests:** `tests/unit/ticket-token.test.ts` (7 — tamper/foreign-secret/junk handling) and
+  `tests/integration/ticket-artifact.integration.test.ts` (4 — real PDF bytes, embedded `/Image` QR,
+  payload→order verification, pending/rejected/expired, token oracle, determinism).
+
+### Added — Unpaid hold expiry
+- **`expireStaleHolds()`** cancels `PENDING_CONFIRMATION` orders older than 24 h (batched at 200),
+  releases the held quota, writes a `TICKET_HOLD_EXPIRED` audit row per order, and is idempotent.
+  CLI: `npm run ticketing:expire-holds`. Confirm/reject on an expired order now fails cleanly instead of
+  confirming a dead hold.
+
+### Changed
+- New runtime dependencies: `pdf-lib`, `qrcode` (+ `@types/qrcode` dev). Both are pure JS — no system
+  fonts, no headless Chrome, no native build step on the VPS.
+- Docs: `API.md` documents the ticket route + payload format, `CONTINUATION.md` marks the artifact as done
+  and warns that the HMAC key is `AUTH_SECRET` (rotating it invalidates already-issued paper tickets).
+
+---
+
+## [1.3.0] - 2026-11-13
+
+### Added — Ticketing (guest order + manual admin verification)
+- **Public purchase page `/tickets`:** hero → 3-step explainer → per-event panel with category cards
+  (`aria-pressed`), quantity stepper, live total, and a receipt screen carrying the order number plus
+  the one-time capability token.
+- **Buyer self-service `/tickets/status`:** order number + token lookup, or a deep link from the
+  receipt. The deep link is resolved server-side, so the receipt renders on first paint (no
+  `setState`-in-effect).
+- **Admin ticketing panel `/admin/ticketing`:** summary stats, quota progress bars, `?status=`
+  filters, and confirm/reject with toasts. Rejection requires a reason and releases capacity.
+- **`TicketOrderActions` client component:** server actions return `ActionResult`; the UI now reads
+  `result.ok` instead of silently discarding failures.
+- **Docs:** `docs/CONTINUATION.md` handover guide, plus ticketing sections in `ARCHITECTURE.md`,
+  `API.md`, `DATABASE.md`, and Phase 7 evidence in `IMPLEMENTATION_CHECKLIST.md`.
+
+### Fixed
+- **Validation messages leaked the Zod schema** (`too_big`, `path`, `maximum`). Zod issues are now
+  mapped per field to human Indonesian sentences, and malformed JSON returns
+  `400 Format permintaan tidak valid.` instead of an unexplained 400.
+- **Nested `<main>` landmark** on `/tickets` (the public layout already renders one) — duplicate
+  landmark removed; asserted `main` count = 1.
+- **Duplicate React key** in the admin event `<select>` caused by `new Set()` deduping object
+  identity instead of `id`.
+- `getGuestOrder` now returns `payment.method` so the buyer status page can show how they paid.
+
+---
+
 ## [1.2.0] - 2026-11-04
 
 ### Added & Rebranded (TFN Temanggung Fight Night & Dual Mode i18n)

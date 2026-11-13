@@ -53,7 +53,7 @@ export function FeaturedFighters({ fighters }: { fighters: FeaturedFighterData[]
                 {/* Champion Pill */}
                 {f.isChampion && (
                   <div className="absolute top-3 left-3 bg-fight-red text-ink font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 shadow-md">
-                    CHAMPION
+                    PEMEGANG GELAR
                   </div>
                 )}
 
@@ -106,11 +106,11 @@ export function FeaturedFighters({ fighters }: { fighters: FeaturedFighterData[]
 
         {/* View All Button */}
         <div className="text-center pt-4">
-          <Link href="/fighters">
-            <Button variant="outline" size="md" className="font-bold tracking-wider px-8">
+          <Button asChild variant="outline" size="md" className="font-bold tracking-wider px-8">
+            <Link href="/fighters">
               {t("rosterBtnMore")} →
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
     </section>

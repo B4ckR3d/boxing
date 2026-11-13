@@ -102,3 +102,65 @@ erDiagram
 - `MediaAsset`: Verified file uploads with random storage keys, SHA-256 checksums, and MIME enforcement.
 - `HeroSlide`: Dynamic fight night carousel slides with scheduling windows (`publishAt`, `unpublishAt`).
 
+
+---
+
+## Ticketing Tables (guest order → manual admin verification)
+
+Four tables back the ticketing flow. `TicketType.sold` is the **reserved-capacity counter** — it
+counts pending holds *and* confirmed orders, which is what makes the atomic oversell guard possible.
+
+### `TicketType` — sellable category per event
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `String` (cuid) | PK |
+| `eventId` | `String` | FK → `Event`, `onDelete: Cascade` |
+| `name` | `VarChar(100)` | e.g. `VIP Ringside` |
+| `code` | `VarChar(40)` | stable slug, unique per event |
+| `description` | `VarChar(500)` nullable | shown on the public category card |
+| `price` | `Decimal(12,2)` | IDR |
+| `quota` | `Int` | total seats |
+| `sold` | `Int` default 0 | **pending holds + confirmed**, mutated only by the guarded `updateMany` |
+| `isActive` | `Boolean` default true | inactive categories disappear from `/tickets` |
+
+Indexes: `UNIQUE(eventId, code)`, `INDEX(eventId, isActive)`.
+
+### `TicketOrder` — one guest purchase
+
+| Column | Type | Notes |
+|---|---|---|
+| `orderNumber` | `VarChar(32)` unique | buyer-facing credential, e.g. `TFN-MWEBJJSG-_I9LEO8` |
+| `customerName` / `customerEmail` / `customerPhone` | `VarChar(120/191/40)` | contact + support lookup |
+| `totalAmount` | `Decimal(12,2)` | snapshot of price*qty at purchase time |
+| `status` | enum `TicketOrderStatus` | `PENDING_CONFIRMATION` → `CONFIRMED` → `USED` \| `REJECTED` \| `CANCELLED` |
+| `paymentMethod` / `paymentStatus` | enums | denormalized mirror of `TicketPayment` for list views |
+| `guestTokenHash` | `Char(64)` unique nullable | **sha256 of the capability token**; plaintext never stored |
+| `confirmedById` / `confirmedAt` / `rejectedAt` | | admin attribution (FK → `User`, `SetNull`) |
+| `checkedInAt` / `checkedInById` | `DateTime?` / `VarChar(30)?` | gate admission stamp + usher (FK `TicketOrderScanner`, `SetNull`); both stay `NULL` until the QR is scanned |
+| `rejectionReason` / `adminNote` / `customerNote` | `VarChar(500)` | audit context |
+
+Indexes: `INDEX(eventId, status, createdAt)`, `INDEX(customerEmail)`.
+`eventId` uses `onDelete: Restrict` — an event with orders cannot be deleted.
+
+### `TicketOrderItem` — line items
+
+`orderId` (Cascade), `ticketTypeId` (Restrict), `quantity`, `unitPrice`, `subtotal`.
+`UNIQUE(orderId, ticketTypeId)` prevents duplicate lines for the same category.
+
+### `TicketPayment` — payment evidence and review state
+
+`orderId` (unique, Cascade), `amount`, `method`, `status` enum `TicketPaymentStatus`
+(`UNPAID` → `PROOF_SUBMITTED` → `VERIFIED` \| `REJECTED`), `proofUrl`, `reference`, `reviewedById`,
+`reviewedAt`. Index `(status, createdAt)`.
+
+### Invariant to protect
+
+```sql
+-- must hold at all times for every category
+SELECT sold <= quota FROM TicketType;
+```
+
+`sold` changes only through (a) the guarded reservation on order creation, (b) the decrement inside
+`rejectOrder`. Any other writer (manual SQL, a future cron, a bulk import) must reproduce those
+semantics or capacity accounting drifts.

@@ -1,103 +1,21 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export function Footer() {
-  const { t } = useLanguage();
-
+  const { t, lang } = useLanguage();
+  const links = [{ href: "/events", label: t("navEvents") }, { href: "/fighters", label: t("navAthletes") }, { href: "/rankings", label: t("navRankings") }, { href: "/grand-prix", label: t("navGrandPrix") }, { href: "/belts", label: t("navBelts") }, { href: "/fights", label: t("navFightHistory") }];
   return (
-    <footer className="bg-canvas border-t border-subtle text-ink select-none transition-colors">
-      {/* Main Footer Directory */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {/* Brand Info */}
-          <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center tracking-tighter">
-              <span className="font-display italic text-3xl sm:text-4xl text-ink font-black">
-                TFN
-              </span>
-              <span className="font-display italic text-2xl sm:text-3xl text-fight-red font-black ml-0.5">
-                ·X
-              </span>
-              <span className="ml-2 font-mono-data text-[10px] bg-fight-red text-ink font-bold px-1.5 py-0.5 uppercase tracking-wider">
-                TEMANGGUNG FIGHT NIGHT
-              </span>
-            </div>
-
-            <p className="text-xs sm:text-sm text-ink-muted max-w-md leading-relaxed font-sans">
-              {t("footerDescription")}
-            </p>
-
-            {/* Social Icons Row */}
-            <div className="flex items-center gap-2 pt-2 text-ink-muted">
-              <span className="w-7 h-7 rounded-full bg-surface-elevated hover:bg-fight-red hover:text-ink flex items-center justify-center text-xs transition-colors cursor-pointer">
-                f
-              </span>
-              <span className="w-7 h-7 rounded-full bg-surface-elevated hover:bg-fight-red hover:text-ink flex items-center justify-center text-xs transition-colors cursor-pointer">
-                ✆
-              </span>
-              <span className="w-7 h-7 rounded-full bg-surface-elevated hover:bg-fight-red hover:text-ink flex items-center justify-center text-xs transition-colors cursor-pointer">
-                𝕏
-              </span>
-              <span className="w-7 h-7 rounded-full bg-surface-elevated hover:bg-fight-red hover:text-ink flex items-center justify-center text-xs transition-colors cursor-pointer">
-                o
-              </span>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="space-y-3 font-mono-data text-xs">
-            <p className="font-bold text-ink uppercase tracking-wider border-b border-subtle pb-2">
-              {t("footerNavTitle")}
-            </p>
-            <ul className="space-y-2 text-ink-muted">
-              <li>
-                <Link href="/rankings" className="hover:text-fight-red transition-colors">
-                  → {t("navRankings")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/grand-prix" className="hover:text-fight-red transition-colors">
-                  → {t("navGrandPrix")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/belts" className="hover:text-fight-red transition-colors">
-                  → {t("navBelts")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/fighters" className="hover:text-fight-red transition-colors">
-                  → {t("navAthletes")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/fights" className="hover:text-fight-red transition-colors">
-                  → {t("navFightHistory")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/events" className="hover:text-fight-red transition-colors">
-                  → {t("navEvents")}
-                </Link>
-              </li>
-            </ul>
-          </div>
+    <footer className="border-t border-subtle bg-charcoal text-ink">
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
+          <div><Link href="/" aria-label="TFN — Temanggung Fight Night" className="font-display text-5xl font-black italic">TFN<span className="text-fight-red">.</span></Link><p className="mt-4 font-display text-lg tracking-wide">TEMANGGUNG FIGHT NIGHT</p><p className="mt-3 max-w-sm text-sm leading-7 text-ink-muted">{lang === "id" ? "Ruang untuk mengenal petarung, mengikuti perjalanan kompetisi, dan menemukan pengalaman fight night di Temanggung." : "Discover the fighters, follow the competition, and find your fight night experience in Temanggung."}</p></div>
+          <nav aria-label="Footer"><h2 className="mb-3 font-mono-data text-xs uppercase tracking-widest text-ink-muted">{t("footerNavTitle")}</h2><ul className="grid grid-cols-2 gap-x-4">{links.map((link) => <li key={link.href}><Link href={link.href} className="inline-flex min-h-11 items-center text-sm hover:text-fight-red">{link.label}</Link></li>)}</ul></nav>
+          <div><h2 className="font-display text-2xl">{lang === "id" ? "Sampai jumpa di arena." : "See you ringside."}</h2><p className="mt-3 text-sm leading-6 text-ink-muted">{lang === "id" ? "Periksa acara dan pilihan tiket yang tersedia sebelum memesan." : "Check available events and ticket options before booking."}</p><Link href="/tickets" className="mt-5 inline-flex min-h-12 items-center gap-4 border border-fight-red px-5 text-sm font-bold hover:bg-fight-red hover:text-white">{lang === "id" ? "Jelajahi tiket" : "Explore tickets"}<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link></div>
         </div>
-
-        {/* Bottom Legal Bar */}
-        <div className="mt-12 pt-8 border-t border-subtle flex flex-col sm:flex-row items-center justify-between gap-4 font-mono-data text-xs text-ink-subtle">
-          <p>{t("footerCopyright")}</p>
-          <div className="flex gap-4">
-            <span className="hover:text-ink cursor-pointer transition-colors">{t("footerTerms")}</span>
-            <span>•</span>
-            <span className="hover:text-ink cursor-pointer transition-colors">{t("footerRules")}</span>
-            <span>•</span>
-            <span className="hover:text-ink cursor-pointer transition-colors">{t("footerPrivacy")}</span>
-          </div>
-        </div>
+        <div className="mt-10 flex flex-col justify-between gap-3 border-t border-subtle pt-6 text-xs leading-6 text-ink-muted sm:flex-row"><p>TFN / TEMANGGUNG FIGHT NIGHT</p><p className="max-w-xl">{lang === "id" ? "Materi bertanda demo merupakan ilustrasi, bukan pengumuman acara atau klaim gelar resmi." : "Content marked as demo is illustrative, not an event announcement or an official title claim."}</p></div>
       </div>
     </footer>
   );

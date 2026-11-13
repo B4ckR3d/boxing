@@ -32,18 +32,19 @@ export default async function PublicBeltsPage() {
       >
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="font-display text-4xl sm:text-6xl text-ink uppercase font-black tracking-tight">
-            SABUK KEJUARAAN RESMI TFN
+            SABUK KEJUARAAN TFN
           </h1>
           <div className="flex items-center justify-center gap-2 font-mono-data text-xs text-ink-muted mt-2 uppercase tracking-widest">
             <Link href="/" className="hover:text-ink transition-colors">BERANDA</Link>
             <ChevronRight className="w-3.5 h-3.5 text-ink-subtle" />
-            <span className="text-fight-red font-bold">SABUK KEJUARAAN DUNIA</span>
+            <span className="text-fight-red font-bold">KOLEKSI SABUK TFN</span>
           </div>
         </div>
       </div>
 
       {/* 2. Belts Showcase */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+        {belts.length === 0 && <p className="border border-subtle bg-charcoal p-8 text-sm leading-7 text-ink-muted">Belum ada data sabuk yang tersedia. Informasi akan ditampilkan setelah diterbitkan.</p>}
         {belts.map((belt) => {
           const activeReign = belt.reigns[0];
           const isWelter =

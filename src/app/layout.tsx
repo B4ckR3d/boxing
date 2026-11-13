@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import Script from "next/script";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/lib/theme/ThemeContext";
@@ -8,34 +9,33 @@ import "@/styles/globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
   title: {
-    default: "TFN | Temanggung Fight Night - Kejuaraan Tinju Profesional",
+    default: "TFN | Temanggung Fight Night",
     template: "%s | TFN - Temanggung Fight Night",
   },
   description:
-    "Platform resmi Temanggung Fight Night (TFN). Peringkat tinju divisi dan pound-for-pound, sabuk kejuaraan dunia, riwayat pertarungan terverifikasi, dan turnamen Grand Prix.",
+    "Temanggung Fight Night: kenali petarung, jelajahi kompetisi, dan temukan informasi tiket.",
   keywords: [
     "TFN",
     "Temanggung Fight Night",
     "Tinju Temanggung",
-    "Kejuaraan Tinju",
+    "Fight Night",
     "Boxing Indonesia",
-    "Heavyweight Champion",
     "Grand Prix Boxing",
     "Fight Card",
   ],
-  authors: [{ name: "Komisi Pertandingan Temanggung Fight Night (TFN)" }],
+  authors: [{ name: "Temanggung Fight Night (TFN)" }],
   openGraph: {
     type: "website",
     locale: "id_ID",
     url: "/",
     siteName: "TFN - Temanggung Fight Night",
-    title: "TFN | Temanggung Fight Night - Kejuaraan Tinju Profesional",
-    description: "Peringkat resmi, sabuk kejuaraan, rekor pertarungan tersertifikasi, dan turnamen tinju profesional di Temanggung.",
+    title: "TFN | Temanggung Fight Night",
+    description: "Kenali petarung, jelajahi kompetisi, dan temukan informasi tiket TFN.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TFN | Temanggung Fight Night - Kejuaraan Tinju Profesional",
-    description: "Peringkat resmi, sabuk kejuaraan, rekor pertarungan tersertifikasi, dan turnamen tinju profesional di Temanggung.",
+    title: "TFN | Temanggung Fight Night",
+    description: "Kenali petarung, jelajahi kompetisi, dan temukan informasi tiket TFN.",
   },
   robots: {
     index: true,
@@ -50,15 +50,21 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // CSP nonce is minted per-request by src/proxy.ts. It must be forwarded to the
+  // theme bootstrap script explicitly — otherwise the server renders nonce=""
+  // while the client hydrates with nonce={undefined}, which breaks hydration and
+  // leaves every client component on the page inert.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     <html lang="id" className="dark scroll-smooth" suppressHydrationWarning>
       <head>
-        <Script src="/theme-init.js" strategy="beforeInteractive" />
+        <Script src="/theme-init.js" strategy="beforeInteractive" nonce={nonce} />
       </head>
       <body className="antialiased selection:bg-fight-red selection:text-ink">
         <ThemeProvider>

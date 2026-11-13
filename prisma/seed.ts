@@ -3,6 +3,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { ALL_PERMISSIONS, DEFAULT_ROLES, PERMISSIONS } from "../src/lib/permissions/catalog";
 import { hashPassword } from "../src/lib/security/password";
+import { getSeedPolicy } from "../scripts/account-policy";
 
 let dbHost = process.env.MYSQL_HOST || "127.0.0.1";
 let dbPort = Number(process.env.MYSQL_PORT) || 3306;
@@ -34,6 +35,7 @@ const adapter = new PrismaMariaDb({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  const policy = getSeedPolicy(process.env);
   console.log("🥊 [Seed] Starting database seed...");
 
   // 1. Seed Permissions (Idempotent)
@@ -127,6 +129,7 @@ async function main() {
     weightClassMap.set(d.slug, wc.id);
   }
 
+  if (policy.demo) {
   // 5. Seed Championship Belts
   console.log("  → Seeding championship belts...");
   const hwId = weightClassMap.get("heavyweight")!;
@@ -429,9 +432,11 @@ async function main() {
 
   // 9. Seed Demo Event: WBC-X 42 (Vale vs Storm)
   console.log("  → Seeding demo fight night event...");
+  const demoStartsAt = new Date(Date.now() + 14 * 24 * 3600 * 1000);
   const event = await prisma.event.upsert({
     where: { slug: "wbc-x-42-night-of-champions" },
-    update: { isPublished: true },
+    // Keep the demo event bookable on re-seed: refresh the date forward and keep it published.
+    update: { isPublished: true, status: "SCHEDULED", startsAt: demoStartsAt },
     create: {
       name: "WBC-X 42: Night of Champions",
       slug: "wbc-x-42-night-of-champions",
@@ -439,7 +444,7 @@ async function main() {
       venue: "Jakarta International Arena",
       city: "Jakarta",
       country: "ID",
-      startsAt: new Date(Date.now() + 14 * 24 * 3600 * 1000), // 14 days from now
+      startsAt: demoStartsAt,
       timezone: "Asia/Jakarta",
       status: "SCHEDULED",
       isPublished: true,
@@ -472,6 +477,41 @@ async function main() {
         { fightId: mainFight.id, fighterId: marcusId, corner: "RED", weighInKg: 108.5 },
         { fightId: mainFight.id, fighterId: darioId, corner: "BLUE", weighInKg: 111.2 },
       ],
+    });
+  }
+
+  // 9b. Seed demo ticket categories (demo data only — clearly fictional pricing)
+  console.log("  → Seeding demo ticket categories...");
+  const demoTicketTypes = [
+    {
+      code: "vip-ringsides",
+      name: "VIP Ringside",
+      description: "Bangku ringside baris depan, akses masuk lebih awal, dan satu merchandise resmi.",
+      price: 750000,
+      quota: 60,
+    },
+    {
+      code: "tribun-barat",
+      name: "Tribun Barat",
+      description: "Tribun utama dengan pandangan penuh ke ring.",
+      price: 350000,
+      quota: 220,
+    },
+    {
+      code: "tribun-umum",
+      name: "Tribun Umum",
+      description: "Area tribun umum, tempat duduk tidak bernomor.",
+      price: 150000,
+      quota: 500,
+    },
+  ];
+
+  for (const t of demoTicketTypes) {
+    await prisma.ticketType.upsert({
+      where: { eventId_code: { eventId: event.id, code: t.code } },
+      // Do not reset `sold` on re-seed — that would break existing orders/stock.
+      update: { name: t.name, description: t.description, price: t.price, quota: t.quota, isActive: true },
+      create: { eventId: event.id, ...t },
     });
   }
 
@@ -587,13 +627,11 @@ async function main() {
     });
   }
 
-  // 12. Seed Core Administrators and Staff (Always seeded so admin login is guaranteed)
-  const rawPass =
-    process.env.ADMIN_PASSWORD ||
-    process.env.DEMO_USER_PASSWORD ||
-    "Demo-Ringside-2026!";
-  console.log(`  → Seeding core administrator & staff accounts (${rawPass.slice(0, 4)}***)...`);
-  const passwordHash = await hashPassword(rawPass);
+  } // explicit demo content only
+
+  if (policy.demoUsers && policy.password) {
+  console.log("  → Seeding explicitly enabled demo accounts (new accounts only)...");
+  const passwordHash = await hashPassword(policy.password);
 
   const coreUsers = [
     { email: "superadmin@boxing.local", name: "Super Admin", roleKey: "super_admin" },
@@ -609,13 +647,7 @@ async function main() {
   for (const u of coreUsers) {
     const user = await prisma.user.upsert({
       where: { email: u.email },
-      update: {
-        name: u.name,
-        isActive: true,
-        passwordHash,
-        failedLoginCount: 0,
-        lockedUntil: null,
-      },
+      update: {},
       create: {
         email: u.email,
         name: u.name,
@@ -634,6 +666,7 @@ async function main() {
     }
   }
 
+  } // explicit demo users only
   console.log("✅ [Seed] Database seeded successfully!");
 }
 

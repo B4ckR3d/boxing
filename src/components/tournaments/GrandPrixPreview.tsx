@@ -43,12 +43,12 @@ export function GrandPrixPreview({ tournament }: GrandPrixPreviewProps) {
             </h2>
           </div>
 
-          <Link href="/grand-prix">
-            <Button variant="outline" size="sm" className="font-bold flex items-center gap-1.5">
+          <Button asChild variant="outline" size="sm" className="font-bold flex items-center gap-1.5">
+            <Link href="/grand-prix">
               <span>{t("gpBtnExplore")}</span>
               <ArrowRight className="w-3.5 h-3.5" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Interactive Bracket Graphic Card */}

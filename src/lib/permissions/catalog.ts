@@ -26,6 +26,9 @@ export const PERMISSIONS = {
   "roles.manage": "Manage roles/permissions and approve sensitive role changes",
   "settings.manage": "Manage organization settings",
   "audit.read": "Read audit logs and login monitoring",
+  "ticketing.read": "View ticket orders and payment confirmation queue",
+  "ticketing.manage": "Create ticket types and manage ticket orders",
+  "ticketing.confirm": "Confirm or reject ticket payments",
 } as const;
 
 export type PermissionKey = keyof typeof PERMISSIONS;
@@ -88,6 +91,9 @@ export const DEFAULT_ROLES: readonly RoleDefinition[] = [
       "content.publish",
       "settings.manage",
       "audit.read",
+      "ticketing.read",
+      "ticketing.manage",
+      "ticketing.confirm",
     ],
   },
   {
@@ -106,7 +112,7 @@ export const DEFAULT_ROLES: readonly RoleDefinition[] = [
     isSystem: true,
     requiresMfa: false,
     isSensitive: false,
-    permissions: ["admin.access", "fighters.read", "tournaments.manage", "fights.manage"],
+    permissions: ["admin.access", "fighters.read", "tournaments.manage", "fights.manage", "ticketing.read"],
   },
   {
     key: "editor",
@@ -115,7 +121,7 @@ export const DEFAULT_ROLES: readonly RoleDefinition[] = [
     isSystem: true,
     requiresMfa: false,
     isSensitive: false,
-    permissions: ["admin.access", "fighters.read", "content.manage"],
+    permissions: ["admin.access", "fighters.read", "content.manage", "ticketing.read", "ticketing.manage"],
   },
   {
     key: "fight_data_manager",
@@ -142,6 +148,8 @@ export const DEFAULT_ROLES: readonly RoleDefinition[] = [
       "fights.approve",
       "belts.approve",
       "content.publish",
+      "ticketing.read",
+      "ticketing.confirm",
     ],
   },
   {

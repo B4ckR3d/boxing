@@ -69,7 +69,7 @@ export default async function PublicFightsPage({
               {fights.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center font-mono-data text-xs text-ink-subtle">
-                    Buku rekor resmi sedang mengarsipkan pertarungan tersertifikasi.
+                    Belum ada hasil pertandingan yang diterbitkan untuk pilihan ini.
                   </td>
                 </tr>
               ) : (

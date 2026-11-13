@@ -7,9 +7,6 @@ import {
   Sliders,
   Plus,
   Trash2,
-  Calendar,
-  ExternalLink,
-  Layers,
   Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,7 +47,7 @@ export function HeroSlideManager({
   const [eventTitle, setEventTitle] = useState("TFN 01 · GEDUNG PEMUDA TEMANGGUNG");
   const [headline, setHeadline] = useState("");
   const [description, setDescription] = useState("");
-  const [eventDate, setEventDate] = useState("2026-12-24T19:00");
+  const [eventDate, _setEventDate] = useState("2026-12-24T19:00");
   const [fighterImageUrl, setFighterImageUrl] = useState("/images/hero/hero_fighter_1_marcus.jpg");
   const [backgroundImageUrl, setBackgroundImageUrl] = useState("/images/hero/boxing-ring-arena.jpg");
   const [ctaPrimaryLabel, setCtaPrimaryLabel] = useState("BACA SELENGKAPNYA");
@@ -169,7 +166,7 @@ export function HeroSlideManager({
         </div>
       ) : (
         <div className="space-y-4">
-          {slides.map((s, idx) => (
+          {slides.map((s) => (
             <div
               key={s.id}
               className="bg-charcoal border border-subtle p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xl hover:border-fight-red transition-all group"

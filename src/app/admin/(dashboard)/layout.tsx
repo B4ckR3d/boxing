@@ -6,6 +6,7 @@ import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton";
 import { ThemeToggle } from "@/lib/theme/ThemeContext";
 import { getSettings } from "@/server/services/settings.service";
 import type { PermissionKey } from "@/lib/permissions/catalog";
+import AdminNavigation from "./AdminNavigation";
 import {
   LayoutDashboard,
   Users,
@@ -35,6 +36,11 @@ export default async function AdminDashboardLayout({
   const can = (permission: PermissionKey) =>
     session.roles.includes("super_admin") || session.permissions.has(permission);
 
+  if (!can("admin.access")) redirect("/admin/login?error=forbidden");
+  if ((session.mfaEnabled || session.mfaRequired) && !session.mfaVerified) {
+    redirect("/admin/login?error=mfa_required");
+  }
+
   const settings = await getSettings();
   const brand = settings["branding.general"];
 
@@ -47,6 +53,9 @@ export default async function AdminDashboardLayout({
     { label: "Sabuk Kejuaraan", href: "/admin/belts", icon: Award },
     { label: "Jadwal Event", href: "/admin/events", icon: CalendarDays },
     { label: "Hero Banner", href: "/admin/hero-slides", icon: Sliders },
+    ...(can("ticketing.read") || can("ticketing.manage") || can("ticketing.confirm")
+      ? [{ label: "Tiket & Pembayaran", href: "/admin/ticketing", icon: ClipboardList }]
+      : []),
     ...(can("users.manage") || can("roles.manage")
       ? [
         { label: "Pengguna & Hak Akses", href: "/admin/users", icon: UserCog },
@@ -72,9 +81,9 @@ export default async function AdminDashboardLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-canvas text-ink flex flex-col md:flex-row select-none">
+    <div className="min-h-screen bg-canvas text-ink flex flex-col md:flex-row">
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-charcoal border-r border-subtle flex flex-col justify-between shrink-0">
+      <aside className="w-full md:w-64 md:sticky md:top-0 md:h-screen md:overflow-y-auto bg-charcoal border-r border-subtle flex flex-col justify-between shrink-0">
         <div>
           {/* Brand Header */}
           <div className="p-5 border-b border-subtle flex items-center justify-between">
@@ -99,21 +108,7 @@ export default async function AdminDashboardLayout({
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-3 space-y-1 font-mono-data text-xs font-semibold">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center gap-2.5 px-3 py-2 text-ink-muted hover:text-ink hover:bg-surface-elevated hover:border-l-2 hover:border-fight-red transition-all"
-                >
-                  <Icon className="w-4 h-4 text-ink-muted shrink-0" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+          <AdminNavigation items={navItems.map(({ href, label }) => ({ href, label }))} />
         </div>
 
         {/* User Session Footer & Logout */}
@@ -150,7 +145,7 @@ export default async function AdminDashboardLayout({
       </aside>
 
       {/* Main Content Viewport */}
-      <main className="flex-1 overflow-y-auto p-6 lg:p-10 bg-canvas">
+      <main id="admin-main" className="min-w-0 flex-1 overflow-x-auto p-4 sm:p-6 lg:p-10 bg-canvas">
         {children}
       </main>
     </div>

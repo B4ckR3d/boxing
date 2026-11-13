@@ -102,3 +102,68 @@ flowchart TD
    - Zero Plaintext Secrets: TOTP seeds encrypted with AES-256-GCM.
    - Redaction pipeline strips passwords, tokens, and authorization headers from all logs and audit events.
 
+
+---
+
+## 5. Ticketing Module (guest order → manual admin verification)
+
+Ticketing is deliberately **NOT** an online payment gateway integration. The organizer collects
+payment out-of-band (transfer / QRIS / cash) and an authorized admin confirms it. This keeps the
+platform free of third-party payment dependencies while still enforcing quota integrity.
+
+### 5.1 Reservation model
+
+`TicketType.sold` is the **single source of truth for reserved capacity** — it includes confirmed
+orders *and* pending holds. Guarded reservation, not read-then-write:
+
+```ts
+const reserved = await tx.ticketType.updateMany({
+  where: { id, isActive: true, sold: { lte: type.quota - quantity } },
+  data: { sold: { increment: quantity } },
+});
+if (reserved.count !== 1) throw new TicketingError("Kuota tiket tidak mencukupi", "SOLD_OUT");
+```
+
+The `UPDATE ... WHERE sold <= quota - qty` runs inside `db.$transaction`, so two concurrent buyers
+competing for the last seats cannot both win (verified: 50 parallel requests → exactly 50 seats
+allocated, never 51).
+
+### 5.2 Lifecycle
+
+| Transition | Trigger | Sold | Payment |
+|---|---|---|---|
+| `PENDING_CONFIRMATION` | buyer submits `POST /api/ticketing/orders` | `+qty` (held) | `PROOF_SUBMITTED` when a reference is sent, else `UNPAID` |
+| `CONFIRMED` | admin `confirmOrder` (`ticketing.confirm` permission) | unchanged | `VERIFIED` + `verifiedById`/`verifiedAt` + audit log |
+| `REJECTED` | admin `rejectOrder` with a required reason | `−qty` (released) | `REJECTED` + audit log |
+| `CANCELLED` | reserved for future refund/expiry automation | `−qty` | `REJECTED`/`CANCELLED` |
+
+Rejection must restore capacity atomically; a rejection that forgets `sold` is a silent oversell bug.
+
+### 5.3 Buyer capability token
+
+Guests have no account, so the order is protected by an opaque **capability token**:
+
+- 32-byte random token, returned **once** in the `POST` response.
+- Stored as `guestTokenHash = sha256(token)` — plaintext never persists.
+- `GET /api/ticketing/orders/[orderNumber]?token=…` looks up by `(orderNumber, guestTokenHash)`.
+- A wrong token and a non-existent order are indistinguishable (both 404), so order numbers cannot be enumerated.
+
+### 5.4 Surface area
+
+| Layer | Path | Notes |
+|---|---|---|
+| Service | `src/server/services/ticketing.service.ts` | `createGuestOrder`, `getGuestOrder`, `confirmOrder`, `rejectOrder`, `listPublishedTicketEvents` |
+| Public API | `src/app/api/ticketing/orders/route.ts` | origin (CSRF) + rate limit + Zod → friendly Indonesian messages |
+| Lookup API | `src/app/api/ticketing/orders/[orderNumber]/route.ts` | token-gated read |
+| Admin actions | `src/app/admin/(dashboard)/ticketing/actions.ts` | `"use server"`, permission-guarded, returns `ActionResult` |
+| Public UI | `src/app/(public)/tickets/page.tsx` | hero → 3 steps → per-event panel |
+| Purchase panel | `src/components/ticketing/TicketOrderForm.tsx` | category cards (`aria-pressed`), qty stepper, live total, receipt |
+| Buyer self-service | `src/app/(public)/tickets/status/page.tsx` + `OrderStatusLookup.tsx` | deep link resolved **server-side**; no client fetch on first paint |
+| Admin UI | `src/app/admin/(dashboard)/ticketing/page.tsx` + `TicketOrderActions.tsx` | stats, quota bars, `?status=` filters, confirm/reject with toasts |
+
+### 5.5 Error contract
+
+Server actions return `{ ok: true } | { ok: false, error: string }`. The UI **must** read
+`result.ok` — earlier versions fired the action and ignored the result, so failures silently
+no-op'd. Zod issues are mapped to buyer-facing Indonesian sentences (never expose field paths or
+min/max numbers).

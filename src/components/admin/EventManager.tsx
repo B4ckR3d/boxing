@@ -6,14 +6,9 @@ import { toast } from "sonner";
 import {
   Calendar,
   MapPin,
-  Clock,
   Plus,
   Search,
-  CheckCircle2,
-  XCircle,
   Trash2,
-  Globe,
-  Radio,
   Swords,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -390,7 +385,11 @@ export function EventManager({
                   </label>
                   <select
                     value={status}
-                    onChange={(e) => setStatus(e.target.value as any)}
+                    onChange={(e) =>
+                      setStatus(
+                        e.target.value as "DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED"
+                      )
+                    }
                     className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
                   >
                     <option value="SCHEDULED">SCHEDULED (Terjadwal)</option>

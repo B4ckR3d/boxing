@@ -21,32 +21,18 @@ const schema = z.object({
   MYSQL_PASSWORD: z.string().default(""),
   DATABASE_POOL_SIZE: z.coerce.number().int().min(1).max(100).default(10),
 
-  AUTH_SECRET: z
-    .string()
-    .optional()
-    .transform((v) =>
-      v && v.trim() !== ""
-        ? v
-        : "tfn_boxing_championship_auth_secret_production_2026_super_secure"
-    )
-    .pipe(z.string().min(32, "AUTH_SECRET must be at least 32 characters")),
-  ENCRYPTION_KEY: z
-    .string()
-    .optional()
-    .transform((v) => {
-      if (v && v.trim() !== "") {
-        try {
-          const buf = Buffer.from(v, "base64");
-          if (buf.length === 32) return v;
-        } catch {}
-      }
-      return "cqrIoEPj/F+u6SIcWduPp+uUduuGYBSSO8plzkNC1v8=";
-    }),
+  AUTH_SECRET: z.string().trim().min(32, "AUTH_SECRET must be at least 32 characters"),
+  ENCRYPTION_KEY: z.string().refine(
+    (value) => /^[A-Za-z0-9+/]{43}=$/.test(value) && Buffer.from(value, "base64").length === 32,
+    "ENCRYPTION_KEY must be a base64-encoded 32-byte key"
+  ),
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(12),
   SESSION_IDLE_MINUTES: z.coerce.number().int().min(5).max(1440).default(60),
   AUTH_ENFORCE_MFA: bool.default(true),
   AUTH_MAX_FAILED_LOGINS: z.coerce.number().int().min(3).max(20).default(5),
   AUTH_LOCKOUT_MINUTES: z.coerce.number().int().min(1).max(1440).default(15),
+
+  TICKET_HOLD_EXPIRY_HOURS: z.coerce.number().int().min(1).max(720).default(24),
 
   STORAGE_DRIVER: z.enum(["local", "s3"]).default("local"),
   UPLOAD_MAX_IMAGE_MB: z.coerce.number().positive().max(50).default(8),

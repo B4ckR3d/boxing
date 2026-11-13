@@ -62,7 +62,7 @@ export default async function PublicFightersPage({
       >
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="font-display text-4xl sm:text-6xl text-ink uppercase font-black tracking-tight">
-            DAFTAR PETARUNG RESMI TFN
+            DIREKTORI PETARUNG TFN
           </h1>
           <div className="flex items-center justify-center gap-2 font-mono-data text-xs text-ink-muted mt-2 uppercase tracking-widest">
             <Link href="/" className="hover:text-ink transition-colors">BERANDA / HOME</Link>
@@ -75,15 +75,19 @@ export default async function PublicFightersPage({
       {/* 2. Filter & Division Toolbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         <div className="bg-card border border-border p-4 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 flex-1 min-w-[240px] bg-canvas border border-border px-3 py-2 font-mono-data text-xs text-foreground">
+          <form action="/fighters" className="flex min-h-12 min-w-0 flex-1 items-center gap-2 border border-border bg-canvas px-3 py-2 font-mono-data text-xs text-foreground">
             <Search className="w-4 h-4 text-muted-foreground" />
             <input
               type="text"
+              name="q"
+              aria-label="Cari nama atau julukan petarung"
               placeholder="Cari nama petarung atau julukan... / Search fighter"
               defaultValue={q}
               className="w-full bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
             />
-          </div>
+            {division && <input type="hidden" name="division" value={division} />}
+            <button type="submit" className="min-h-11 shrink-0 px-3 font-bold text-fight-red">CARI</button>
+          </form>
 
           <div className="flex flex-wrap gap-2 font-mono-data text-xs">
             <Link

@@ -47,16 +47,16 @@ export function RankingPreview({
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-subtle pb-6">
           <div>
             <h2 className="font-display text-4xl sm:text-6xl text-ink uppercase tracking-tight font-black">
-              {divisionDisplay} <span className="text-fight-red">{t("rankingsTitleSuffix")}</span>
+              {divisionDisplay} <span className="text-fight-red">PERINGKAT</span>
             </h2>
           </div>
 
-          <Link href="/rankings">
-            <Button variant="outline" size="sm" className="font-bold flex items-center gap-1.5">
+          <Button asChild variant="outline" size="sm" className="font-bold flex items-center gap-1.5">
+            <Link href="/rankings">
               <span>{t("rankingsBtnAll")}</span>
               <ArrowRight className="w-3.5 h-3.5" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* Division Title (Image 4 centered header) */}

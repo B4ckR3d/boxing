@@ -1,4 +1,5 @@
 import React from "react";
+import { requirePermission } from "@/lib/permissions/guard";
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { Plus, Search } from "lucide-react";
@@ -11,6 +12,7 @@ export default async function AdminFightersPage({
 }: {
   searchParams: Promise<{ q?: string; division?: string }>;
 }) {
+  await requirePermission("fighters.read");
   const { q, division } = await searchParams;
 
   const whereClause: Record<string, unknown> = {
@@ -66,11 +68,11 @@ export default async function AdminFightersPage({
         </div>
 
         <div>
-          <Link href="/admin/fighters">
-            <Button variant="crimson" size="sm" className="font-bold tracking-wider">
+          <Button asChild variant="crimson" size="sm" className="font-bold tracking-wider">
+            <Link href="/admin/fighters">
               <Plus className="w-4 h-4 mr-1.5" /> REGISTER FIGHTER
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
       </div>
 

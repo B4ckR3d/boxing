@@ -33,7 +33,7 @@ export interface BeltViewerProps {
 }
 
 export function Belt3DViewer({ belt }: BeltViewerProps) {
-  const [viewMode, setViewMode] = useState<"photo" | "3d">("photo");
+  const [viewMode, _setViewMode] = useState<"photo" | "3d">("photo");
   const [isRotating, setIsRotating] = useState(true);
 
   // Determine photo url based on division/name

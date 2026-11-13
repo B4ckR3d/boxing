@@ -7,7 +7,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className = "", variant = "crimson", size = "md", children, ...props }, ref) => {
+  ({ className = "", variant = "crimson", size = "md", asChild = false, children, ...props }, ref) => {
     const base =
       "inline-flex items-center justify-center font-display uppercase tracking-wider font-bold transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer focus:outline-none";
 
@@ -31,10 +31,23 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       xl: "text-base sm:text-lg px-8 py-3.5",
     };
 
+    const classes = `${base} ${variants[variant]} ${sizes[size]} ${className}`.trim();
+
+    // asChild renders the caller's element (usually a <Link>) with button styling instead of
+    // nesting a <button> inside an <a>. Nesting interactive controls breaks the a11y tree and
+    // produces overlapping click targets.
+    if (asChild && React.isValidElement(children)) {
+      const child = children as React.ReactElement<{ className?: string }>;
+      return React.cloneElement(child, {
+        className: `${classes} ${child.props.className ?? ""}`.trim(),
+        ref,
+      } as Partial<{ className: string }>);
+    }
+
     return (
       <button
         ref={ref}
-        className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}
+        className={classes}
         {...props}
       >
         {children}

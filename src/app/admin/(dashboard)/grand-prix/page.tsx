@@ -1,4 +1,5 @@
 import React from "react";
+import { requirePermission } from "@/lib/permissions/guard";
 import Link from "next/link";
 import { prisma } from "@/lib/db/prisma";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { Plus } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AdminGrandPrixPage() {
+  await requirePermission("tournaments.manage");
   const tournaments = await prisma.tournament.findMany({
     include: {
       weightClass: true,

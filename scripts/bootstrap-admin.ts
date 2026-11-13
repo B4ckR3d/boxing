@@ -3,6 +3,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { ALL_PERMISSIONS, DEFAULT_ROLES, PERMISSIONS } from "../src/lib/permissions/catalog";
 import { hashPassword } from "../src/lib/security/password";
+import { getBootstrapAccount } from "./account-policy";
 
 let dbHost = process.env.MYSQL_HOST || "127.0.0.1";
 let dbPort = Number(process.env.MYSQL_PORT) || 3306;
@@ -34,6 +35,7 @@ const adapter = new PrismaMariaDb({
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  const account = getBootstrapAccount(process.env);
   console.log("🔐 [Bootstrap Admin] Ensuring roles and permissions...");
 
   for (const key of ALL_PERMISSIONS) {
@@ -76,32 +78,18 @@ async function main() {
     }
   }
 
-  const rawPass =
-    process.env.ADMIN_PASSWORD ||
-    process.env.DEMO_USER_PASSWORD ||
-    "Demo-Ringside-2026!";
+  const rawPass = account.password;
 
   console.log("🔐 [Bootstrap Admin] Hashing password with Argon2id...");
   const passwordHash = await hashPassword(rawPass);
 
-  const accounts = [
-    { email: "superadmin@boxing.local", name: "Super Admin", roleKey: "super_admin" },
-    { email: "admin@boxing.local", name: "Platform Admin", roleKey: "administrator" },
-    { email: "rankings@boxing.local", name: "Chief Ranking Officer", roleKey: "ranking_manager" },
-    { email: "tournaments@boxing.local", name: "Grand Prix Director", roleKey: "tournament_manager" },
-  ];
+  const accounts = [{ email: account.email, name: account.name, roleKey: "super_admin" }];
 
   console.log("🔐 [Bootstrap Admin] Upserting admin accounts...");
   for (const acc of accounts) {
     const user = await prisma.user.upsert({
       where: { email: acc.email },
-      update: {
-        name: acc.name,
-        isActive: true,
-        passwordHash,
-        failedLoginCount: 0,
-        lockedUntil: null,
-      },
+      update: {},
       create: {
         email: acc.email,
         name: acc.name,
@@ -124,8 +112,8 @@ async function main() {
 
   console.log("\n=======================================================");
   console.log("✅ Admin accounts successfully bootstrapped & unlocked!");
-  console.log(`   Email:    admin@boxing.local / superadmin@boxing.local`);
-  console.log(`   Password: ${rawPass}`);
+  console.log(`   Email: ${account.email}`);
+  console.log("   Existing accounts are preserved. Passwords are never printed.");
   console.log("=======================================================\n");
 }
 

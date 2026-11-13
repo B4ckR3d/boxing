@@ -29,6 +29,12 @@ next-env.d.ts
 # backups
 /backups
 
+# scheduler state (hold-expiry cron log + lock)
+/storage/
+
+# local agent workspace (Hermes session scratch, not project source)
+/.hermes/
+
 # misc
 .DS_Store
 *.pem

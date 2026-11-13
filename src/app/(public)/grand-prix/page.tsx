@@ -42,7 +42,7 @@ export default async function PublicGrandPrixPage() {
       >
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="font-display text-4xl sm:text-6xl text-ink uppercase font-black tracking-tight">
-            TURNAMEN TFN WORLD GRAND PRIX
+            TURNAMEN TFN GRAND PRIX
           </h1>
           <div className="flex items-center justify-center gap-2 font-mono-data text-xs text-ink-muted mt-2 uppercase tracking-widest">
             <Link href="/" className="hover:text-ink transition-colors">BERANDA</Link>
@@ -54,6 +54,7 @@ export default async function PublicGrandPrixPage() {
 
       {/* 2. Tournaments Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+        {tournaments.length === 0 && <p className="border border-subtle bg-charcoal p-8 text-sm leading-7 text-ink-muted">Belum ada turnamen yang diterbitkan. Bagan dan peserta akan ditampilkan setelah tersedia.</p>}
         {tournaments.map((t) => {
           const mainBracket = t.brackets[0];
           const bouts = mainBracket?.bouts || [];
@@ -85,7 +86,7 @@ export default async function PublicGrandPrixPage() {
 
                 <div className="text-right font-mono-data text-xs text-ink-muted">
                   <p>FORMAT: {t.size}-MAN SISTEM GUGUR TUNGGAL</p>
-                  <p className="text-ink font-bold mt-0.5">DISAHKAN KOMISI PERTANDINGAN TFN</p>
+                  <p className="text-ink font-bold mt-0.5">DATA TURNAMEN TERBITAN TFN</p>
                 </div>
               </div>
 

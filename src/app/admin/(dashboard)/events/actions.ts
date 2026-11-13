@@ -13,7 +13,7 @@ export interface CreateEventInput {
   city?: string;
   country?: string;
   startsAt: string;
-  status: "DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED" | "CANCELLED" | "POSTPONED" | any;
+  status: "DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED" | "CANCELLED" | "POSTPONED";
   isPublished: boolean;
   description?: string;
 }
