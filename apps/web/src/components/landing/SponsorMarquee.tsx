@@ -94,11 +94,11 @@ function SponsorTile({ sponsor, lang }: { sponsor: TileData; lang: "id" | "en" }
 // ── Main component ────────────────────────────────────────────────────────────
 
 interface SponsorMarqueeProps {
-  /** Daftar sponsor aktif dari DB via getPublicSponsors(). */
-  sponsors: PublicSponsor[];
+  /** Daftar sponsor aktif dari DB via getPublicSponsors(). Opsional — default [] → tampil placeholder. */
+  sponsors?: PublicSponsor[];
 }
 
-export function SponsorMarquee({ sponsors }: SponsorMarqueeProps) {
+export function SponsorMarquee({ sponsors = [] }: SponsorMarqueeProps) {
   const { lang } = useLanguage();
 
   // Gunakan data DB jika ada; fallback ke placeholder saat DB kosong.

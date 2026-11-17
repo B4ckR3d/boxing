@@ -208,21 +208,21 @@ export default async function PublicHomePage() {
   const activeHeroSlides =
     heroSlides.length > 0
       ? heroSlides.map((s) => ({
-          id: s.id,
-          isDemo: true,
-          eventTitle: s.eventTitle,
-          category: s.category,
-          headline: s.headline,
-          description: s.description,
-          eventDate: s.eventDate ? s.eventDate.toISOString() : null,
-          fighterImageUrl: s.fighterImage?.url || "/images/hero/hero_fighter_1_marcus.jpg",
-          backgroundImageUrl: s.background?.url || "/images/hero/boxing-ring-arena.jpg",
-          ctaPrimaryLabel: s.ctaPrimaryLabel || "BACA SELENGKAPNYA",
-          ctaPrimaryHref: s.ctaPrimaryHref || "/events",
-          ctaSecondaryLabel: s.ctaSecondaryLabel || "LIHAT AGENDA",
-          ctaSecondaryHref: s.ctaSecondaryHref || "/rankings",
-          overlay: s.overlay,
-        }))
+        id: s.id,
+        isDemo: true,
+        eventTitle: s.eventTitle,
+        category: s.category,
+        headline: s.headline,
+        description: s.description,
+        eventDate: s.eventDate ? s.eventDate.toISOString() : null,
+        fighterImageUrl: s.fighterImage?.url || "/images/hero/hero_fighter_1_marcus.jpg",
+        backgroundImageUrl: s.background?.url || "/images/hero/boxing-ring-arena.jpg",
+        ctaPrimaryLabel: s.ctaPrimaryLabel || "BACA SELENGKAPNYA",
+        ctaPrimaryHref: s.ctaPrimaryHref || "/events",
+        ctaSecondaryLabel: s.ctaSecondaryLabel || "LIHAT AGENDA",
+        ctaSecondaryHref: s.ctaSecondaryHref || "/rankings",
+        overlay: s.overlay,
+      }))
       : defaultHeroSlides;
 
   return (
@@ -231,10 +231,10 @@ export default async function PublicHomePage() {
       <HeroSlider slides={activeHeroSlides} />
 
       {/* 2. TFN identity ribbon; no unverified sponsor claims. */}
-      <SponsorRibbon />
+      {/* <SponsorRibbon /> */}
 
       {/* 2b. Official event / government backing — sourced from src/lib/site/partners.ts */}
-      <OfficialSupport variant="home" />
+      {/* <OfficialSupport variant="home" /> */}
 
       {/* 2c. Sponsor & mitra komersial — dari database, hanya yang aktif */}
       <SponsorShowcase sponsors={sponsors} />
@@ -275,7 +275,7 @@ export default async function PublicHomePage() {
       <FeaturedFighters fighters={fightersProps} />
 
       {/* 9. Sponsor marquee — tepat di atas footer */}
-      <SponsorMarquee />
+      <SponsorMarquee sponsors={sponsors} />
     </div>
   );
 }
