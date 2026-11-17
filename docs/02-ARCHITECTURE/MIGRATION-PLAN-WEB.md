@@ -117,6 +117,25 @@ mentah; tak pernah ketahuan karena yang diuji `tsx`, bukan `dist`. Kini `verify:
   - Catatan desain: paket menerima `env: () => AuthEnv` (getter), **bukan** objek, supaya konfigurasi
     dibaca per panggilan seperti sebelumnya. `apps/api/src/config/env.ts` mewajibkan `ENCRYPTION_KEY`.
 
+### Langkah F — `server/services` tinggal binding — **SELESAI (2026-11-17)**
+
+Tujuan: tidak ada lagi aturan bisnis di dalam `apps/web`. Setelah audit, folder
+`apps/web/src/server/services/` berisi 7 berkas dan hanya **satu** yang masih logika nyata:
+
+| Berkas | Baris | Keputusan |
+|---|---|---|
+| `rbac.service.ts` | 578 | **pindah** → `packages/auth` sebagai `createRbacService({ db, audit })` |
+| `audit`, `auth`, `settings`, `sponsor`, `ticketing`, `ticket-pdf` | < 60 | tetap — memang binding `next/headers` / Prisma web |
+
+- Keenam berkas sisanya **bukan sisa migrasi** yang terlewat, melainkan adapter proses web: yang
+  dibaca `headers()` tidak mungkin hidup di paket bersama.
+- Dependensi RBAC disuntik (`db` + `audit`), semua 21 ekspor lama dipertahankan, sehingga call site
+  (`actions.ts`, `page.tsx`, `RoleManager`, `UserManager`) tidak berubah.
+- `apps/api/tests/package-boundary.test.ts` menjaga batas paket: gagal bila `packages/auth/src`
+  mengimpor `next/*`, `server-only`, alias `@/…`, atau membuat `new PrismaClient()` sendiri.
+- Bukti paket benar-benar portabel: `createRbacService` dijalankan lewat `tsx` di luar Next terhadap
+  DB dev → 8 role / 8 user / 71 permission, plus `RbacError` dan `ZodError` pada jalur gagal.
+
 ---
 
 ## 4. Yang TIDAK dilakukan di Phase 1

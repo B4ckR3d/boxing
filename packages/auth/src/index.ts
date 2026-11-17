@@ -15,4 +15,5 @@ export * from "./permissions";
 export * from "./crypto";
 export * from "./totp";
 export * from "./session.service";
+export * from "./rbac.service";
 export type { AuthenticatedUser, SessionCookieJar, SessionCookieOptions } from "./session";

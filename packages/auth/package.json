@@ -14,7 +14,8 @@
     "./session": "./src/session.ts",
     "./crypto": "./src/crypto.ts",
     "./totp": "./src/totp.ts",
-    "./session-service": "./src/session.service.ts"
+    "./session-service": "./src/session.service.ts",
+    "./rbac-service": "./src/rbac.service.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

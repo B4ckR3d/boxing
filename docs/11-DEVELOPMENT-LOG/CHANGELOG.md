@@ -67,6 +67,48 @@ persis seperti proses `tsx` yatim yang ditemukan di lokal (port 4000 dipegang bu
 | Blok 8b, API tidak terdaftar | exit 0 + peringatan cara mendaftarkan |
 | `bash -n scripts/deploy.sh` | sintaks valid |
 
+## 2026-11-17 — Langkah F: `rbac` ke `packages/auth`, `apps/web/src/server/services` habis
+
+**Cakupan:** berkas terakhir yang menyimpan logika domain di `apps/web/src/server/services/` pindah
+ke paket. Setelah ini isi folder tersebut **hanya binding** — tidak ada lagi aturan bisnis di dalam app.
+
+| Pindah ke `packages/auth` | Dari |
+|---|---|
+| `rbac.service.ts` — `createRbacService({ db, audit })` | `apps/web/src/server/services/rbac.service.ts` (578 baris) |
+
+Inventaris folder sebelum pemindahan (7 berkas): `rbac.service.ts` **578 baris** = satu-satunya logika
+nyata. Enam sisanya (`audit`, `auth`, `settings`, `sponsor`, `ticketing`, `ticket-pdf`) masing-masing
+di bawah 60 baris dan memang milik lapisan web — `next/headers` atau Prisma web — jadi **tidak**
+dipindah dan tidak dihapus.
+
+Dependensi yang disuntik: `db` (Prisma proses pemanggil) dan `audit` (binding web menambahkan
+IP/User-Agent dari `headers()`, API memakai versi `req`). Semua 21 ekspor lama dipertahankan lewat
+binding tipis, jadi `actions.ts`, `page.tsx`, `RoleManager.tsx`, dan `UserManager.tsx` **tidak
+berubah satu baris pun**.
+
+Kontrak perilaku yang sengaja dipertahankan persis: urutan validasi, four-eyes untuk role sensitif
+(`RoleRequest` PENDING + reviewer ≠ requester), proteksi super-admin terakhir, pencabutan semua sesi
+saat akun dinonaktifkan, dan penulisan audit di setiap jalur.
+
+### Penjaga arsitektur baru
+
+`apps/api/tests/package-boundary.test.ts` membaca sumber `packages/auth/src` dan gagal bila ada
+berkas yang mengimpor `next/*`, `server-only`, alias `@/…`, atau membuat `new PrismaClient()`
+sendiri. Diuji dengan menyuntikkan pelanggaran sementara — test memang **merah**, bukan hijau palsu.
+
+### Terbukti hidup
+
+| Uji | Hasil |
+|---|---|
+| `createRbacService` dijalankan via `tsx` **di luar Next** (paket `@tfn/auth`) | 8 role, 8 user, 0 pending, 71 permission |
+| Jalur error domain tanpa Next | `RbacError - Role not found`, `ZodError` |
+| `GET /admin/roles`, `/admin/users`, `/admin/audit-logs` | 200 / 200 / 200 |
+| `pnpm turbo:verify` | **19/19** |
+| `apps/api` test | **39/39** (7 berkas; +3 cookie, +5 boundary) |
+| `apps/web` unit test | **89/89** |
+| `verify:integration` | **33/33** |
+| `next build` | **tidak dijalankan** (aturan repo) |
+
 ## 2026-11-17 — Langkah E2: `auth` ke `packages/auth`, alias `@/*` di `apps/api` dihapus
 
 **Cakupan:** sisa terakhir ketergantungan terbalik API → `apps/web/src` hilang.
