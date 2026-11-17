@@ -19,9 +19,9 @@
 import { z } from "zod";
 import type { PrismaClient } from "@tfn/db/client";
 import { TicketOrderStatus, TicketPaymentMethod, TicketPaymentStatus } from "@tfn/db/enums";
-import { buildTicketPdf } from "./ticket-pdf.service.js";
-import { buildTicketPayload, verifyTicketPayload } from "./ticket-token.js";
-import { sameEmail, samePhone } from "./buyer-identity.js";
+import { buildTicketPdf } from "./ticket-pdf.service";
+import { buildTicketPayload, verifyTicketPayload } from "./ticket-token";
+import { sameEmail, samePhone } from "./buyer-identity";
 
 export type Tx = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
 export type Db = PrismaClient | Tx;

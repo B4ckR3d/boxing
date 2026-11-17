@@ -14,7 +14,7 @@
  * hanya dicatat ke stderr. Audit adalah bukti, bukan syarat commit.
  */
 import type { PrismaClient } from "@tfn/db/client";
-import { redact } from "./redact.js";
+import { redact } from "./redact";
 
 export type Tx = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
 export type Db = PrismaClient | Tx;

@@ -53,3 +53,5 @@ cred.md
 # monorepo (Turborepo)
 .turbo/
 apps/*/dist/
+packages/*/dist/
+*.tsbuildinfo

@@ -105,6 +105,14 @@ mentah; tak pernah ketahuan karena yang diuji `tsx`, bukan `dist`. Kini `verify:
 
 ### Langkah E — Bersihkan root
 - Hapus `src/server`, route handler lama, script duplikat; update semua dokumen.
+- **Status: E1 SELESAI (2026-11-17), E2 terbuka.** `src/` di root sudah tidak ada sejak Langkah A.
+  - E1: `packages/auth` (`@tfn/auth`) dibuat; `catalog`, `password`, `account-policy`, `rate-limit`,
+    `hasPermission`/four-eyes pindah ke sana. `apps/api` tidak lagi memakai alias `@/` untuk tiga
+    modul itu, root `tsconfig.json` kehilangan `paths @/* → apps/web/src/*`, dan `scripts/monorepo/*`
+    (tooling sekali pakai Langkah A) dihapus.
+  - E2 (belum): `auth.service.ts` (346 baris) masih di `apps/web/src/server/services/` dan
+    `apps/api/src/routes/auth.ts` + `lib/require-permission.ts` masih mengimpornya lewat alias `@/`.
+    Itu sisa terakhir "hapus `src/server`".
 
 ---
 

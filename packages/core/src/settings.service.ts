@@ -18,7 +18,7 @@ import {
   isSettingKey,
   type SettingKey,
   type SettingValues,
-} from "./setting-schemas.js";
+} from "./setting-schemas";
 
 export class SettingsError extends Error {
   constructor(message: string) {

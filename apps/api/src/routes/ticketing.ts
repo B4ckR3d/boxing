@@ -12,12 +12,10 @@ import {
   ticketOrderInputSchema,
   TicketingError,
 } from "../lib/ticketing.js";
-import { getSession } from "@/server/services/auth.service";
-import { hasPermission } from "@/lib/permissions/guard";
-import type { PermissionKey } from "@/lib/permissions/catalog";
-import { rateLimit } from "@/lib/security/rate-limit";
-import { createExpressCookieJar } from "../lib/cookie-jar";
+import { rateLimit } from "@tfn/auth/rate-limit";
+import { originAllowed, requirePermission } from "../lib/require-permission.js";
 import { AppError } from "../lib/errors";
+import { env } from "../config/env.js";
 
 /**
  * Router ticketing di `apps/api` (Langkah C).
@@ -48,38 +46,6 @@ function statusFor(code: string): number {
   return 400;
 }
 
-/**
- * Origin check gaya Express — padanan `verifyRequestOrigin()` di web yang memakai `next/headers`.
- *
- * Aturannya sama persis supaya pemindahan tidak melunakkan CSRF: Origin (atau Referer) harus
- * cocok dengan `APP_URL`, atau cocok dengan Host request. Tanpa keduanya hanya diizinkan di
- * development, untuk agen non-browser.
- */
-function originAllowed(req: Request): boolean {
-  const origin = req.headers.origin;
-  const referer = req.headers.referer;
-  const host = req.headers.host;
-  const configured = (() => {
-    try {
-      return new URL(process.env.APP_URL ?? "http://localhost:3000").origin;
-    } catch {
-      return "http://localhost:3000";
-    }
-  })();
-
-  const matches = (value: string) => value === configured || (host ? value.endsWith(host) : false);
-
-  if (typeof origin === "string" && origin.length > 0) return origin !== "null" && matches(origin);
-  if (typeof referer === "string" && referer.length > 0) {
-    try {
-      return matches(new URL(referer).origin);
-    } catch {
-      return false;
-    }
-  }
-  return process.env.NODE_ENV === "development";
-}
-
 function clientIp(req: Request): string {
   const forwarded = req.headers["x-forwarded-for"];
   const first = Array.isArray(forwarded) ? forwarded[0] : forwarded;
@@ -97,22 +63,6 @@ function toAppError(error: unknown): AppError {
     });
   }
   return new AppError(500, "INTERNAL_ERROR", "Pesanan tidak dapat diproses.", { expose: false });
-}
-
-/**
- * Sesi admin dari cookie Express.
- *
- * `guard.requirePermission()` tidak dipakai karena ia membaca cookie lewat `next/headers`;
- * di sini sesi diambil dengan jar Express lalu diperiksa dengan `hasPermission()` yang sama
- * (termasuk aturan super_admin implisit).
- */
-async function requirePermission(req: Request, res: Parameters<typeof createExpressCookieJar>[1], permission: PermissionKey) {
-  const user = await getSession(createExpressCookieJar(req, res));
-  if (!user) throw new AppError(401, "UNAUTHORIZED", "Authentication required");
-  if (!hasPermission(user, permission)) {
-    throw new AppError(403, "FORBIDDEN", `Required permission missing: ${permission}`);
-  }
-  return user;
 }
 
 const rejectSchema = z.object({ reason: z.string().trim().min(1).max(500) });
@@ -146,7 +96,7 @@ export function createTicketingRouter(): Router {
   /** POST /api/ticketing/orders — guest checkout. Rate limit + origin sama seperti di web. */
   router.post("/orders", async (req, res, next) => {
     try {
-      if (!originAllowed(req)) throw new AppError(403, "INVALID_ORIGIN", "Invalid request origin");
+      if (!originAllowed(req, env().APP_URL)) throw new AppError(403, "INVALID_ORIGIN", "Invalid request origin");
 
       const limited = rateLimit("publicApi", `ticket-order:${clientIp(req)}`);
       if (!limited.allowed) {
@@ -199,7 +149,7 @@ export function createTicketingRouter(): Router {
   /** POST /api/ticketing/orders/:orderId/confirm — butuh `ticketing.confirm`. */
   router.post("/orders/:orderId/confirm", async (req, res, next) => {
     try {
-      if (!originAllowed(req)) throw new AppError(403, "INVALID_ORIGIN", "Invalid request origin");
+      if (!originAllowed(req, env().APP_URL)) throw new AppError(403, "INVALID_ORIGIN", "Invalid request origin");
       const user = await requirePermission(req, res, "ticketing.confirm");
       res.json({ data: await confirmOrder(req.params.orderId ?? "", user.id) });
     } catch (error) {
@@ -210,7 +160,7 @@ export function createTicketingRouter(): Router {
   /** POST /api/ticketing/orders/:orderId/reject — butuh `ticketing.confirm`. */
   router.post("/orders/:orderId/reject", async (req, res, next) => {
     try {
-      if (!originAllowed(req)) throw new AppError(403, "INVALID_ORIGIN", "Invalid request origin");
+      if (!originAllowed(req, env().APP_URL)) throw new AppError(403, "INVALID_ORIGIN", "Invalid request origin");
       const user = await requirePermission(req, res, "ticketing.confirm");
 
       const parsed = rejectSchema.safeParse(req.body);
@@ -225,7 +175,7 @@ export function createTicketingRouter(): Router {
   /** POST /api/ticketing/check-in — gate scan. */
   router.post("/check-in", async (req, res, next) => {
     try {
-      if (!originAllowed(req)) throw new AppError(403, "INVALID_ORIGIN", "Invalid request origin");
+      if (!originAllowed(req, env().APP_URL)) throw new AppError(403, "INVALID_ORIGIN", "Invalid request origin");
       const user = await requirePermission(req, res, "ticketing.confirm");
 
       const parsed = checkInSchema.safeParse(req.body);

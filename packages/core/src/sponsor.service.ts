@@ -10,7 +10,7 @@
  * Tanpa sponsor aktif, hasilnya array kosong — beranda tidak pernah menampilkan logo palsu.
  */
 import type { PrismaClient } from "@tfn/db/client";
-import { normalizeSponsorTier, type SponsorTierKey } from "./sponsor-tiers.js";
+import { normalizeSponsorTier, type SponsorTierKey } from "./sponsor-tiers";
 
 export type Tx = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
 export type Db = PrismaClient | Tx;

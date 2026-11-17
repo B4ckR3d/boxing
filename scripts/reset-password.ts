@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { PrismaClient } from "@tfn/db/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
-import { hashPassword, passwordPolicy } from "../apps/web/src/lib/security/password";
+import { hashPassword, passwordPolicy } from "@tfn/auth/password";
 
 /**
  * Reset an admin password directly in the database.

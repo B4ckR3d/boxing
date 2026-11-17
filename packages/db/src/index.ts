@@ -15,5 +15,5 @@
  *   `@tfn/db/client`   → PrismaClient, namespace `Prisma`
  *   `@tfn/db/enums`    → enum skema (mis. TicketOrderStatus)
  */
-export * from "./generated/prisma/client.js";
-export * from "./generated/prisma/enums.js";
+export * from "./generated/prisma/client";
+export * from "./generated/prisma/enums";

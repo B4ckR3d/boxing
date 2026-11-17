@@ -12,8 +12,8 @@
  */
 import type { Request } from "express";
 import { getSession } from "@/server/services/auth.service";
-import { hasPermission } from "@/lib/permissions/guard";
-import type { PermissionKey } from "@/lib/permissions/catalog";
+import { hasPermission } from "@tfn/auth/permissions";
+import type { PermissionKey } from "@tfn/auth/catalog";
 import { createExpressCookieJar } from "../lib/cookie-jar.js";
 import { AppError } from "../lib/errors.js";
 

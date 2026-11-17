@@ -5,17 +5,17 @@
  * definisi yang identik. Subpath export (`@tfn/core/settings`, dst.) tetap tersedia bila pemanggil
  * ingin impor sempit.
  */
-export { logAudit } from "./audit.service.js";
-export type { AuditContext, AuditDeps, Db, LogAuditParams, Tx } from "./audit.service.js";
+export { logAudit } from "./audit.service";
+export type { AuditContext, AuditDeps, Db, LogAuditParams, Tx } from "./audit.service";
 
-export { SettingsError, getSettings, updateSettings, SETTING_SCHEMAS, SETTING_KEYS, isSettingKey } from "./settings.service.js";
-export type { SettingKey, SettingValues, SettingsDeps } from "./settings.service.js";
+export { SettingsError, getSettings, updateSettings, SETTING_SCHEMAS, SETTING_KEYS, isSettingKey } from "./settings.service";
+export type { SettingKey, SettingValues, SettingsDeps } from "./settings.service";
 
-export { getPublicSponsors } from "./sponsor.service.js";
-export type { PublicSponsor } from "./sponsor.service.js";
+export { getPublicSponsors } from "./sponsor.service";
+export type { PublicSponsor } from "./sponsor.service";
 
-export { redact, diff } from "./redact.js";
-export type { JsonValue } from "./redact.js";
+export { redact, diff } from "./redact";
+export type { JsonValue } from "./redact";
 
 export {
   SPONSOR_TIERS,
@@ -25,5 +25,5 @@ export {
   normalizeSponsorTier,
   sponsorTierLabel,
   isSafeLogoSource,
-} from "./sponsor-tiers.js";
-export type { SponsorTierKey } from "./sponsor-tiers.js";
+} from "./sponsor-tiers";
+export type { SponsorTierKey } from "./sponsor-tiers";

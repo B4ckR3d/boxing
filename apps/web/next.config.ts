@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
   // @tfn/db mengirim TypeScript source (Prisma Client 7 digenerate sebagai .ts), bukan hasil
   // build JS — jadi Next harus ikut men-transpile package ini. Tanpa ini, `next build` gagal
   // me-resolve tipe dari workspace package.
-  transpilePackages: ["@tfn/db"],
+  transpilePackages: ["@tfn/db", "@tfn/ticketing", "@tfn/core", "@tfn/auth"],
   turbopack: {
     root: MONOREPO_ROOT,
   },
