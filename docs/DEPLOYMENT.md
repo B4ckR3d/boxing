@@ -102,8 +102,9 @@ The script runs, in order: **env preflight** (fails loudly if `APP_URL`, `DATABA
 `AUTH_SECRET` or `ENCRYPTION_KEY` are empty — the dev fallbacks were removed) → `git reset --hard
 origin/main` → `npm ci --include=dev` → `prisma generate` → **`prisma migrate deploy`** (required:
 without it the ticketing/check-in tables never appear and the first write 500s) → `rm -rf .next` +
-`npm run build` → `pm2 restart boxing-tfn --update-env` → HTTP smoke test on `127.0.0.1:3000` →
-idempotent `scripts/cron/install.sh`.
+`npm run build` → `pm2 restart boxing-tfn --update-env` → **`pm2 restart tfn-api` + `/health` check**
+(bila proses API terdaftar; deploy **gagal** kalau API tidak sehat, karena BFF `/api/auth/*` di web
+mem-proxy ke sana) → HTTP smoke test on `127.0.0.1:3000` → idempotent `scripts/cron/install.sh`.
 
 `admin:bootstrap` is **opt-in** (`RUN_BOOTSTRAP=1 ./scripts/deploy.sh`) because it resets admin
 passwords; a normal deploy must not change credentials. aaPanel's own Cron UI is where the

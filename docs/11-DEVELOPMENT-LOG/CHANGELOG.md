@@ -1,3 +1,37 @@
+## 2026-11-17 — Audit deploy: `ENCRYPTION_KEY` + API yang tak pernah di-restart
+
+**Temuan:** `scripts/deploy.sh` hanya me-restart proses web (`boxing-tfn`). Sejak Langkah E2 auth
+hidup di `apps/api`, dan `apps/web` memanggilnya lewat BFF (`API_INTERNAL_URL`, default
+`127.0.0.1:4000`). Artinya deploy bisa "sukses" sementara API tetap menjalankan kode lama — gejala
+persis seperti proses `tsx` yatim yang ditemukan di lokal (port 4000 dipegang build pra-E2).
+
+**Diperbaiki**
+
+- `scripts/deploy.sh`: langkah **8b** me-restart `tfn-api` bila terdaftar di PM2, lalu memeriksa
+  `/health`. Deploy **gagal (exit 1)** bila health bukan 200 — API mati berarti auth mati.
+  Bila proses belum terdaftar, hanya peringatan (deploy web-only tetap sah).
+- `apps/api/.env.example`: blok auth (`AUTH_SECRET`, `ENCRYPTION_KEY`, sesi, lockout) + `API_INTERNAL_URL`.
+  Sebelumnya file ini tidak menyebut satu pun variabel auth, sehingga siapa pun yang menyalinnya
+  mendapat API yang menolak start.
+- `.env.example` root: `API_INTERNAL_URL` didokumentasikan (sebelumnya hanya default di kode).
+- `docs/10-DEPLOYMENT/DEPLOYMENT-GUIDE.md`: tabel "website/admin/pos/api per-Dockerfile" **dihapus** —
+  tidak ada satu pun Dockerfile di repo. Diganti tabel proses PM2 yang nyata. Checklist produksi
+  menambah verifikasi `tfn-api` + kesamaan `ENCRYPTION_KEY`.
+- `docs/DEPLOYMENT.md`: urutan `deploy.sh` diperbarui.
+
+**Diverifikasi (bukan diasumsikan)**
+
+| Uji | Hasil |
+|---|---|
+| `ENCRYPTION_KEY=""` boot API | exit 1, `must be a base64-encoded 32-byte key` |
+| `ENCRYPTION_KEY="dGVzdA=="` (4 byte) | exit 1, pesan sama |
+| `ENCRYPTION_KEY` valid dari `.env` | server listening (kontrol positif) |
+| Web vs API pakai kunci sama | keduanya baca root `.env`, tidak ada override di app |
+| Blok 8b, API terdaftar + health 200 | exit 0, `✓ API health OK` |
+| Blok 8b, API terdaftar + health 503 | **exit 1**, pesan menyebut `ENCRYPTION_KEY` |
+| Blok 8b, API tidak terdaftar | exit 0 + peringatan cara mendaftarkan |
+| `bash -n scripts/deploy.sh` | sintaks valid |
+
 ## 2026-11-17 — Langkah E2: `auth` ke `packages/auth`, alias `@/*` di `apps/api` dihapus
 
 **Cakupan:** sisa terakhir ketergantungan terbalik API → `apps/web/src` hilang.

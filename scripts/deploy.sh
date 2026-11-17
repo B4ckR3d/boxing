@@ -11,6 +11,10 @@ set -euo pipefail
 
 APP_DIR="${APP_DIR:-/www/wwwroot/boxing}"
 PM2_NAME="${PM2_NAME:-boxing-tfn}"
+# Proses API terpisah (Langkah E2: auth pindah ke apps/api). Opsional: bila proses tidak
+# ada di PM2, langkah restart API dilewati dengan peringatan — bukan kegagalan deploy.
+PM2_API_NAME="${PM2_API_NAME:-tfn-api}"
+API_PORT="${API_PORT:-4000}"
 # Port to smoke-test: APP_PORT env > PORT from .env > 3000
 if [ -z "${APP_PORT:-}" ]; then
   APP_PORT="$(grep -E '^PORT=' .env 2>/dev/null | tail -1 | cut -d= -f2 | tr -d '\r' )"
@@ -127,6 +131,34 @@ else
 fi
 pm2 save
 pm2 describe "$PM2_NAME" | grep -E 'status|uptime|restarts' || true
+
+# API adalah proses terpisah sejak Langkah E2 (auth ada di apps/api). Tanpa restart di sini,
+# deploy web akan sukses sementara API tetap menjalankan kode lama — gejalanya 500 pada
+# /api/auth/me karena BFF (API_INTERNAL_URL) memanggil API yang tidak sinkron.
+# Non-fatal bila proses belum terdaftar: deployment web-only tetap sah.
+if pm2 describe "$PM2_API_NAME" >/dev/null 2>&1; then
+  step "8b/8 Restarting PM2 process '$PM2_API_NAME'"
+  pm2 restart "$PM2_API_NAME" --update-env
+  pm2 describe "$PM2_API_NAME" | grep -E 'status|uptime|restarts' || true
+
+  echo "waiting for http://127.0.0.1:$API_PORT/health ..."
+  api_code=""
+  for _ in $(seq 1 20); do
+    api_code=$(curl -s -o /dev/null -m 5 -w '%{http_code}' "http://127.0.0.1:$API_PORT/health" || true)
+    [ "$api_code" = "200" ] && break
+    sleep 2
+  done
+  if [ "$api_code" != "200" ]; then
+    printf '\033[31m✗ API health check returned HTTP %s — cek: pm2 logs %s --lines 80\033[0m\n' "${api_code:-none}" "$PM2_API_NAME" >&2
+    printf '\033[31m  Gejala umum: ENCRYPTION_KEY kosong/bukan 32-byte base64 membuat API menolak start.\033[0m\n' >&2
+    printf '\033[31m  Deploy digagalkan: web memanggil API via API_INTERNAL_URL, jadi API mati = auth mati.\033[0m\n' >&2
+    exit 1
+  fi
+  echo "✓ API health OK"
+else
+  printf '\033[33m! PM2 process "%s" tidak ditemukan — API tidak di-restart.\033[0m\n' "$PM2_API_NAME" >&2
+  printf '\033[33m  Bila API berjalan di mesin ini, daftarkan: pm2 start pnpm --name %s --filter @tfn/api start\033[0m\n' "$PM2_API_NAME" >&2
+fi
 
 echo "waiting for http://127.0.0.1:$APP_PORT ..."
 code=""

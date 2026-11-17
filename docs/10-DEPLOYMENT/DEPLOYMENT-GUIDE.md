@@ -39,25 +39,30 @@ Catatan penting:
 | `NODE_ENV=production` | — |
 | `APP_URL` | harus `https://tfn.pimpom.id` (origin check) |
 | `MYSQL_*` / `DATABASE_URL` | kredensial produksi (jangan dipakai di dev) |
-| `AUTH_SECRET`, `ENCRYPTION_KEY` | 32-byte base64; rotasi = logout massal + tiket PDF lama invalid |
+| `AUTH_SECRET`, `ENCRYPTION_KEY` | 32-byte base64; rotasi = logout massal + tiket PDF lama invalid. **Harus identik di web dan `apps/api`** — beda `ENCRYPTION_KEY` = semua akun ber-MFA gagal login lewat API (`mfaSecretEnc` tak bisa didekripsi). `apps/api` menolak start bila kosong/bukan 32 byte |
 | `AUTH_ENFORCE_MFA` | disarankan `true` untuk role sensitif |
 | `STORAGE_DRIVER`, `S3_*` | bila memakai object storage |
 | `DEMO_USER_PASSWORD` | **jangan** dipakai di produksi; gunakan bootstrap admin |
 
-## 4. Target deployment (setelah restrukturisasi)
+## 4. Proses runtime (kondisi nyata)
 
-| Service | Port | Docker |
-|---|---|---|
-| website | 3000 | `infrastructure/docker/website.Dockerfile` |
-| admin | 3001 | `admin.Dockerfile` |
-| pos | 3002 | `pos.Dockerfile` |
-| api | 4000 | `api.Dockerfile` |
-| worker | — | `worker.Dockerfile` |
-| mysql | internal | image `mysql:8.4` |
-| redis | internal | image `redis:7` |
+Deploy produksi memakai **PM2 + aaPanel, tanpa Docker**. Repo ini **tidak punya satu pun
+Dockerfile** — tabel "website 3000 / api 4000 / admin 3001 / pos 3002 per-Dockerfile" pada versi
+sebelumnya dokumen ini adalah rencana yang tidak pernah diimplementasikan dan sudah dihapus.
+
+| Proses PM2 | App | Port | Perintah |
+|---|---|---|---|
+| `boxing-tfn` (default) | `apps/web` | 3000 | `pnpm --filter @tfn/web start` |
+| `tfn-api` (bila dipakai) | `apps/api` | 4000 | `pnpm --filter @tfn/api start` |
+| worker | `apps/worker` | — | cron `expire-holds` |
+
+`apps/web` memanggil API lewat **`API_INTERNAL_URL`** (default `http://127.0.0.1:4000`, jadi di VPS
+satu mesin tidak perlu diisi). Konsekuensinya: **API mati = auth mati**, karena BFF `/api/auth/*`
+di web mem-proxy ke sana. `scripts/deploy.sh` karena itu me-restart `tfn-api` bila prosesnya
+terdaftar, dan **menggagalkan deploy** kalau `/health` API bukan 200.
 
 Nginx: satu vhost per domain, `client_max_body_size` cukup untuk upload KTP (mis. 5 MB), rate limit
-pada `/api/v1/auth/*`, header keamanan, TLS dari aaPanel/Let's Encrypt.
+pada `/api/auth/*`, header keamanan, TLS dari aaPanel/Let's Encrypt.
 
 ## 5. Checklist produksi (ringkas)
 
@@ -65,6 +70,8 @@ pada `/api/v1/auth/*`, header keamanan, TLS dari aaPanel/Let's Encrypt.
 - [ ] Migration diuji di salinan data
 - [ ] Health check endpoint merespons
 - [ ] Smoke test alur tiket & login admin
+- [ ] `tfn-api` terdaftar di PM2 (`pm2 describe tfn-api`) dan `/health` = 200 — tanpa ini auth mati
+- [ ] `ENCRYPTION_KEY` di `.env` **identik** web & API (`grep '^ENCRYPTION_KEY=' .env` sekali saja)
 - [ ] Cron terpasang (`install.sh status`)
 - [ ] Log berputar (jangan sampai disk penuh)
 - [ ] Rollback plan jelas (kode + data)
