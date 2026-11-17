@@ -79,6 +79,7 @@ another one breaks the accessibility tree (this regressed once — assertion: `d
 | Admin reject | Playwright + reason → `REJECTED`, capacity released (public page back to 780/780) |
 | Buyer status page | deep link resolved server-side, renders on first paint, shows payment method |
 | Validation messages | 7 curl variants → human Indonesian sentences, `400`/`409` only |
+| Sponsorship CMS | Playwright `scripts/verify/sponsor-e2e.cjs`: login → `/admin/sponsors` → create → toast `Sponsor berhasil ditambahkan` → row in list → homepage renders `Didukung oleh` with the logo loaded (`naturalWidth` > 0). With 0 rows in DB the block is absent from the HTML |
 
 **Do not "clean up" these on assumption** — every row above has been observed, not inferred. If you
 change a rate limit, a guard, or the reservation query, re-run the matching row.
@@ -356,5 +357,52 @@ PARTNERS: Partner[]               // PRESENTED_BY | OFFICIAL_PARTNER | MEDIA_PAR
 
 Docs cross-reference: `docs/ASSUMPTIONS.md` §"Klaim resmi & sponsor" states the same rules in
 Indonesian for the organiser.
+
+---
+
+## 14. Sponsorship module (implemented)
+
+Commercial sponsors are now **database-driven** and managed from the CMS — the static registry above
+still owns government/partner claims, but it is no longer the only way a logo reaches the landing page.
+
+| Layer | File |
+|---|---|
+| Tier constants | `src/lib/sponsors/tiers.ts` |
+| Public read | `src/server/services/sponsor.service.ts` (`getPublicSponsors()`) |
+| Server actions | `src/app/admin/(dashboard)/sponsors/actions.ts` |
+| Admin page | `src/app/admin/(dashboard)/sponsors/page.tsx` |
+| Admin UI | `src/components/admin/SponsorManager.tsx` |
+| Landing block | `src/components/landing/SponsorShowcase.tsx` |
+| Tests / probe | `tests/unit/sponsor.test.ts` · `scripts/verify/sponsor-e2e.cjs` |
+
+Full reference: **`docs/SPONSORS.md`**.
+
+Rules a future edit must not break:
+
+1. **`Sponsor.logoId` is an FK to `MediaAsset`, not a string column.** There is no `logo` field;
+   `SELECT … FROM Sponsor` with `logo` fails with `Unknown column 'logo'`. Writing a raw path into
+   `logoId` will violate the FK.
+2. **No `SponsorTier` enum exists.** `tier` is `VarChar(32)`; unknown values are normalised to
+   `PARTNER` on read (`normalizeSponsorTier`) but **rejected** on write.
+3. **Empty ⇒ render nothing.** `SponsorShowcase` returns `null` with zero active sponsors. Verified
+   live: `sponsor-showcase-heading` is absent from the homepage HTML when the table is empty. Do not
+   add a placeholder "slot sponsor kosong" to the landing page — the repo rule forbids unverified
+   sponsor claims.
+4. **Validation messages must reach the operator.** Domain errors are thrown as
+   `DomainValidationError`, which is listed in `domainErrors` inside `src/lib/actions/result.ts`.
+   A plain `throw new Error("…")` gets swallowed into "Something went wrong" — that was the exact bug
+   fixed in this iteration.
+5. **Every action re-checks `verifyRequestOrigin()` + `requirePermission("content.manage")`**, then
+   calls `revalidatePath()` for `/admin/sponsors`, `/` and `/tickets`. Skipping revalidation makes the
+   landing page serve a stale block.
+6. **Adding a file to `public/` requires a server restart** — a running `next start` will 404 a file
+   created after boot. Symptom: logo element present but `naturalWidth === 0`.
+
+Gates: `npx vitest run --project unit` → 75/75 · `npx tsc --noEmit` → 0 · `npm run lint` clean ·
+`npm run build` exit 0 · `node scripts/verify/sponsor-e2e.cjs` (against `npm run start -p 3015`) →
+creation toast + logo rendered on the homepage.
+
+Not built yet: file uploader (path/URL is pasted, same as Hero Banner), contract/date evidence per
+sponsor, placements outside the landing page, impression or click reporting.
 
 

@@ -1,7 +1,9 @@
 import React from "react";
 import { prisma } from "@/lib/db/prisma";
+import { getPublicSponsors } from "@/server/services/sponsor.service";
 import { HeroSlider } from "@/components/landing/HeroSlider";
 import { SponsorRibbon } from "@/components/landing/SponsorRibbon";
+import { SponsorShowcase } from "@/components/landing/SponsorShowcase";
 import { OfficialSupport } from "@/components/landing/OfficialSupport";
 import { FightHighlights } from "@/components/landing/FightHighlights";
 import { MatchupShowcase } from "@/components/landing/MatchupShowcase";
@@ -21,7 +23,9 @@ export default async function PublicHomePage() {
     orderBy: { sortOrder: "asc" },
   });
 
-  // 2. Fetch Latest Published Heavyweight Ranking Version & Entries
+  // 2. Fetch Sponsor aktif + Latest Published Heavyweight Ranking Version & Entries
+  const sponsors = await getPublicSponsors();
+
   const hwVersion = await prisma.rankingVersion.findFirst({
     where: {
       type: "DIVISION",
@@ -230,6 +234,9 @@ export default async function PublicHomePage() {
 
       {/* 2b. Official event / government backing — sourced from src/lib/site/partners.ts */}
       <OfficialSupport variant="home" />
+
+      {/* 2c. Sponsor & mitra komersial — dari database, hanya yang aktif */}
+      <SponsorShowcase sponsors={sponsors} />
 
       {/* 3. Public discovery links */}
       <FightHighlights />

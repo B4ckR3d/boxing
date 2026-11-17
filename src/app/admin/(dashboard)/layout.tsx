@@ -15,6 +15,7 @@ import {
   Award,
   CalendarDays,
   Sliders,
+  Handshake,
   ClipboardList,
   UserCog,
   ShieldCheck,
@@ -53,6 +54,9 @@ export default async function AdminDashboardLayout({
     { label: "Sabuk Kejuaraan", href: "/admin/belts", icon: Award },
     { label: "Jadwal Event", href: "/admin/events", icon: CalendarDays },
     { label: "Hero Banner", href: "/admin/hero-slides", icon: Sliders },
+    ...(can("content.manage")
+      ? [{ label: "Sponsor & Mitra", href: "/admin/sponsors", icon: Handshake }]
+      : []),
     ...(can("ticketing.read") || can("ticketing.manage") || can("ticketing.confirm")
       ? [{ label: "Tiket & Pembayaran", href: "/admin/ticketing", icon: ClipboardList }]
       : []),

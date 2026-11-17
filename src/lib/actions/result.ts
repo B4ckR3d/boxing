@@ -11,6 +11,14 @@ export interface ActionResult {
   requiresApproval?: boolean;
 }
 
+/**
+ * Validation error dari domain layer (bukan Zod). Ditampilkan apa adanya ke user,
+ * karena pesannya memang ditulis untuk operator admin.
+ */
+export class DomainValidationError extends Error {
+  readonly name = "DomainValidationError";
+}
+
 /** Maps thrown errors to safe, user-facing action results. */
 export function actionError(err: unknown): string {
   if (err instanceof ZodError) {
@@ -27,7 +35,7 @@ export function actionError(err: unknown): string {
   }
   if (err instanceof Error) {
     // Hide unexpected internals; show known domain errors only
-    const domainErrors = ["RbacError", "SettingsError"];
+    const domainErrors = ["RbacError", "SettingsError", "DomainValidationError"];
     if (domainErrors.includes(err.name)) return err.message;
   }
   return "Something went wrong. Please try again.";
