@@ -16,7 +16,7 @@
 | TFN-008 | Fighter database (global, lintas event) | P0 | **TESTING** | CRUD + direktori publik ada; club/coach, NIK/KTP/BPJS, consent belum |
 | TFN-009 | Fighter registration (form + consent + dokumen) | P0 | **BACKLOG** | Tidak ada modul registrasi sama sekali |
 | TFN-010 | Payment abstraction + QRIS + webhook | P0 | **BACKLOG** | Masih transfer manual + verifikasi admin |
-| TFN-011 | Ticketing (online, QR, check-in, expiry) | P1 | **DONE** | 50 paralel 0 oversell; PDF+QR; 9 test check-in; cron expiry |
+| TFN-011 | Ticketing (online, QR, check-in, expiry) | P1 | **DONE** | 50 paralel 0 oversell (**Gate A2 tervalidasi 17 Nov 2026**: 50/50, 60→50, kontrol negatif 3/17); PDF+QR; 9 test check-in; cron expiry |
 | TFN-012 | POS (kasir, shift, rekonsiliasi) | P1 | **BACKLOG** | Belum ada app/route |
 | TFN-013 | Match management (matchmaking + konflik jadwal) | P1 | **IN PROGRESS** | `Fight` + participant + result approval ada; guard konflik jadwal belum |
 | TFN-014 | Championship (belt, reign, defense) | P1 | **DONE** | Model + halaman + approval 4-eyes |

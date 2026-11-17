@@ -48,6 +48,23 @@ Invariant yang **tidak boleh** rusak selama migrasi: reservasi kursi atomik (50 
   ticketing 50-parallel tetap 0 oversell.
 
 ### Langkah B — Pindahkan auth ke `apps/api`
+
+> **Progres 17 Nov 2026 — Langkah B SELESAI (3/3):** `/api/auth/*` di web adalah proxy tipis ke
+> `apps/api`; tidak ada lagi auth yang dieksekusi di Next. Bukti hidup: login 200 + cookie HttpOnly,
+> `/me` 24 permission, logout → 401, `/admin` 200 dengan sesi API vs 307 tanpa sesi, origin asing 403.
+> Gate 12/12; web 119 test. Berikutnya: Langkah C.
+>
+> **Progres 17 Nov 2026 — slice 2/3 SELESAI:** auth sudah hidup di `apps/api`
+> (`POST /api/auth/login|logout`, `GET /api/auth/me`) memakai service yang sama dengan web lewat
+> `createExpressCookieJar`. Bukti hidup: login 200 + `Set-Cookie` HttpOnly, `/me` 24 permission,
+> logout → `/me` 401. Test API 31/31; `turbo:verify` 12/12. Tidak ada duplikasi logika auth.
+> Sisa: slice 3/3 (BFF Next → `/api/auth/*`, halaman admin, uji deny-path, hapus route lama).
+>
+> **Progres 17 Nov 2026 — slice 1/3 SELESAI:** `auth.service` sudah lepas dari `next/headers`
+> lewat `SessionCookieJar` (`src/lib/auth/session-cookie-jar.ts`), dengan bukti 4 unit test yang
+> membuat `cookies()` melempar bila dipanggil. Sisa: (2) jar Express + route `/api/auth/*` di
+> `apps/api`, (3) BFF Next + halaman admin + uji deny-path. Detail: CHANGELOG 2026-11-17.
+
 - Pindah `src/server/services/auth.service.ts`, `rbac.service.ts`, route `/api/auth/*`.
 - Cookie sesi lintas subdomain (ADR-002), CSRF tetap.
 - **Acceptance:** login/logout via API; unit test auth (sudah ada) pindah & lulus;
@@ -62,6 +79,29 @@ Invariant yang **tidak boleh** rusak selama migrasi: reservasi kursi atomik (50 
 - `apps/worker`: expire-holds, notifikasi, sheets sync (TFN-018).
 - **Acceptance:** cron berjalan dari worker; log terpusat; tidak ada route handler bisnis
   tersisa di Next (kecuali BFF/proxy bila diputuskan).
+
+**Status: SELESAI (2026-11-17), dengan 2 catatan.** Hasil nyata:
+
+| Isi | Keadaan |
+|---|---|
+| `packages/core` | `audit`, `settings`, `sponsor` + `redact`/`setting-schemas`/`sponsor-tiers` |
+| Binding web | `apps/web/src/server/services/*` jadi re-export tipis; call site tak berubah |
+| Route API | `GET`/`PUT /api/settings` (butuh `settings.manage`), `GET /api/sponsors` (publik) |
+| Admin action | proxy ke `PUT /api/settings`; Prisma tak lagi ditulis dari proses Next |
+| Worker | `apps/worker` CLI `expire-holds` menggantikan `scripts/expire-holds.ts` |
+
+Bukti cron hidup: `scanned=1 expired=1 seatsReleased=2`, order `PENDING_CONFIRMATION` →
+`CANCELLED`, `sold` 5 → 3 (hold di-backdate 30 jam agar benar-benar basi).
+
+**Catatan 1 — notifikasi & sheets sync tidak dikerjakan.** Keduanya belum punya kode sama
+sekali; plan hanya menyebutnya sebagai TFN-018. Tidak ada yang bisa dipindah.
+
+**Catatan 2 — `saveTicketTypeAction` masih menyentuh `prisma` langsung** di web (sisa Langkah C),
+jadi kalimat "tidak ada route handler bisnis tersisa di Next" belum sepenuhnya benar.
+
+**Bug yang ditemukan gate saat Langkah D, bukan direncanakan:** bundel `apps/api` rusak sejak
+Langkah C. `--packages=external` tanpa alias `@tfn/ticketing` membuat `dist/` mengimpor `.ts`
+mentah; tak pernah ketahuan karena yang diuji `tsx`, bukan `dist`. Kini `verify:dist` lulus.
 
 ### Langkah E — Bersihkan root
 - Hapus `src/server`, route handler lama, script duplikat; update semua dokumen.

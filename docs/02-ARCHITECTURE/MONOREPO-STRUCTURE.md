@@ -130,7 +130,9 @@ tfn/
 │   ├── web/     @tfn/web  — Next.js 16 (src/app, components, lib, server, public, tests, scripts/verify)
 │   └── api/     @tfn/api  — Express 5 + TS (esbuild bundle → dist/index.js)
 ├── packages/
-│   └── db/      @tfn/db   — Prisma Client bersama (src/generated/prisma, gitignored)
+│   ├── db/        @tfn/db        — Prisma Client bersama (src/generated/prisma, gitignored)
+│   ├── ticketing/ @tfn/ticketing — domain ticketing (order, PDF, token QR, check-in, expiry)
+│   └── core/      @tfn/core      — audit, settings, sponsor + util murni (redact, schemas, tiers)
 ├── prisma/      schema.prisma + migrations + seed.ts  (dijalankan dari root)
 ├── scripts/     skrip ops: bootstrap-admin, reset-password, expire-holds, wait-for-db, db-backup, monorepo/
 ├── docker/ · docs/ · turbo.json · pnpm-workspace.yaml · tsconfig.json (skrip ops saja)
@@ -145,3 +147,22 @@ Aturan yang mengikat struktur ini:
 | `transpilePackages: ["@tfn/db"]` | `@tfn/db` mengirim TypeScript source, bukan JS hasil build |
 | esbuild `--alias:@tfn/db*` di `apps/api` | `--packages=external` akan meng-external-kan `@tfn/db` → `ERR_MODULE_NOT_FOUND` saat runtime |
 | Root `tsconfig.json` memetakan `@/*` → `apps/web/src/*` | Skrip ops (`tsx scripts/*.ts`) tetap memakai alias yang sama tanpa duplikasi path |
+
+## Worker (`apps/worker`) — ADR-014
+
+| Aspek | Nilai |
+|---|---|
+| Paket | `@tfn/worker` (private, ESM) |
+| Entry | `pnpm --filter @tfn/worker <script>` → `tsx src/cli.ts <command>` |
+| Command | `expire-holds` (`--verbose` untuk selalu mencetak ringkasan) |
+| Reuse | impor `@tfn/ticketing` (bukan `@/*` ke `apps/web/src/*`); dependensi diinjeksi di `apps/worker/src/lib/*` |
+| Wajib | tidak ada syarat `--conditions` (binding worker tidak memakai `server-only`); flag `react-server` tinggal sisa |
+| Cron | `scripts/cron/expire-holds.sh` → `pnpm worker:expire-holds` |
+
+## BFF (`apps/web` → `apps/api`) — ADR-013
+
+- Klien: `apps/web/src/lib/api/client.ts` (`apiFetch`, `ApiClientError`). **Server-only.**
+- Base URL: `API_INTERNAL_URL` (default `http://127.0.0.1:4000`) — tidak pernah ke browser.
+- Pemetaan: error hulu → envelope ADR-010; jaringan mati/timeout → **503**; error lain → **502**.
+- Contoh hidup: `GET /api/v1/meta` (200 saat api nyala, 503 `UPSTREAM_UNREACHABLE` saat api mati).
+- Modul bisnis lama belum dipindah; pola ini dipakai saat modulnya pindah ke `apps/api`.

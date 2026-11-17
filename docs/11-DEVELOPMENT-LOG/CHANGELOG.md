@@ -1,6 +1,288 @@
+## 2026-11-17 — Langkah D: `audit`/`settings`/`sponsor` ke `packages/core` + worker
+
+**Cakupan:** paket domain baru `@tfn/core` dan otoritas settings pindah dari Next ke `apps/api`.
+
+| Endpoint baru di `apps/api` | Penjaga |
+|---|---|
+| `GET /api/settings` | sesi + `settings.manage` |
+| `PUT /api/settings` | sesi + `settings.manage` + origin |
+| `GET /api/sponsors` | publik |
+
+`packages/core` berisi `audit`, `settings`, `sponsor`, plus util murni `redact`, `setting-schemas`,
+`sponsor-tiers`. Dependensi (`prisma`, konteks request, `logAudit`) **diinjeksi** per-app, sama
+seperti `packages/ticketing` — paket tidak membaca env sendiri dan tidak membuat pool sendiri.
+
+Web: tiga service jadi binding tipis; call site lama tidak berubah. Server action admin settings
+kini **proxy** ke API, jadi Prisma tidak lagi ditulis dari proses Next untuk settings.
+
+### Terbukti hidup
+
+| Uji | Hasil |
+|---|---|
+| `GET /api/sponsors` | 200 `{"data":[]}` |
+| `GET /api/settings` | 200, nilai default dari DB |
+| `PUT` tanpa sesi | 401 `UNAUTHORIZED` |
+| `PUT` origin asing | 403 `INVALID_ORIGIN` |
+| `PUT` sesi sah | 200, `applied:["footer.general"]` |
+| `PUT` key tak dikenal | 400 `Unknown setting key: bogus.key` |
+| `AuditLog` | `SETTINGS_UPDATE`, actorId benar, `ipAddress=127.0.0.1` |
+
+Worker `expire-holds` dibuktikan menyapu hold nyata: `scanned=1 expired=1 seatsReleased=2`, order
+`PENDING_CONFIRMATION` → `CANCELLED`, `sold` 5 → 3 (hold di-backdate 30 jam).
+
+### Dua bug yang ditemukan gate, bukan direncanakan
+
+1. **Bundel `apps/api` sudah rusak sejak Langkah C.** Script build memakai `--packages=external`
+   tanpa alias `@tfn/ticketing`, sehingga `dist/index.js` mengimpor file `.ts` mentah dan gagal saat
+   dijalankan. Tak pernah ketahuan karena pengujian memakai `tsx`, bukan `dist`. Alias
+   `@tfn/ticketing*` dan `@tfn/core*` ditambahkan; `verify:dist` (smoke `/health`, `/health/ready`)
+   kini lulus.
+2. **`packages/core` belum punya `eslint.config.mjs`**, sehingga `turbo:verify` gagal di task lint.
+   Config dibuat mengikuti `apps/api`, tanpa aturan `no-console` karena ini library.
+
+### Gate
+
+`pnpm turbo:verify` → **16/16 task** (naik dari 12 karena `@tfn/core` masuk pipeline), unit **89**
+lulus · `pnpm verify:integration` → **33/33** · `pnpm test:gate-a2` → **3/3** dengan
+`[negctl] kuota=3 sukses=3 ditolak=17 sold=3`.
+
+### Belum selesai (jujur)
+
+- Notifikasi & sheets sync (TFN-018) **tidak dikerjakan** — belum ada kodenya sama sekali.
+- `saveTicketTypeAction` masih menulis `prisma` langsung dari web.
+- Worker masih membawa `--conditions=react-server` yang tak lagi dibutuhkan binding barunya.
+
+---
+
+## 2026-11-17 — Langkah C: ticketing dipindah ke `apps/api`
+
+**Cakupan:** router ticketing di `apps/api` + web menjadi proxy tipis.
+
+| Endpoint baru di `apps/api` | Penjaga |
+|---|---|
+| `GET /api/ticketing/events` | publik |
+| `GET /api/ticketing/orders/:no?token=` | capability token |
+| `POST /api/ticketing/orders` | origin + rate limit |
+| `GET /api/ticketing/orders/:no/ticket?token=` | capability token, PDF biner |
+| `POST /api/ticketing/orders/:id/confirm` | sesi + `ticketing.confirm` |
+| `POST /api/ticketing/orders/:id/reject` | sesi + `ticketing.confirm` |
+| `POST /api/ticketing/check-in` | sesi + `ticketing.confirm` |
+
+Web (`/api/ticketing/*`, `/tickets/[no]/ticket`, server action admin & scan) kini hanya meneruskan
+cookie sesi + origin ke API. Logika bisnis tetap satu sumber: `ticketing.service.ts`.
+
+### Terbukti hidup (bukan hanya kompilasi)
+
+Order nyata dibuat lewat API, lalu jalur lengkap diuji: `201` create → `200` confirm → **PDF 11 KB
+`%PDF-1.7`** → `200` check-in → `400 ALREADY_USED` saat discan ulang. Proxy web juga mengembalikan
+PDF valid (11 KB, `application/pdf`).
+
+### Tiga bug yang ditemukan saat pemindahan
+
+1. **`pdf-lib` & `qrcode` tidak ada di `apps/api`.** Bundle hanya naik 30 kb (normalnya ~1 MB) karena
+   esbuild menandai `--packages=external`. Endpoint PDF akan **crash 500 di production** meski
+   typecheck hijau. Sudah ditambahkan sebagai dependency `apps/api`.
+2. **`apiFetch` tidak meneruskan cookie browser.** Route admin (confirm/reject/check-in) akan selalu
+   401 dari API. Diperbaiki dengan forward `cookie` + `origin`, mengikuti pola `auth/logout`.
+3. **Tipe `CheckInResult` bocor menjadi `unknown`** akibat trik tipe kondisional di `scan/actions.ts`;
+   diganti tipe eksplisit `CheckInOutcome`.
+
+### Dua flaky test yang diperbaiki (bukan diabaikan)
+
+- **`buyer-cap` gagal ~1 dari 3 run.** Penyebab: tiga file integrasi memanggil `expireStaleHolds()`
+  yang **global** (`take: 200` lintas event) sementara vitest menjalankan file **paralel** pada satu
+  DB. Sapuan file A men-CANCEL order "basi" milik file B sebelum gilirannya. Perbaikan:
+  `fileParallelism: false` untuk project integration (biaya ~3 detik, gate jadi deterministik).
+- **`ticket-artifact` gagal ~1 dari 5 run.** Penyebab: `pdf-lib` menulis `CreationDate`/`ModDate`
+  sehingga **panjang byte** berbeda 1 antar detik, walau isi identik. Tes membandingkan `byteLength`.
+  Perbaikan: bandingkan `payload` + `filename`, bukan ukuran berkas.
+
+Setelah perbaikan: **8/8 run integrasi hijau berturut-turut**.
+
+### Gate
+
+- Integrasi **33/33** (termasuk Gate A2: 50/50, 50/10, kontrol negatif 3/17)
+- `turbo:verify` **12/12**
+- Data uji dibersihkan; port 3000/4000 bersih.
+
+### Sisa (dicatat, belum dikerjakan)
+
+- `ticketing.service.ts` + `ticket-pdf.service.ts` **masih di `apps/web/src/server/services/`** dan
+  diimpor `apps/api` lewat alias. Belum dipindah ke `packages/` — "satu sumber" saat ini berarti
+  satu *file*, bukan satu *paket*.
+- `saveTicketTypeAction` (CRUD kategori tiket) masih memakai `prisma` langsung.
+
 # Changelog
 
 Format: tanggal · ringkas · bukti. Hanya perubahan yang benar-benar terjadi.
+
+## 2026-11-17 — Gate A2 dijalankan (baseline ticketing sebelum Langkah C)
+
+**Latar:** dokumen (`ARCHITECTURE.md`, `TASK-TRACKER.md`, `PROJECT-STATUS.md`) mengklaim
+"50 request paralel → tepat 50 kursi, 0 oversell", tetapi tes yang benar-benar ada hanya
+menguji **2 order** bersamaan. Klaim itu belum pernah diverifikasi pada skalanya.
+
+**Yang ditambahkan:**
+- `apps/web/tests/integration/ticketing-concurrency.integration.test.ts` — 2 tes.
+- `apps/web/tests/integration/ticketing-negative-control.integration.test.ts` — 1 tes kontrol.
+- Script root `test:gate-a2` (jalankan hanya Gate A2) dan `verify:integration`.
+
+**Detail desain yang menentukan:**
+- Cap per pembeli = **10 tiket/kategori**, jadi 50 order paralel memakai **50 pembeli berbeda**
+  (email + telepon unik). Dengan satu email, tes akan gagal karena cap — bukan karena kapasitas —
+  sehingga hasilnya menyesatkan ke arah sebaliknya.
+- Kuota kategori dibuat **tepat 50** agar batas benar-benar diperebutkan (bukan 100 yang longgar).
+- Penolakan diperiksa harus berupa `TicketingError` (kesalahan domain), bukan crash/timeout/pool habis.
+
+**Hasil (MySQL `boxing_test` di :3307, data nyata):**
+| Skenario | Hasil |
+|---|---|
+| 50 order paralel / kuota 50 | **50 sukses, 0 ditolak, `sold` = 50** |
+| 60 order paralel / kuota 50 | **50 sukses, 10 ditolak, `sold` = 50** (tidak pernah 51) |
+| Kontrol negatif: kuota 3 / 20 paralel | **3 sukses, 17 ditolak, `sold` = 3** |
+
+Kontrol negatif sengaja dibuat agar tes konkurensi tidak "hijau karena kebetulan" —
+angka 3/17 membuktikan guard kapasitas benar-benar aktif dan menolak.
+
+**Celah gate yang ditemukan:** `turbo:verify` hanya menjalankan `test` = **unit** (89 tes).
+**33 tes integrasi tidak pernah ikut gate.** Karena itu integrasi butuh DB hidup, ia tidak
+dimasukkan ke `turbo:verify` (yang harus tetap bisa jalan tanpa Docker), melainkan ke
+`verify:integration` / `test:gate-a2` yang eksplisit.
+
+**Suite:** integrasi **33/33** lulus (7 file; naik dari 30 karena 3 tes baru).
+DB test bersih setelah run: `Event=0 TicketType=0 TicketOrder=0` berprefiks `itest-`.
+`turbo:verify` tetap **12/12**.
+
+**Arti untuk Langkah C:** baseline sah sekarang ada. Setelah ticketing dipindah ke `apps/api`,
+`pnpm test:gate-a2` harus menghasilkan angka yang sama persis (50/50, 50/10, 3/17).
+
+## 2026-11-17 — Langkah B (slice 3/3): Langkah B SELESAI — otoritas auth pindah ke `apps/api`
+
+**Bentuk akhir:** route `/api/auth/*` di `apps/web` kini **proxy tipis** (ADR-013). URL publik tidak
+berubah, jadi tidak ada komponen UI yang perlu disentuh, tetapi **tidak ada lagi auth yang
+dieksekusi di Next** — satu sumber kebenaran sesi ada di `apps/api`.
+
+**File:**
+- `apps/web/src/app/api/auth/login/route.ts` — validasi Zod + rate limit + origin, lalu proxy.
+- `apps/web/src/app/api/auth/logout/route.ts` — meneruskan cookie browser, meneruskan cookie hapus.
+- `apps/web/src/app/api/auth/me/route.ts` — membaca sesi dari API, 401 diteruskan apa adanya.
+- `apps/web/src/lib/api/client.ts` — `apiFetchRaw()` baru mengembalikan `setCookies`;
+  `apiFetch()` jadi pembungkus tipis (satu `fetch` call, bukan dua salinan).
+- `apps/web/tests/unit/auth-routes-security.test.ts` — ditulis ulang untuk menguji **kontrak proxy**.
+
+**Keputusan penting — cookie tidak dirakit di Next.** Versi pertama route login saya sempat memakai
+fungsi placeholder yang membuang `set-cookie`; itu berarti UI "login sukses" tanpa sesi. Diperbaiki
+dengan meneruskan header dari `apps/api` apa adanya, sehingga hanya API yang menerbitkan cookie.
+
+**Regresi keamanan yang tertangkap gate (dan diperbaiki):** saat menulis ulang route login,
+batas body 16 KB hilang (sempat jadi 400, bukan 413). Dipulihkan dengan membaca stream dan
+`reader.cancel()` — `Content-Length` tidak dipercaya.
+
+**Bukti hidup (web :3123 → apps/api :4000 → MySQL):**
+| Skenario | Hasil |
+|---|---|
+| Login via BFF | **200**, `Set-Cookie` **HttpOnly** |
+| `/me` via BFF | **200**, roles `["super_admin"]`, **24 permission** |
+| logout via BFF | **200**, cookie kedaluwarsa 1970 dikirim |
+| `/me` setelah logout | **401** |
+| `/admin`, `/admin/users` dengan sesi API | **200** render |
+| `/admin`, `/admin/users` tanpa sesi | **307** → `/admin/login` |
+| origin asing / `null` / tanpa origin | **403** |
+| same-origin + `sec-fetch-site: cross-site` | **403** |
+| Halaman login UI (password salah) | pesan `Invalid email or password` dari API |
+
+**Gate:** `pnpm turbo:verify` → **12/12**. Web **119** test (89 unit + 30 integration; dari 116),
+API **31**, worker **5**. `apps/api` runtime bersih setelah shim (ADR-015).
+
+**Status Langkah B: SELESAI (3/3).**
+
+## 2026-11-17 — Langkah B (slice 2/3): auth berjalan di `apps/api`
+
+**Hasil:** login/logout/me tersedia di `apps/api` memakai **service yang sama** dengan web —
+tidak ada duplikasi logika. Bedanya hanya sumber cookie: `createExpressCookieJar(req, res)`.
+
+**File baru:**
+- `apps/api/src/lib/cookie-jar.ts` — `parseCookieHeader()` + `createExpressCookieJar()`
+  (implementasi `SessionCookieJar` di atas `req`/`res`, tanpa dependensi baru).
+- `apps/api/src/routes/auth.ts` — `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`,
+  semua dengan envelope ADR-010.
+- `apps/api/src/shims/{server-only,next-headers}.ts` — shim untuk runtime non-Next.
+- `apps/api/tests/auth-routes.test.ts` — 12 test.
+
+**Tiga bug nyata yang ditemukan saat bukti hidup (bukan saat menulis kode):**
+1. `ERR_MODULE_NOT_FOUND: server-only` — paket hanya dideklarasikan di `apps/web`; ditambahkan ke
+   dependencies `apps/api`.
+2. `ERR_MODULE_NOT_FOUND: next` — adapter default `auth.service` menarik `next/headers` ke bundle API.
+   Diselesaikan dengan shim + `--alias` esbuild; shim `cookies()` **melempar** bila dipanggil,
+   jadi pemanggil yang lupa menyuntik jar gagal berisik, bukan diam-diam.
+3. `Cannot find package '@/server/services/auth.service'` di vitest (health/docs test jadi FAIL) —
+   alias `@/*` tidak diketahui vitest. Ditambahkan `resolve.alias` di `vitest.config.mts`,
+   sejalan dengan `tsconfig.json` dan flag esbuild.
+
+**Bukti hidup (DB nyata, MySQL 127.0.0.1:3307):**
+- Login salah → `401 INVALID_CREDENTIALS` (bukan 500).
+- `/me` tanpa cookie → `401 UNAUTHORIZED`.
+- Login benar (`superadmin@boxing.local`) → **200**, `Set-Cookie` **HttpOnly**, roles `["super_admin"]`.
+- `/me` dengan cookie → **200**, **24 permission** terkirim.
+- `logout` → **200**, cookie dihapus (`cleared: true`).
+- `/me` **setelah** logout → **401** ⇒ sesi benar-benar dicabut, bukan hanya cookie dibuang.
+- Password demo hanya dibaca dari `.env` di dalam skrip probe dan **tidak pernah dicetak**.
+
+**Gate:** `pnpm turbo:verify` → **12/12 task**. Test API **31/31** (naik dari 19).
+
+**Sisa Langkah B:** slice 3/3 — BFF Next memanggil `/api/auth/*`, halaman admin tetap bisa login,
+deny-path diuji, lalu route lama di `apps/web/src/app/api/auth/*` dihapus.
+
+## 2026-11-17 — Langkah B (slice 1/3): `auth.service` lepas dari `next/headers`
+
+**Kenapa ini dulu:** Langkah B memindahkan auth ke `apps/api`, tetapi `auth.service.ts` memanggil
+`cookies()` dari `next/headers` di 3 fungsi (`getSession`, `setSessionCookie`, `destroySession`).
+Selama itu ada, service mustahil dipanggil Express — memindahkan filenya saja akan langsung gagal.
+
+**Yang dikerjakan (tanpa perubahan perilaku):**
+- `src/lib/auth/session-cookie-jar.ts` — interface `SessionCookieJar` (`get`/`set`/`delete`) +
+  `createMemoryCookieJar()` untuk test. **Tidak** mengimpor `next/*`.
+- `src/server/services/next-session-cookie-jar.ts` — satu-satunya tempat yang menyentuh
+  `next/headers`; membungkusnya jadi `SessionCookieJar`.
+- `auth.service.ts` — tiga fungsi menerima `jar?: SessionCookieJar`. Tanpa `jar` → jar Next
+  (perilaku identik); dengan `jar` → tidak menyentuh `next/headers` sama sekali.
+  Sisa pemanggilan `cookies()` langsung di file itu: **0**.
+
+**Bukti:**
+- `tests/unit/auth-cookie-jar.test.ts` (4 test) memakai `vi.mock("next/headers")` yang **melempar
+  bila `cookies()` dipanggil**, lalu menyuntik jar sendiri — keempatnya lulus, artinya service
+  benar-benar tidak lagi bergantung pada Next.
+- Dicatat juga bahwa token di-hash: argumen `findUnique` memakai `tokenHash` 64 hex, bukan token mentah.
+- Regresi: `pnpm test:all` di `apps/web` → **116 test / 22 file lulus** (naik dari 105), `next build` OK,
+  `pnpm turbo:verify` → **12/12 task**.
+
+**Sisa Langkah B:** (2) jar Express di atas `req`/`res` + route `/api/auth/*` di `apps/api`;
+(3) BFF Next memanggil API, halaman admin tetap bisa login, deny-path diuji.
+
+## 2026-11-17 — NT-6: Next.js jadi BFF/proxy · NT-7: `apps/worker` terpisah
+
+**NT-6 — Next = BFF ke `apps/api` (ADR-013):**
+- `apps/web/src/lib/api/client.ts`: `apiFetch()` + `ApiClientError`. Meneruskan `x-request-id`,
+  `cache: "no-store"`, timeout 8 s, dan menerjemahkan envelope ADR-010 jadi error bertipe.
+  Kegagalan jaringan/timeout → `503 UPSTREAM_UNREACHABLE` / `UPSTREAM_TIMEOUT`.
+- Env baru `API_INTERNAL_URL` (default `http://127.0.0.1:4000`) di `apps/web/src/lib/env.ts`.
+- Rute contoh hidup `GET /api/v1/meta`. Bukti nyata: **200** dengan body `{"service":"tfn-api",…}`
+  saat `apps/api` menyala; **503** `{"error":{"code":"UPSTREAM_UNREACHABLE",…}}` saat api dimatikan.
+  `x-request-id: req-manual-1` dari klien terlihat di respons → header benar-benar diteruskan.
+- 7 unit test (`apps/web/tests/unit/api-bff-client.test.ts`) — termasuk base URL berakhiran slash,
+  envelope tanpa `error`, upstream mati, timeout, dan propagasi `requestId`.
+
+**NT-7 — `apps/worker` (`@tfn/worker`, ADR-014):**
+- `src/cli.ts` (dispatch command + `--verbose`), `src/jobs/expire-holds.ts`, `src/lib/report.ts`.
+- **Tanpa duplikasi logika:** job memanggil `expireStaleHolds` milik `apps/web` lewat pemetaan
+  `@/*` → `apps/web/src/*` di tsconfig worker, dijalankan dengan `--conditions=react-server`.
+- 5 unit test untuk format keluaran & exit code.
+- Bukti nyata: `expire-holds --verbose` → `[expire-holds] scanned=0 expired=0 skipped=0
+  seatsReleased=0 (121ms)` — job benar-benar menyentuh database, bukan sekadar exit 0.
+- `scripts/expire-holds.ts` **dihapus**; `pnpm ticketing:expire-holds` dan
+  `scripts/cron/expire-holds.sh` kini memanggil `pnpm worker:expire-holds` (satu implementasi).
+
+**Gate:** `pnpm turbo:verify` → **12/12 task** (sebelumnya 9; worker menambah typecheck+lint+test).
 
 ## 2026-11-17 — Langkah A: aplikasi Next.js pindah ke `apps/web` + Prisma Client jadi `@tfn/db`
 

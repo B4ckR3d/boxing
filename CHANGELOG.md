@@ -1,3 +1,61 @@
+## 2026-11-17 — Langkah C: ticketing dipindah ke `apps/api`
+
+**Cakupan:** router ticketing di `apps/api` + web menjadi proxy tipis.
+
+| Endpoint baru di `apps/api` | Penjaga |
+|---|---|
+| `GET /api/ticketing/events` | publik |
+| `GET /api/ticketing/orders/:no?token=` | capability token |
+| `POST /api/ticketing/orders` | origin + rate limit |
+| `GET /api/ticketing/orders/:no/ticket?token=` | capability token, PDF biner |
+| `POST /api/ticketing/orders/:id/confirm` | sesi + `ticketing.confirm` |
+| `POST /api/ticketing/orders/:id/reject` | sesi + `ticketing.confirm` |
+| `POST /api/ticketing/check-in` | sesi + `ticketing.confirm` |
+
+Web (`/api/ticketing/*`, `/tickets/[no]/ticket`, server action admin & scan) kini hanya meneruskan
+cookie sesi + origin ke API. Logika bisnis tetap satu sumber: `ticketing.service.ts`.
+
+### Terbukti hidup (bukan hanya kompilasi)
+
+Order nyata dibuat lewat API, lalu jalur lengkap diuji: `201` create → `200` confirm → **PDF 11 KB
+`%PDF-1.7`** → `200` check-in → `400 ALREADY_USED` saat discan ulang. Proxy web juga mengembalikan
+PDF valid (11 KB, `application/pdf`).
+
+### Tiga bug yang ditemukan saat pemindahan
+
+1. **`pdf-lib` & `qrcode` tidak ada di `apps/api`.** Bundle hanya naik 30 kb (normalnya ~1 MB) karena
+   esbuild menandai `--packages=external`. Endpoint PDF akan **crash 500 di production** meski
+   typecheck hijau. Sudah ditambahkan sebagai dependency `apps/api`.
+2. **`apiFetch` tidak meneruskan cookie browser.** Route admin (confirm/reject/check-in) akan selalu
+   401 dari API. Diperbaiki dengan forward `cookie` + `origin`, mengikuti pola `auth/logout`.
+3. **Tipe `CheckInResult` bocor menjadi `unknown`** akibat trik tipe kondisional di `scan/actions.ts`;
+   diganti tipe eksplisit `CheckInOutcome`.
+
+### Dua flaky test yang diperbaiki (bukan diabaikan)
+
+- **`buyer-cap` gagal ~1 dari 3 run.** Penyebab: tiga file integrasi memanggil `expireStaleHolds()`
+  yang **global** (`take: 200` lintas event) sementara vitest menjalankan file **paralel** pada satu
+  DB. Sapuan file A men-CANCEL order "basi" milik file B sebelum gilirannya. Perbaikan:
+  `fileParallelism: false` untuk project integration (biaya ~3 detik, gate jadi deterministik).
+- **`ticket-artifact` gagal ~1 dari 5 run.** Penyebab: `pdf-lib` menulis `CreationDate`/`ModDate`
+  sehingga **panjang byte** berbeda 1 antar detik, walau isi identik. Tes membandingkan `byteLength`.
+  Perbaikan: bandingkan `payload` + `filename`, bukan ukuran berkas.
+
+Setelah perbaikan: **8/8 run integrasi hijau berturut-turut**.
+
+### Gate
+
+- Integrasi **33/33** (termasuk Gate A2: 50/50, 50/10, kontrol negatif 3/17)
+- `turbo:verify` **12/12**
+- Data uji dibersihkan; port 3000/4000 bersih.
+
+### Sisa (dicatat, belum dikerjakan)
+
+- `ticketing.service.ts` + `ticket-pdf.service.ts` **masih di `apps/web/src/server/services/`** dan
+  diimpor `apps/api` lewat alias. Belum dipindah ke `packages/` — "satu sumber" saat ini berarti
+  satu *file*, bukan satu *paket*.
+- `saveTicketTypeAction` (CRUD kategori tiket) masih memakai `prisma` langsung.
+
 # Changelog
 
 All notable changes to the Boxing Championship Platform will be documented in this file.

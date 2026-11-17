@@ -167,3 +167,83 @@ sehingga `apps/api` harus mengimpor source lewat jalur relatif naik-turun direkt
 - `next.config.ts` memuat `.env` root secara eksplisit dan menetapkan `turbopack.root` = root repo.
 - `package-lock.json` dihapus; npm tidak lagi dipakai.
 
+---
+
+## ADR-013 — Next.js menjadi BFF/proxy ke `apps/api`, browser tidak memanggil API langsung
+
+**Status:** ACCEPTED — 17 Nov 2026 (NT-6)
+**Konteks:** Dengan `apps/web` dan `apps/api` terpisah, ada dua kemungkinan: browser memanggil
+`api.*` langsung (butuh CORS, cookie lintas subdomain, rate limit terduplikasi), atau Next
+bertindak sebagai BFF yang meneruskan permintaan ke `apps/api`.
+**Keputusan:** **Next = BFF.** Semua trafik klien tetap ke domain web; route handler/server
+component memanggil `apps/api` lewat `apiFetch()` (`apps/web/src/lib/api/client.ts`).
+**Alasan:**
+- Cookie sesi, CSP nonce, dan rate limit tinggal satu pintu — tidak ada CORS lintas subdomain.
+- Alamat internal `apps/api` (`API_INTERNAL_URL`, default `http://127.0.0.1:4000`) tidak pernah
+  terekspos ke browser.
+- Envelope error ADR-010 diterjemahkan sekali di klien, jadi komponen UI punya satu cara baca error.
+- `requestId` diteruskan ke hulu, sehingga satu request bisa dilacak di log web **dan** api.
+**Konsekuensi:**
+- `apiFetch()` hanya boleh diimpor dari kode server (`server-only`); 503 `UPSTREAM_TIMEOUT` /
+  `UPSTREAM_UNREACHABLE` dipetakan ke HTTP 503, error hulu lain → 502.
+- Ketersediaan web bergantung pada `apps/api`; health web tidak boleh ikut merah hanya karena api
+  mati (rute yang tidak memakai BFF tetap 200).
+- Panggilan BFF tidak di-cache (`cache: "no-store"`); caching ditangani di layer data, bukan proxy.
+- Modul bisnis lama (auth, ticketing) **belum** dipindahkan; pola ini dipakai saat modulnya pindah
+  ke `apps/api` (Langkah B/C). Sampai itu, route lama tetap memanggil service langsung.
+
+---
+
+## ADR-014 — Worker terjadwal sebagai `apps/worker` terpisah, memakai ulang service web
+
+**Status:** ACCEPTED — 17 Nov 2026 (NT-7)
+**Konteks:** `expire-holds` sebelumnya skrip `tsx` di root yang dipanggil cron. Skrip itu harus
+memuat seluruh konteks web (env, Prisma, service), dan makin banyak job akan menumpuk di `scripts/`.
+**Keputusan:** Paket **`apps/worker` (`@tfn/worker`)** dengan CLI `tsx src/cli.ts <command>`,
+command pertama `expire-holds`.
+**Alasan:**
+- Worker bisa jalan tanpa menyalakan web, dan sebaliknya; siklus hidupnya independen.
+- **Tidak ada duplikasi logika:** job memanggil `expireStaleHolds` yang sama dengan route Next
+  (impor `@/…` dipetakan ke `apps/web/src` lewat `paths` di tsconfig worker).
+- Disiplin keluaran dipertahankan: senyap bila tidak ada yang kedaluwarsa; `--verbose` untuk
+  membuktikan job benar-benar menyentuh database setelah deploy.
+**Konsekuensi:**
+- Karena service web memakai penanda `server-only`, proses harus dijalankan dengan
+  `--conditions=react-server` (sudah dibungkus di script `expire-holds`).
+- Worker berbagi `.env` root dan database yang sama; **tidak** boleh berjalan sebagai replika
+  terpisah saat migrasi (satu writer).
+- `scripts/expire-holds.ts` dihapus; `pnpm ticketing:expire-holds` dan
+  `scripts/cron/expire-holds.sh` kini mendelegasikan ke `pnpm worker:expire-holds`.
+- Ketergantungan app→app (`@tfn/worker` → source `apps/web`) adalah **transisional**; saat modul
+  ticketing pindah ke `apps/api`, job diarahkan ke service api.
+
+---
+
+---
+
+## ADR-015 — `apps/api` memakai service `apps/web` lewat shim runtime (fase strangler)
+
+**Status:** Diterima · 17 Nov 2026
+
+**Konteks.** Langkah B memindahkan auth ke `apps/api`, tetapi `auth.service` masih menyentuh
+`server-only` (penanda Next) dan menyediakan adapter default ke `next/headers`. `apps/api` tidak
+punya runtime Next, sehingga bundling langsung menghasilkan dua kegagalan nyata:
+`ERR_MODULE_NOT_FOUND: server-only` dan `ERR_MODULE_NOT_FOUND: next`.
+
+**Keputusan.** Selama fase strangler, `apps/api` memakai sumber `apps/web` lewat tiga jalur yang
+harus selalu sejalan:
+1. `tsconfig.json` → `paths: { "@/*": ["../web/src/*"] }`
+2. `vitest.config.mts` → `resolve.alias` (`@/*`, `server-only`, `next/headers`)
+3. flag esbuild `--alias` di script `build`
+
+`server-only` dipetakan ke shim kosong (di API tidak ada Client Component). `next/headers`
+dipetakan ke shim yang **melempar** bila `cookies()` dipanggil — jadi pemanggil yang lupa
+menyuntik `SessionCookieJar` gagal dengan pesan jelas, bukan diam-diam memakai cookie salah.
+
+**Konsekuensi.**
+- (+) Tidak ada duplikasi logika auth; satu sumber kebenaran tetap di `apps/web`.
+- (+) Kegagalan salah-suntik jadi berisik dan mudah dilacak.
+- (−) Tiga tempat alias harus disinkronkan; bila menambah alias baru, ubah ketiganya.
+- (−) Ini **sementara**: setelah Langkah E (bersihkan root), service pindah ke paket bersama
+  (mis. `packages/auth`) dan shim ini dihapus.
+
