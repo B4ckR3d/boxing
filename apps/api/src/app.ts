@@ -9,6 +9,9 @@ import { notFound } from "./middleware/not-found.js";
 import { requestContext } from "./middleware/request-context.js";
 import { createHealthRouter } from "./routes/health.js";
 import { createV1Router } from "./routes/v1.js";
+import { createAuthRouter } from "./routes/auth.js";
+import { createTicketingRouter } from "./routes/ticketing.js";
+import { createSettingsRouter, createSponsorsRouter } from "./routes/settings.js";
 
 export interface AppDeps {
   /** Ping database untuk readiness. Di-inject agar test tidak butuh MySQL. */
@@ -57,6 +60,10 @@ export function createApp({ checkDb, version = "0.1.0", openApiEnabled }: AppDep
 
   app.use(createHealthRouter({ checkDb }));
   app.use("/api/v1", createV1Router({ version }));
+  app.use("/api/auth", createAuthRouter());
+  app.use("/api/ticketing", createTicketingRouter());
+  app.use("/api/settings", createSettingsRouter());
+  app.use("/api/sponsors", createSponsorsRouter());
 
   if (openApiEnabled ?? e.OPENAPI_ENABLED !== false) mountApiDocs(app);
 

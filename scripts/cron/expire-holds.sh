@@ -4,7 +4,7 @@
 #
 #   crontab:  17 * * * *  /www/wwwroot/boxing/scripts/cron/expire-holds.sh
 #
-# Wraps `npm run ticketing:expire-holds` with the four things a bare cron line lacks:
+# Wraps `pnpm worker:expire-holds` (apps/worker, ADR-014) with the four things a bare cron line lacks:
 #   1. a usable PATH            — cron inherits almost nothing, `npm` is usually not on it
 #   2. overlap protection       — flock, so a slow sweep cannot run twice and double-release seats
 #   3. a durable audit trail    — append-only log under storage/logs/, self-rotating
@@ -79,7 +79,7 @@ fi
 
 # --- 3. run the sweep -----------------------------------------------------------------------
 started_at=$(date +%s)
-output=$(npm run --silent ticketing:expire-holds 2>&1)
+output=$(pnpm --silent worker:expire-holds 2>&1)
 rc=$?
 elapsed=$(( $(date +%s) - started_at ))
 

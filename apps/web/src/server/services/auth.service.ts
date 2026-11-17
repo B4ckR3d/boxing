@@ -1,6 +1,7 @@
 import "server-only";
-import { cookies } from "next/headers";
 import { prisma } from "@/lib/db/prisma";
+import type { SessionCookieJar } from "@/lib/auth/session-cookie-jar";
+import { nextSessionCookieJar } from "./next-session-cookie-jar";
 import { env } from "@/lib/env";
 import { sha256Hex, randomToken, decryptSecret } from "@/lib/security/crypto";
 import { verifyPassword, verifyAgainstDummy } from "@/lib/security/password";
@@ -27,10 +28,15 @@ export interface AuthenticatedUser {
   mfaVerified: boolean;
 }
 
-/** Resolves the current session from incoming HTTP cookies */
-export async function getSession(): Promise<AuthenticatedUser | null> {
-  const cookieStore = await cookies();
-  const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+/**
+ * Resolves the current session from incoming HTTP cookies.
+ *
+ * `jar` opsional: pemanggil non-Next (Express nanti, test) menyuntik jar sendiri. Tanpa `jar`,
+ * perilaku tetap persis seperti sebelumnya (`next/headers`).
+ */
+export async function getSession(jar?: SessionCookieJar): Promise<AuthenticatedUser | null> {
+  const cookieStore = jar ?? (await nextSessionCookieJar());
+  const rawToken = cookieStore.get(SESSION_COOKIE_NAME);
   if (!rawToken) return null;
 
   const tokenHash = sha256Hex(rawToken);
@@ -115,7 +121,7 @@ export interface LoginResult {
 export async function authenticateCredentials(
   email: string,
   plainPassword: string,
-  meta?: { ip?: string; userAgent?: string; totpCode?: string }
+  meta?: { ip?: string; userAgent?: string; totpCode?: string; jar?: SessionCookieJar }
 ): Promise<LoginResult> {
   const normEmail = email.trim().toLowerCase();
   const now = new Date();
@@ -249,7 +255,8 @@ export async function authenticateCredentials(
 
   // Create full authenticated session only after all required credentials pass.
   const session = await createSession(user.id, meta, mfaVerified);
-  await setSessionCookie(session.rawToken);
+  // `meta.jar` disuntik pemanggil non-Next (Express); tanpa itu tetap pakai `next/headers`.
+  await setSessionCookie(session.rawToken, meta?.jar);
 
   await logAudit({
     actorId: user.id,
@@ -308,8 +315,8 @@ export async function createSession(
 }
 
 /** Attaches the session cookie to the response */
-export async function setSessionCookie(rawToken: string): Promise<void> {
-  const cookieStore = await cookies();
+export async function setSessionCookie(rawToken: string, jar?: SessionCookieJar): Promise<void> {
+  const cookieStore = jar ?? (await nextSessionCookieJar());
   const isSecure =
     process.env.NODE_ENV === "production" && process.env.APP_URL?.startsWith("https://");
   cookieStore.set(SESSION_COOKIE_NAME, rawToken, {
@@ -322,9 +329,9 @@ export async function setSessionCookie(rawToken: string): Promise<void> {
 }
 
 /** Revokes the current session and clears the cookie */
-export async function destroySession(): Promise<void> {
-  const cookieStore = await cookies();
-  const rawToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+export async function destroySession(jar?: SessionCookieJar): Promise<void> {
+  const cookieStore = jar ?? (await nextSessionCookieJar());
+  const rawToken = cookieStore.get(SESSION_COOKIE_NAME);
   if (rawToken) {
     const tokenHash = sha256Hex(rawToken);
     await prisma.session.updateMany({

@@ -13,6 +13,9 @@ const bool = z
 const schema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   APP_URL: z.string().default("http://localhost:3000"),
+  // NT-6: alamat internal apps/api untuk pola BFF (server-to-server, tidak pernah ke browser).
+  // Default = port dev apps/api. Di produksi isi http://127.0.0.1:4000.
+  API_INTERNAL_URL: z.string().url().default("http://127.0.0.1:4000"),
 
   MYSQL_HOST: z.string().default("127.0.0.1"),
   MYSQL_PORT: z.coerce.number().int().positive().default(3306),

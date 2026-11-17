@@ -27,6 +27,17 @@ export default defineConfig({
           setupFiles: ["tests/setup.ts"],
           include: ["tests/integration/**/*.test.ts"],
           alias,
+          /**
+           * Serial, bukan paralel. Semua file integrasi memakai **satu** database MySQL yang sama,
+           * dan beberapa di antaranya memanggil `expireStaleHolds()` yang bersifat global: sapuan itu
+           * mengambil batch `take: 200` lintas event, lalu men-CANCEL order milik file tes lain yang
+           * sedang berjalan. Gejalanya flaky (~1 dari 3 run) di `buyer-cap`, bukan di tes konkurensi —
+           * order "basi" milik file itu sudah dihabiskan sapuan file lain sebelum gilirannya.
+           *
+           * Biaya: suite integrasi ~3 detik lebih lambat. Itu harga yang wajar untuk gate deterministik;
+           * gate yang kadang hijau kadang merah tidak bisa dipakai sebagai pembanding pemindahan.
+           */
+          fileParallelism: false,
         },
       },
     ],

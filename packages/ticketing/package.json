@@ -1,0 +1,30 @@
+{
+  "name": "@tfn/ticketing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Logika domain ticketing (order, PDF, check-in, expiry) yang dipakai bersama apps/web dan apps/api.",
+  "exports": {
+    ".": "./src/ticketing.service.ts",
+    "./pdf": "./src/ticket-pdf.service.ts",
+    "./token": "./src/ticket-token.ts",
+    "./identity": "./src/buyer-identity.ts",
+    "./labels": "./src/labels.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@tfn/db": "workspace:*"
+  },
+  "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "qrcode": "^1.5.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/qrcode": "^1.5.5",
+    "typescript": "5.9.3"
+  }
+}

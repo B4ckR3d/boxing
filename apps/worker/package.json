@@ -1,0 +1,31 @@
+{
+  "name": "@tfn/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Worker terjadwal TFN (ADR-014): job hold-expiry tanpa menyalakan web. Memakai ulang service apps/web, bukan menduplikasi logika.",
+  "scripts": {
+    "start": "tsx src/cli.ts",
+    "expire-holds": "NODE_OPTIONS=--conditions=react-server tsx src/cli.ts expire-holds",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tfn/db": "workspace:*",
+    "dotenv": "^17.2.0",
+    "tsx": "^4.20.0",
+    "zod": "^4.6.7",
+    "@tfn/ticketing": "workspace:*",
+    "@prisma/adapter-mariadb": "7.10.1",
+    "@prisma/client": "7.10.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24",
+    "eslint": "^9",
+    "typescript-eslint": "^8.72.2",
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.0"
+  }
+}

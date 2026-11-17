@@ -6,38 +6,50 @@
  * USED is allowed on purpose: after the gate scan the buyer may still want a copy, and re-downloading
  * cannot admit anyone twice because check-in is driven by the database status, not by the PDF.
  *
- * Status codes: 401 missing token, 404 wrong order/token, 409 order not confirmed, 429 (none: the
- * route is read-only and cheap enough for the single-instance deployment).
+ * Langkah C: PDF kini dibuat di `apps/api` (`ticket-pdf.service` sudah pindah ke sana). Route ini
+ * hanya meneruskan byte apa adanya — jangan sampai PDF melewati parser JSON.
+ *
+ * Status codes: 401 missing token, 404 wrong order/token, 409 order not confirmed.
  */
-import { getTicketArtifact, TicketingError } from "@/server/services/ticketing.service";
+import { apiFetchBinary, ApiClientError } from "@/lib/api/client";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function textResponse(message: string, status: number): Response {
+  return new Response(message, {
+    status,
+    headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+  });
+}
 
 export async function GET(request: Request, { params }: { params: Promise<{ orderNumber: string }> }) {
   const { orderNumber } = await params;
   const token = new URL(request.url).searchParams.get("token")?.trim() ?? "";
 
-  if (!token) {
-    return new Response("Token akses wajib diisi.", { status: 401, headers: { "Content-Type": "text/plain; charset=utf-8" } });
-  }
+  if (!token) return textResponse("Token akses wajib diisi.", 401);
 
   try {
-    const { filename, buffer } = await getTicketArtifact(orderNumber, token);
-    return new Response(buffer as BodyInit, {
+    const { bytes, contentType, filename } = await apiFetchBinary(
+      `/api/ticketing/orders/${encodeURIComponent(orderNumber)}/ticket?token=${encodeURIComponent(token)}`,
+    );
+
+    return new Response(bytes as BodyInit, {
       status: 200,
       headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${filename}"`,
-        "Content-Length": String(buffer.byteLength),
+        "Content-Type": contentType,
+        ...(filename ? { "Content-Disposition": `attachment; filename="${filename}"` } : {}),
+        "Content-Length": String(bytes.byteLength),
         "Cache-Control": "private, no-store",
       },
     });
   } catch (error) {
-    if (error instanceof TicketingError) {
-      const status = error.code === "NOT_FOUND" ? 404 : error.code === "INVALID_STATE" ? 409 : 400;
-      return new Response(error.message, { status, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
+    if (error instanceof ApiClientError) {
+      if (error.code === "NOT_FOUND") return textResponse("Pesanan tidak ditemukan", 404);
+      if (error.code === "INVALID_STATE") return textResponse(error.message, 409);
+      if (error.status === 401) return textResponse(error.message, 401);
+      return textResponse(error.message, error.status >= 500 ? 500 : 400);
     }
-    return new Response("Gagal membuat tiket.", { status: 500, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+    return textResponse("Gagal membuat tiket.", 500);
   }
 }

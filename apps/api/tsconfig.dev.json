@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["../web/src/*"],
+      "server-only": ["./src/shims/server-only.ts"],
+      "next/headers": ["./src/shims/next-headers.ts"]
+    }
+  }
+}

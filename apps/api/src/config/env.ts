@@ -72,6 +72,15 @@ const rawSchema = z.object({
   MYSQL_USER: z.string().default("boxing"),
   MYSQL_PASSWORD: z.string().default(""),
   DATABASE_POOL_SIZE: z.coerce.number().int().min(1).max(100).default(10),
+
+  /**
+   * Secret HMAC untuk payload QR tiket (`TFN1.<order>.<SIG>`).
+   *
+   * HARUS sama dengan `AUTH_SECRET` di `apps/web`. Tiket yang diterbitkan web diverifikasi di gate
+   * oleh API secara offline (tanpa DB), jadi secret berbeda = semua tiket sah ditolak sebagai palsu.
+   * Panjang minimum 32 disamakan dengan skema web; `buildTicketPayload` menolak secret < 16.
+   */
+  AUTH_SECRET: z.string().trim().min(32, "AUTH_SECRET must be at least 32 characters"),
 });
 
 export type ApiEnv = z.infer<typeof rawSchema> & { corsOrigins: string[] };

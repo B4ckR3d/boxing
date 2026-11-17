@@ -14,6 +14,7 @@
     "test:unit": "pnpm --filter @tfn/web test:unit",
     "test:integration": "pnpm --filter @tfn/web test:integration",
     "test:all": "pnpm --filter @tfn/web test:all",
+    "test:all+integration": "pnpm test:unit && pnpm test:integration",
     "db:up": "docker compose up -d mysql",
     "db:down": "docker compose down",
     "db:wait": "node scripts/wait-for-db.mjs",
@@ -27,11 +28,15 @@
     "db:backup": "node scripts/db-backup.mjs",
     "admin:bootstrap": "tsx scripts/bootstrap-admin.ts",
     "user:reset-password": "tsx scripts/reset-password.ts",
-    "ticketing:expire-holds": "NODE_OPTIONS=--conditions=react-server tsx scripts/expire-holds.ts",
+    "ticketing:expire-holds": "pnpm worker:expire-holds",
     "postinstall": "prisma generate || true",
     "turbo:verify": "turbo run typecheck lint test verify:dist",
+    "test:gate-a2": "pnpm --filter @tfn/web vitest run --project integration tests/integration/ticketing-concurrency.integration.test.ts tests/integration/ticketing-negative-control.integration.test.ts",
+    "verify:integration": "pnpm --filter @tfn/web test:integration",
     "api:dev": "pnpm --filter @tfn/api dev",
-    "api:test": "pnpm --filter @tfn/api test"
+    "api:test": "pnpm --filter @tfn/api test",
+    "worker:expire-holds": "pnpm --filter @tfn/worker expire-holds",
+    "worker:typecheck": "pnpm --filter @tfn/worker typecheck"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.2",
