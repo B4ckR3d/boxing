@@ -40,7 +40,13 @@ export function createExpressCookieJar(req: Request, res: Response): SessionCook
   return {
     get: (name) => readAll()[name],
     set: (name, value, options: SessionCookieOptions) => {
-      res.cookie(name, value, options);
+      /**
+       * Express mengartikan `maxAge` dalam **milidetik**, sedangkan kontrak `SessionCookieOptions`
+       * memakai **detik** (sama seperti `next/headers` `cookies().set()`). Tanpa konversi ini,
+       * sesi 12 jam menjadi 43 detik: 43200 dianggap ms sehingga `Expires` jatuh 43 detik kemudian.
+       */
+      const { maxAge, ...rest } = options;
+      res.cookie(name, value, maxAge === undefined ? rest : { ...rest, maxAge: maxAge * 1000 });
     },
     delete: (name) => {
       res.clearCookie(name, { path: "/" });

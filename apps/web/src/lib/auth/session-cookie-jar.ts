@@ -15,6 +15,10 @@ export type SessionCookieOptions = {
   secure?: boolean;
   sameSite?: "lax" | "strict" | "none";
   path?: string;
+  /**
+   * Umur cookie dalam **detik** (mengikuti `next/headers` `cookies().set()`).
+   * Adapter Express wajib mengalikan 1000 karena `res.cookie()` memakai milidetik.
+   */
   maxAge?: number;
 };
 

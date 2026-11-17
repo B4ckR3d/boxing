@@ -1,3 +1,38 @@
+## 2026-11-17 — Akun demo lokal + tiga bug yang menghalangi login
+
+Audit "apakah ada akun demo untuk akses lokal" menemukan 8 akun `@boxing.local` sudah ada di seed,
+tetapi **tidak satu pun bisa dipakai login**. Tiga bug terpisah:
+
+**1. Password demo tidak cocok (HTTP 401).** `prisma db seed` dan `scripts/bootstrap-admin.ts`
+memakai `update: {}`, jadi akun yang sudah ada mempertahankan hash lamanya. Hash di DB tidak cocok
+dengan `DEMO_USER_PASSWORD` maupun `BOOTSTRAP_ADMIN_PASSWORD` (diverifikasi dengan
+`verifyPassword()` milik `@tfn/auth`, bukan tebakan). Diperbaiki dengan jalur resmi
+`pnpm user:reset-password -- --all-demo` → 8/8 akun ter-reset dan terbuka. **Tidak ada perubahan
+kode** untuk ini; penyebabnya operasional, bukan bug kode.
+
+**2. Login dari `localhost:3000` ditolak 403.** `hasValidAuthOrigin()` di
+`apps/web/src/app/api/auth/origin.ts` melakukan exact-match terhadap `APP_URL`, yang di dev berisi
+`https://tfn.pimpom.id`. Akibatnya membuka aplikasi di localhost tidak bisa login sama sekali.
+Ditambahkan cabang `isLocalDevOrigin()` yang **hanya aktif saat `NODE_ENV=development`** dan hanya
+untuk hostname loopback (`localhost`, `127.0.0.1`, `::1`). Diuji 7 kasus: `https://evil.com` dan
+`https://evil.com.tfn.pimpom.id` tetap ditolak di semua mode — CSRF produksi tidak dilonggarkan.
+
+**3. Sesi mati dalam 43 detik, bukan 12 jam.** `apps/api/src/lib/cookie-jar.ts` meneruskan
+`maxAge` apa adanya ke Express `res.cookie()`, yang memakai **milidetik**, sementara kontrak
+`SessionCookieOptions` memakai **detik**. 43200 detik dibaca sebagai 43200 ms → `Max-Age=43`.
+Baris `Session` di DB tetap benar (`expiresAt - createdAt = 43200`), jadi bug murni di adapter
+HTTP. Diperbaiki dengan `maxAge * 1000`; satuan didokumentasikan di `SessionCookieOptions` agar
+adapter berikutnya tidak mengulanginya. Regresi dikunci di `apps/api/tests/cookie-jar.test.ts`
+(3 test: 43200 → `Max-Age=43200`, nilai kecil proporsional, dan cookie sesi tanpa `Max-Age`).
+
+**Verifikasi:** `Set-Cookie: bx_session=...; Max-Age=43200` dari API langsung; login via BFF
+`localhost:3000` → 200 dan `/admin` 200 berisi "Super Admin" (tanpa sesi: 307 ke `/admin/login`).
+`turbo:verify` 19/19; suite `apps/api` 6 file / 34 test.
+
+**Catatan deploy:** perbaikan 2 dan 3 menyentuh `apps/api` dan `apps/web`, jadi baru berlaku
+setelah deploy. Bug 43 detik hampir pasti juga terjadi di produksi — user akan ter-logout dalam
+satu menit.
+
 ## 2026-11-17 — Audit deploy: `ENCRYPTION_KEY` + API yang tak pernah di-restart
 
 **Temuan:** `scripts/deploy.sh` hanya me-restart proses web (`boxing-tfn`). Sejak Langkah E2 auth
