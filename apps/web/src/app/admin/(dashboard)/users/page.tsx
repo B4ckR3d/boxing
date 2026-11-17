@@ -2,11 +2,12 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/server/services/auth.service";
 import { hasPermission } from "@/lib/permissions/guard";
+// Otoritas RBAC ada di `apps/api` (Langkah F lanjutan).
 import {
   listUsersDetailed,
   listPendingRoleRequests,
   listRolesDetailed,
-} from "@/server/services/rbac.service";
+} from "@/lib/api/rbac";
 import { UserManager } from "@/components/admin/UserManager";
 
 export const dynamic = "force-dynamic";

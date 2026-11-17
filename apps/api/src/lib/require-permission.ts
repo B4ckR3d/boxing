@@ -33,7 +33,34 @@ export async function requirePermission(req: Request, res: CookieJarResponse, pe
  *
  * Aturannya sama persis supaya pemindahan tidak melunakkan CSRF: Origin (atau Referer) harus cocok
  * dengan `APP_URL`, atau cocok dengan Host request. Tanpa keduanya hanya diizinkan di development.
+ *
+ * Escape hatch development, sama seperti `apps/web/src/app/api/auth/origin.ts`: `.env` sengaja
+ * memakai `APP_URL=https://tfn.pimpom.id` agar perilakunya mirip produksi, sehingga membuka
+ * `http://localhost:3000` akan membuat origin loopback tidak cocok. Loopback diterima **hanya saat
+ * NODE_ENV=development**; di produksi cabang ini mati, jadi CSRF tidak dilonggarkan.
  */
+/**
+ * `NODE_ENV` efektif — **harus** memakai default yang sama dengan skema env (`config/env.ts`).
+ *
+ * Jangan baca `process.env.NODE_ENV` mentah: `pnpm start` tidak mengekspornya, jadi nilainya
+ * `undefined` walau aplikasi secara efektif berjalan sebagai development. Akibatnya escape hatch
+ * loopback tidak pernah aktif dan semua mutasi dari UI lokal kena 403. Sebaliknya di produksi
+ * `NODE_ENV=production` wajib di-set eksplisit (dilakukan PM2), sehingga cabang ini tetap mati.
+ */
+function nodeEnv(): string {
+  return process.env.NODE_ENV ?? "development";
+}
+
+function isLocalDevOrigin(value: string): boolean {
+  if (nodeEnv() !== "development") return false;
+  try {
+    const { hostname } = new URL(value);
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+  } catch {
+    return false;
+  }
+}
+
 export function originAllowed(req: Request, appUrl: string): boolean {
   const origin = req.headers.origin;
   const referer = req.headers.referer;
@@ -47,9 +74,9 @@ export function originAllowed(req: Request, appUrl: string): boolean {
     }
   };
 
-  if (origin) return sameAs(origin);
-  if (referer) return sameAs(referer);
+  if (origin) return sameAs(origin) || isLocalDevOrigin(origin);
+  if (referer) return sameAs(referer) || isLocalDevOrigin(referer);
 
   // Tidak ada Origin/Referer: hanya agen non-browser (curl, job internal) di development.
-  return process.env.NODE_ENV !== "production";
+  return nodeEnv() !== "production";
 }

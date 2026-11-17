@@ -12,6 +12,7 @@ import { createV1Router } from "./routes/v1.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createTicketingRouter } from "./routes/ticketing.js";
 import { createSettingsRouter, createSponsorsRouter } from "./routes/settings.js";
+import { createRbacRouter } from "./routes/rbac.js";
 
 export interface AppDeps {
   /** Ping database untuk readiness. Di-inject agar test tidak butuh MySQL. */
@@ -64,6 +65,7 @@ export function createApp({ checkDb, version = "0.1.0", openApiEnabled }: AppDep
   app.use("/api/ticketing", createTicketingRouter());
   app.use("/api/settings", createSettingsRouter());
   app.use("/api/sponsors", createSponsorsRouter());
+  app.use("/api/rbac", createRbacRouter());
 
   if (openApiEnabled ?? e.OPENAPI_ENABLED !== false) mountApiDocs(app);
 

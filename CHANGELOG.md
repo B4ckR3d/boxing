@@ -1,3 +1,56 @@
+## 2026-11-17 — Langkah G: RBAC dipindah ke `apps/api`
+
+**Cakupan:** router RBAC di `apps/api` + web menjadi pemanggil API, binding Prisma di web dihapus.
+
+| Endpoint baru di `apps/api` | Penjaga |
+|---|---|
+| `GET/POST /api/rbac/roles` | sesi + `roles.manage` + origin |
+| `PUT /api/rbac/roles/:id`, `PUT /api/rbac/roles/:id/permissions`, `DELETE /api/rbac/roles/:id` | sesi + `roles.manage` + origin |
+| `GET /api/rbac/users`, `POST /api/rbac/users/:id/roles`, `DELETE /api/rbac/users/:id/roles/:roleId` | sesi + `users.manage` + origin |
+| `POST /api/rbac/users/:id/active` | sesi + `users.manage` + origin |
+| `GET /api/rbac/role-requests`, `POST /api/rbac/role-requests/:id/review` | sesi + `roles.manage` + origin |
+
+Halaman `/admin/roles` dan `/admin/users` beserta `actions.ts` kini memanggil API lewat
+`apps/web/src/lib/api/rbac.ts` (meneruskan cookie sesi + origin asli). Logika bisnis tetap satu
+sumber: `packages/auth` (`createRbacService`). Binding lama
+`apps/web/src/server/services/rbac.service.ts` (578 baris) **dihapus**.
+
+### Dua keputusan yang tidak boleh "dirapikan" nanti
+
+1. **Permission dipisah dua.** Role & role-request dijaga `roles.manage`; user & pemberian role
+   dijaga `users.manage`. Digabung jadi satu gerbang, pemegang `users.manage` bisa menaikkan hak
+   aksesnya sendiri lewat role sensitif. Ada test yang menjaga pemisahan ini.
+2. **`grantRole` tetap mengembalikan `{ requiresApproval }`**, bukan `{ status }`. Bentuk itu kontrak
+   service asli yang dipakai `UserManager`; menggantinya akan memaksa perubahan UI tanpa manfaat.
+
+### Bug yang hanya muncul saat probe live (gate tetap hijau)
+
+Mutasi dari UI **selalu 403 `INVALID_ORIGIN`**. Pembacaan 200, jadi halaman tampak sehat dan
+tombol simpan mati tanpa gejala. Dua sebab berlapis:
+
+1. **Origin tidak cocok.** `.env` memakai `APP_URL=https://tfn.pimpom.id`, sedangkan server component
+   mengirim origin `http://localhost:3000`. GET tidak melewati origin check, jadi bug ini tak
+   terlihat sampai ada operasi tulis.
+2. **`NODE_ENV` mentah.** Setelah escape hatch loopback ditambahkan, mutasi masih 403:
+   `originAllowed` membaca `process.env.NODE_ENV`, sementara `pnpm start` tidak mengekspornya →
+   `undefined`, walau `config/env.ts` memberi default `development`.
+
+Perbaikan: helper `nodeEnv()` (default sama dengan skema env) + `isLocalDevOrigin()`, dikunci test
+tiga lingkungan — `development` menerima loopback tapi menolak `evil.example.com` **dan**
+`evil.example.com.tfn.pimpom.id`; `production` menolak loopback; `test/CI` nol pelonggaran.
+
+### Terbukti hidup (bukan hanya kompilasi)
+
+8 akun demo login `200` dengan role benar. `GET /api/rbac/roles` → `200` (8 role, 24 permission
+super_admin). `POST` role uji dengan origin loopback → `201`, lalu `DELETE` → `200`, data kembali 8
+role. Origin asing → `403 INVALID_ORIGIN`. Viewer `GET /roles` → `403 FORBIDDEN` (service tak
+dipanggil). Halaman `/admin/roles` dan `/admin/users` `200` dengan data role nyata ter-render.
+
+Gate: `turbo:verify` 19/19 (unit), `verify:integration` 33/33, `apps/api` 52 test (13 di antaranya
+test HTTP RBAC termasuk guard, envelope, four-eyes, dan tiga lingkungan origin).
+
+---
+
 ## 2026-11-17 — Langkah C: ticketing dipindah ke `apps/api`
 
 **Cakupan:** router ticketing di `apps/api` + web menjadi proxy tipis.

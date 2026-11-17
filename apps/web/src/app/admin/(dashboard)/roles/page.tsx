@@ -2,7 +2,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { getSession } from "@/server/services/auth.service";
 import { hasPermission } from "@/lib/permissions/guard";
-import { listRolesDetailed } from "@/server/services/rbac.service";
+import { listRolesDetailed } from "@/lib/api/rbac";
 import { RoleManager } from "@/components/admin/RoleManager";
 
 export const dynamic = "force-dynamic";

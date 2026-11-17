@@ -138,6 +138,50 @@ Tujuan: tidak ada lagi aturan bisnis di dalam `apps/web`. Setelah audit, folder
 
 ---
 
+### Langkah G — otorisasi RBAC pindah ke `apps/api` — **SELESAI (2026-11-17)**
+
+Langkah F memindahkan *logika* RBAC ke `packages/auth`, tetapi **pemanggilnya** masih proses web:
+`apps/web/src/server/services/rbac.service.ts` membuat Prisma client sendiri. Artinya otorisasi
+masih berjalan di dua proses. Langkah G memindahkan **jalur HTTP**-nya.
+
+| Endpoint baru di `apps/api` | Penjaga |
+|---|---|
+| `GET /api/rbac/roles`, `POST /api/rbac/roles` | sesi + `roles.manage` + origin |
+| `PUT /api/rbac/roles/:id`, `PUT /api/rbac/roles/:id/permissions`, `DELETE /api/rbac/roles/:id` | sesi + `roles.manage` + origin |
+| `GET /api/rbac/users`, `POST /api/rbac/users/:id/roles`, `DELETE /api/rbac/users/:id/roles/:roleId` | sesi + `users.manage` + origin |
+| `POST /api/rbac/users/:id/active` | sesi + `users.manage` + origin |
+| `GET /api/rbac/role-requests`, `POST /api/rbac/role-requests/:id/review` | sesi + `roles.manage` + origin |
+
+Permission sengaja **dipisah dua**, bukan satu gerbang global: role & role-request dijaga
+`roles.manage`, user & pemberian role dijaga `users.manage`. Kalau disatukan, pemegang `users.manage`
+bisa menaikkan hak akses sendiri lewat role sensitif — eskalasi wewenang.
+
+- `apps/api/src/lib/require-permission.ts` dipakai bersama settings/sponsor/ticketing, jadi matriks
+  permission tidak diduplikasi. Four-eyes tetap di `packages/auth`, bukan di router.
+- `apps/web/src/lib/api/rbac.ts` meneruskan **cookie sesi + origin asli**; binding web lama
+  (`server/services/rbac.service.ts`, 578 baris) **dihapus**.
+- Kontrak call site dipertahankan: `grantRole`/`revokeRole` tetap mengembalikan `{ requiresApproval }`.
+
+**Bug yang ditemukan justru saat probe live, bukan saat gate:** mutasi dari UI **selalu** 403
+`INVALID_ORIGIN`. Dua sebab berlapis:
+
+1. `.env` memakai `APP_URL=https://tfn.pimpom.id`, sedangkan server component mengirim origin
+   `http://localhost:3000` → tidak cocok. Pembacaan tetap 200 karena GET tidak melewati origin check,
+   jadi halaman tampak sehat sementara tombol simpan mati.
+2. Setelah escape hatch loopback ditambahkan, mutasi masih 403: `originAllowed` membaca
+   `process.env.NODE_ENV` mentah, sedangkan `pnpm start` tidak mengekspornya → `undefined` walau
+   skema env memberi default `development`.
+
+Diperbaiki dengan helper `nodeEnv()` (default sama dengan `config/env.ts`) + `isLocalDevOrigin()`,
+dan dikunci test tiga lingkungan: `development` lolos loopback tapi menolak `evil.example.com` dan
+`evil.example.com.tfn.pimpom.id`; `production` menolak loopback; `test/CI` nol pelonggaran.
+
+Gate: `turbo:verify` 19/19 (unit), `verify:integration` 33/33, `apps/api` 52 test.
+Probe live: login 8 akun demo `200`, `roles` `200` (8 role), `POST` loopback `201`, origin asing
+`403`, viewer `GET /roles` `403 FORBIDDEN`, `DELETE` role uji `200` (data dikembalikan ke 8 role).
+
+---
+
 ## 4. Yang TIDAK dilakukan di Phase 1
 
 - Membuat `apps/web` (butuh Langkah A disetujui).

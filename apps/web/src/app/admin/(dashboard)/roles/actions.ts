@@ -4,12 +4,13 @@ import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/permissions/guard";
 import { verifyRequestOrigin } from "@/lib/security/csrf";
 import { actionError, type ActionResult } from "@/lib/actions/result";
+// Otoritas RBAC ada di `apps/api` (Langkah F lanjutan) — klien ini meneruskan cookie + origin asli.
 import {
   createRole,
   updateRole,
   updateRolePermissions,
   deleteRole,
-} from "@/server/services/rbac.service";
+} from "@/lib/api/rbac";
 
 export async function createRoleAction(input: unknown): Promise<ActionResult> {
   try {

@@ -10,7 +10,7 @@ import {
   reviewRoleRequestAction,
   setUserActiveAction,
 } from "@/app/admin/(dashboard)/users/actions";
-import type { UserDetail } from "@/server/services/rbac.service";
+import type { UserDetail } from "@tfn/auth/rbac-service";
 
 interface RoleOption {
   id: string;

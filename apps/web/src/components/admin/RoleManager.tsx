@@ -24,7 +24,7 @@ import {
   updateRolePermissionsAction,
   deleteRoleAction,
 } from "@/app/admin/(dashboard)/roles/actions";
-import type { RoleDetail } from "@/server/services/rbac.service";
+import type { RoleDetail } from "@tfn/auth/rbac-service";
 
 interface RoleManagerProps {
   roles: RoleDetail[];
