@@ -1,3 +1,46 @@
+## 2026-11-17 — Langkah E2: `auth` ke `packages/auth`, alias `@/*` di `apps/api` dihapus
+
+**Cakupan:** sisa terakhir ketergantungan terbalik API → `apps/web/src` hilang.
+
+| Pindah ke `packages/auth` | Dari |
+|---|---|
+| `session.service.ts` — `createAuthService(deps)` | `apps/web/src/server/services/auth.service.ts` (280 baris) |
+| `crypto.ts` — `sha256Hex`, `randomToken`, `safeEqual`, `hmacSha256`, `encryptSecret`, `decryptSecret` | `apps/web/src/lib/security/crypto.ts` |
+| `totp.ts` — RFC 6238 | `apps/web/src/lib/security/totp.ts` |
+
+Web dan API kini **binding tipis** di atas paket yang sama; bedanya hanya sumber cookie
+(`next/headers` vs Express) dan Prisma client milik masing-masing proses.
+
+`apps/api`: alias `@/*` → `../web/src/*` **dihapus**, bersama `tsconfig.dev.json` dan folder
+`src/shims/` (`server-only`, `next/headers`) yang jadi mati. Script `dev`/`start` tidak lagi butuh
+`--tsconfig` khusus.
+
+### Dua bug yang ditemukan gate (bukan test yang salah)
+
+1. **Snapshot `env`.** Paket awalnya menerima `env: AuthEnv` sehingga konfigurasi dibaca sekali saat
+   modul dimuat. Kode lama memanggil `env()` per request — bedanya berarti perubahan
+   `AUTH_ENFORCE_MFA`/`APP_URL` butuh restart diam-diam. Kontrak diubah jadi `env: () => AuthEnv`.
+2. **`stubEnv` diabaikan.** Binding membaca `env().APP_URL` dari mock yang tidak punya field itu;
+   sekarang `process.env.APP_URL ?? e.APP_URL`, sesuai semantik asli.
+
+`apps/api/src/config/env.ts` kini **mewajibkan `ENCRYPTION_KEY`** (base64 32 byte) — tanpa itu akun
+ber-MFA gagal login lewat API karena `mfaSecretEnc` tidak bisa didekripsi.
+
+### Terbukti hidup
+
+| Uji | Hasil |
+|---|---|
+| `GET /health`, `/health/ready` | 200 / 200 (DB up) |
+| `POST /api/auth/login` kredensial salah | 401 `INVALID_CREDENTIALS` (jalur paket + `loginAttempt`) |
+| `GET /api/auth/me` tanpa cookie | 401 `UNAUTHORIZED` envelope ADR-010 |
+| `POST /api/auth/logout` tanpa sesi | 200 idempotent |
+| `pnpm turbo:verify` | **19/19** |
+| `apps/web` unit test | **89/89** |
+| `apps/api` test | **31/31** |
+| `verify:integration` | **33/33** |
+| `test:gate-a2` | **3/3** |
+| `next build` | lolos |
+
 ## 2026-11-17 — Langkah D: `audit`/`settings`/`sponsor` ke `packages/core` + worker
 
 **Cakupan:** paket domain baru `@tfn/core` dan otoritas settings pindah dari Next ke `apps/api`.

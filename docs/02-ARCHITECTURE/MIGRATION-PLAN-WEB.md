@@ -103,16 +103,19 @@ jadi kalimat "tidak ada route handler bisnis tersisa di Next" belum sepenuhnya b
 Langkah C. `--packages=external` tanpa alias `@tfn/ticketing` membuat `dist/` mengimpor `.ts`
 mentah; tak pernah ketahuan karena yang diuji `tsx`, bukan `dist`. Kini `verify:dist` lulus.
 
-### Langkah E — Bersihkan root
+### Langkah E — Bersihkan root — **SELESAI (E1 + E2, 2026-11-17)**
 - Hapus `src/server`, route handler lama, script duplikat; update semua dokumen.
-- **Status: E1 SELESAI (2026-11-17), E2 terbuka.** `src/` di root sudah tidak ada sejak Langkah A.
+- **Status: E1 SELESAI, E2 SELESAI.** `src/` di root sudah tidak ada sejak Langkah A.
   - E1: `packages/auth` (`@tfn/auth`) dibuat; `catalog`, `password`, `account-policy`, `rate-limit`,
     `hasPermission`/four-eyes pindah ke sana. `apps/api` tidak lagi memakai alias `@/` untuk tiga
     modul itu, root `tsconfig.json` kehilangan `paths @/* → apps/web/src/*`, dan `scripts/monorepo/*`
     (tooling sekali pakai Langkah A) dihapus.
-  - E2 (belum): `auth.service.ts` (346 baris) masih di `apps/web/src/server/services/` dan
-    `apps/api/src/routes/auth.ts` + `lib/require-permission.ts` masih mengimpornya lewat alias `@/`.
-    Itu sisa terakhir "hapus `src/server`".
+  - E2: `session.service.ts` → `createAuthService(deps)` di `packages/auth`, bersama `crypto.ts` dan
+    `totp.ts`. `apps/web` dan `apps/api` kini binding tipis; **alias `@/*` di `apps/api` dihapus
+    seluruhnya**, bersama `tsconfig.dev.json` dan `src/shims/`. Tidak ada lagi impor dari `apps/api`
+    ke pohon sumber Next — arah dependensi satu arah: `apps → packages`.
+  - Catatan desain: paket menerima `env: () => AuthEnv` (getter), **bukan** objek, supaya konfigurasi
+    dibaca per panggilan seperti sebelumnya. `apps/api/src/config/env.ts` mewajibkan `ENCRYPTION_KEY`.
 
 ---
 

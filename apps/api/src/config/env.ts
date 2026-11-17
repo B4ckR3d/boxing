@@ -81,6 +81,28 @@ const rawSchema = z.object({
    * Panjang minimum 32 disamakan dengan skema web; `buildTicketPayload` menolak secret < 16.
    */
   AUTH_SECRET: z.string().trim().min(32, "AUTH_SECRET must be at least 32 characters"),
+
+  /**
+   * Variabel sesi/auth (Langkah E2). Nilai & default **disamakan dengan `apps/web/src/lib/env.ts`**
+   * karena keduanya kini menjalankan implementasi `@tfn/auth` yang sama: masa hidup sesi, idle
+   * timeout, dan kebijakan lockout harus identik atau sesi yang dibuat web akan dinilai berbeda
+   * oleh API.
+   *
+   * `ENCRYPTION_KEY` wajib: dipakai `decryptSecret()` untuk membaca `mfaSecretEnc` saat login MFA.
+   * Tanpa kunci yang sama dengan web, semua akun ber-MFA gagal login lewat API.
+   */
+  ENCRYPTION_KEY: z.string().refine((v) => {
+    try {
+      return Buffer.from(v, "base64").length === 32;
+    } catch {
+      return false;
+    }
+  }, "ENCRYPTION_KEY must be a base64-encoded 32-byte key"),
+  SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(720).default(12),
+  SESSION_IDLE_MINUTES: z.coerce.number().int().min(5).max(1440).default(60),
+  AUTH_ENFORCE_MFA: bool.default(true),
+  AUTH_MAX_FAILED_LOGINS: z.coerce.number().int().min(3).max(20).default(5),
+  AUTH_LOCKOUT_MINUTES: z.coerce.number().int().min(1).max(1440).default(15),
 });
 
 export type ApiEnv = z.infer<typeof rawSchema> & { corsOrigins: string[] };

@@ -1,13 +1,18 @@
 /**
  * Barrel `@tfn/auth`.
  *
- * `session.js` sengaja belum ada di E1 — lihat catatan di NEXT-TASKS: `auth.service` masih terikat
- * `next/headers` + Prisma + crypto di web, dan pemindahannya dikerjakan sebagai E2 supaya tidak
- * setengah jalan. `permissions.ts` hanya memakai `type` dari sana, jadi tidak ada impor runtime.
+ * Semua domain auth murni ada di sini: katalog permission, matriks otorisasi, kebijakan
+ * password/akun, rate limit, primitif kripto, TOTP, dan layanan sesi berbasis injeksi.
+ *
+ * Yang **tidak** ada di sini: apa pun yang membaca request. `next/headers` dan `req.cookies`
+ * hidup di binding masing-masing app (`apps/web`, `apps/api`).
  */
 export * from "./catalog";
 export * from "./password";
 export * from "./account-policy";
 export * from "./rate-limit";
 export * from "./permissions";
+export * from "./crypto";
+export * from "./totp";
+export * from "./session.service";
 export type { AuthenticatedUser, SessionCookieJar, SessionCookieOptions } from "./session";

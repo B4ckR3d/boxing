@@ -11,7 +11,7 @@
  * permission tidak diduplikasi.
  */
 import type { Request } from "express";
-import { getSession } from "@/server/services/auth.service";
+import { getSession } from "./auth.js";
 import { hasPermission } from "@tfn/auth/permissions";
 import type { PermissionKey } from "@tfn/auth/catalog";
 import { createExpressCookieJar } from "../lib/cookie-jar.js";

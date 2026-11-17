@@ -12,7 +12,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/headers", () => ({ cookies: async () => mocks.cookies }));
 vi.mock("@/lib/db/prisma", () => ({ prisma: mocks }));
 vi.mock("@/lib/env", () => ({ env: () => mocks.config }));
-vi.mock("@/lib/security/password", () => ({ verifyPassword: mocks.verifyPassword, verifyAgainstDummy: vi.fn() }));
+vi.mock("@tfn/auth/password", () => ({ verifyPassword: mocks.verifyPassword, verifyAgainstDummy: vi.fn() }));
 vi.mock("@/server/services/audit.service", () => ({ logAudit: vi.fn() }));
 import { authenticateCredentials } from "@/server/services/auth.service";
 import { encryptSecret } from "@/lib/security/crypto";

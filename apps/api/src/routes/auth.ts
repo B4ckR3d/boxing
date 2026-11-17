@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { authenticateCredentials, destroySession, getSession } from "@/server/services/auth.service";
+import { authenticateCredentials, destroySession, getSession } from "../lib/auth.js";
 import { createExpressCookieJar } from "../lib/cookie-jar";
 import { AppError } from "../lib/errors";
 

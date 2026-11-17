@@ -14,7 +14,7 @@ const authenticateCredentials = vi.fn();
 const destroySession = vi.fn();
 const getSession = vi.fn();
 
-vi.mock("@/server/services/auth.service", () => ({
+vi.mock("../src/lib/auth.js", () => ({
   authenticateCredentials: (...a: unknown[]) => authenticateCredentials(...a),
   destroySession: (...a: unknown[]) => destroySession(...a),
   getSession: (...a: unknown[]) => getSession(...a),

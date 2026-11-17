@@ -11,7 +11,10 @@
     "./account-policy": "./src/account-policy.ts",
     "./rate-limit": "./src/rate-limit.ts",
     "./permissions": "./src/permissions.ts",
-    "./session": "./src/session.ts"
+    "./session": "./src/session.ts",
+    "./crypto": "./src/crypto.ts",
+    "./totp": "./src/totp.ts",
+    "./session-service": "./src/session.service.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -20,7 +23,8 @@
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.2",
-    "zod": "^4.6.7"
+    "zod": "^4.6.7",
+    "@tfn/db": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
