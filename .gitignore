@@ -1,18 +1,18 @@
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 
 # testing
-/coverage
-/test-results
-/playwright-report
-/blob-report
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
 /playwright/.cache
 
-# next.js
-/.next/
-/out/
+# next.js (monorepo: tiap app punya .next sendiri)
+.next/
+out/
 next-env.d.ts
 *.tsbuildinfo
 
@@ -21,15 +21,17 @@ next-env.d.ts
 
 # prisma generated client
 /src/generated
+/packages/db/src/generated
 
 # uploads (local storage driver — dev only)
-/public/uploads/*
-!/public/uploads/.gitkeep
+public/uploads/*
+!public/uploads/.gitkeep
 
 # backups
-/backups
+backups/
 
-# scheduler state (hold-expiry cron log + lock)
+# scheduler state (hold-expiry cron log + lock) — ikut pindah ke apps/web
+apps/web/storage/
 /storage/
 
 # local agent workspace (Hermes session scratch, not project source)
@@ -48,4 +50,6 @@ cred.md
 
 # vercel
 .vercel
-
+# monorepo (Turborepo)
+.turbo/
+apps/*/dist/

@@ -10,7 +10,9 @@
 
 generator client {
   provider     = "prisma-client"
-  output       = "../src/generated/prisma"
+  // ADR-011: satu schema di root, client digenerate ke package bersama `@tfn/db`
+  // supaya apps/web dan apps/api memakai client yang sama tanpa duplikasi.
+  output       = "../packages/db/src/generated/prisma"
   moduleFormat = "esm"
 }
 

@@ -1,0 +1,27 @@
+{
+  "name": "@tfn/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Prisma Client bersama untuk apps/web dan apps/api (ADR-011). Schema tetap satu di root.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/generated/prisma/client.ts",
+    "./enums": "./src/generated/prisma/enums.ts",
+    "./models": "./src/generated/prisma/models.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate --schema ../../prisma/schema.prisma",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@prisma/adapter-mariadb": "7.10.1",
+    "@prisma/client": "7.10.1"
+  },
+  "devDependencies": {
+    "@prisma/adapter-mariadb": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "prisma": "7.10.1",
+    "typescript": "5.9.3"
+  }
+}

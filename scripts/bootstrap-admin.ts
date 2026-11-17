@@ -1,9 +1,9 @@
 import "dotenv/config";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient } from "@tfn/db/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
-import { ALL_PERMISSIONS, DEFAULT_ROLES, PERMISSIONS } from "../src/lib/permissions/catalog";
-import { hashPassword } from "../src/lib/security/password";
-import { getBootstrapAccount } from "./account-policy";
+import { ALL_PERMISSIONS, DEFAULT_ROLES, PERMISSIONS } from "../apps/web/src/lib/permissions/catalog";
+import { hashPassword } from "../apps/web/src/lib/security/password";
+import { getBootstrapAccount } from "../apps/web/src/lib/security/account-policy";
 
 let dbHost = process.env.MYSQL_HOST || "127.0.0.1";
 let dbPort = Number(process.env.MYSQL_PORT) || 3306;
