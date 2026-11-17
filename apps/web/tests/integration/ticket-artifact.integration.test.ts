@@ -40,7 +40,7 @@ function input(overrides: Partial<TicketOrderInput> = {}): TicketOrderInput {
 beforeAll(async () => {
   adminId = (
     await prisma.user.create({
-      data: { email: `${PREFIX}admin@example.com`, name: "ITest Artifact Admin", passwordHash: "not-a-real-hash", isActive: true },
+      data: { username: `${PREFIX}admin`, email: `${PREFIX}admin@example.com`, name: "ITest Artifact Admin", passwordHash: "not-a-real-hash", isActive: true },
     })
   ).id;
 

@@ -21,6 +21,7 @@ export interface SessionCookieJar {
 
 export interface AuthenticatedUser {
   id: string;
+  username: string;
   email: string;
   name: string;
   isActive: boolean;

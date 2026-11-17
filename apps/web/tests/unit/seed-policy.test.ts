@@ -22,6 +22,35 @@ describe("bootstrap account policy", () => {
     expect(() => getBootstrapAccount({ DEMO_USER_PASSWORD: "StrongPassword123!" })).toThrow();
   });
   it("normalizes email and accepts one explicit account", () => {
-    expect(getBootstrapAccount({ BOOTSTRAP_ADMIN_EMAIL: "ADMIN@TFN.LOCAL ", BOOTSTRAP_ADMIN_NAME: "TFN Admin", BOOTSTRAP_ADMIN_PASSWORD: "StrongPassword123!" })).toEqual({email: "admin@tfn.local", name: "TFN Admin", password: "StrongPassword123!"});
+    expect(getBootstrapAccount({ BOOTSTRAP_ADMIN_EMAIL: "ADMIN@TFN.LOCAL ", BOOTSTRAP_ADMIN_NAME: "TFN Admin", BOOTSTRAP_ADMIN_PASSWORD: "StrongPassword123!" })).toEqual({username: "admin", email: "admin@tfn.local", name: "TFN Admin", password: "StrongPassword123!"});
+  });
+  it("derives username from email when not given, sanitizing unsupported characters", () => {
+    // `+` tidak sah pada username, jadi diganti `-`; pemisah di ujung dibuang.
+    expect(
+      getBootstrapAccount({
+        BOOTSTRAP_ADMIN_EMAIL: "super.admin+tfn@tfn.local",
+        BOOTSTRAP_ADMIN_NAME: "TFN Admin",
+        BOOTSTRAP_ADMIN_PASSWORD: "StrongPassword123!",
+      }).username,
+    ).toBe("super.admin-tfn");
+  });
+  it("prefers an explicit BOOTSTRAP_ADMIN_USERNAME", () => {
+    expect(
+      getBootstrapAccount({
+        BOOTSTRAP_ADMIN_EMAIL: "admin@tfn.local",
+        BOOTSTRAP_ADMIN_USERNAME: "  RootOperator  ",
+        BOOTSTRAP_ADMIN_NAME: "TFN Admin",
+        BOOTSTRAP_ADMIN_PASSWORD: "StrongPassword123!",
+      }).username,
+    ).toBe("rootoperator");
+  });
+  it("rejects a username that cannot be derived into a valid handle", () => {
+    expect(() =>
+      getBootstrapAccount({
+        BOOTSTRAP_ADMIN_EMAIL: "ab@tfn.local",
+        BOOTSTRAP_ADMIN_NAME: "TFN Admin",
+        BOOTSTRAP_ADMIN_PASSWORD: "StrongPassword123!",
+      }),
+    ).toThrow(/BOOTSTRAP_ADMIN_USERNAME/);
   });
 });

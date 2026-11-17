@@ -34,6 +34,7 @@ describe("Role-Based Access Control (RBAC) Engine", () => {
   it("checks permissions correctly for authenticated user object", () => {
     const testUser: AuthenticatedUser = {
       id: "u1",
+      username: "rankingmgr",
       email: "rankingmgr@boxing.local",
       name: "Ranking Manager",
       isActive: true,

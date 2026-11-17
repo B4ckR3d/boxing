@@ -634,14 +634,14 @@ async function main() {
   const passwordHash = await hashPassword(policy.password);
 
   const coreUsers = [
-    { email: "superadmin@boxing.local", name: "Super Admin", roleKey: "super_admin" },
-    { email: "admin@boxing.local", name: "Platform Admin", roleKey: "administrator" },
-    { email: "rankings@boxing.local", name: "Chief Ranking Officer", roleKey: "ranking_manager" },
-    { email: "tournaments@boxing.local", name: "Grand Prix Director", roleKey: "tournament_manager" },
-    { email: "editor@boxing.local", name: "Lead Content Editor", roleKey: "editor" },
-    { email: "data@boxing.local", name: "Fight Record Keeper", roleKey: "fight_data_manager" },
-    { email: "reviewer@boxing.local", name: "Sanctioning Reviewer", roleKey: "reviewer" },
-    { email: "viewer@boxing.local", name: "Broadcast Guest", roleKey: "viewer" },
+    { username: "superadmin", email: "superadmin@boxing.local", name: "Super Admin", roleKey: "super_admin" },
+    { username: "admin", email: "admin@boxing.local", name: "Platform Admin", roleKey: "administrator" },
+    { username: "rankings", email: "rankings@boxing.local", name: "Chief Ranking Officer", roleKey: "ranking_manager" },
+    { username: "tournaments", email: "tournaments@boxing.local", name: "Grand Prix Director", roleKey: "tournament_manager" },
+    { username: "editor", email: "editor@boxing.local", name: "Lead Content Editor", roleKey: "editor" },
+    { username: "data", email: "data@boxing.local", name: "Fight Record Keeper", roleKey: "fight_data_manager" },
+    { username: "reviewer", email: "reviewer@boxing.local", name: "Sanctioning Reviewer", roleKey: "reviewer" },
+    { username: "viewer", email: "viewer@boxing.local", name: "Broadcast Guest", roleKey: "viewer" },
   ];
 
   for (const u of coreUsers) {
@@ -649,6 +649,7 @@ async function main() {
       where: { email: u.email },
       update: {},
       create: {
+        username: u.username,
         email: u.email,
         name: u.name,
         passwordHash,

@@ -12,6 +12,7 @@ import { Belt3DViewer } from "@/components/belts/Belt3DViewer";
 import { BeltSectionHeader } from "@/components/belts/BeltSectionHeader";
 import { GrandPrixPreview } from "@/components/tournaments/GrandPrixPreview";
 import { FeaturedFighters } from "@/components/fighters/FeaturedFighters";
+import { SponsorMarquee } from "@/components/landing/SponsorMarquee";
 
 export const revalidate = 60; // ISR cache revalidation window
 
@@ -272,6 +273,9 @@ export default async function PublicHomePage() {
 
       {/* 8. Elite Roster Athletes & Social Grid (Reference Image 1) */}
       <FeaturedFighters fighters={fightersProps} />
+
+      {/* 9. Sponsor marquee — tepat di atas footer */}
+      <SponsorMarquee />
     </div>
   );
 }

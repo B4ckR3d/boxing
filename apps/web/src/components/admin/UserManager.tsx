@@ -11,6 +11,7 @@ import {
   setUserActiveAction,
 } from "@/app/admin/(dashboard)/users/actions";
 import type { UserDetail } from "@tfn/auth/rbac-service";
+import { CreateUserForm } from "./CreateUserForm";
 
 interface RoleOption {
   id: string;
@@ -154,6 +155,9 @@ export function UserManager({
         </p>
       </div>
 
+      {/* Tambah user baru — hanya untuk pemegang users.manage */}
+      {canManageUsers && <CreateUserForm roles={roleOptions} />}
+
       {/* Pending Role Requests */}
       {canReview && (
         <div className="bg-charcoal border border-subtle p-5 space-y-3">
@@ -262,6 +266,8 @@ export function UserManager({
                       )}
                     </div>
                     <p className="font-mono-data text-[10px] text-ink-muted mt-0.5">
+                      <span className="text-ink font-bold">@{user.username}</span>
+                      {" · "}
                       {user.email}
                       {user.lastLoginAt &&
                         ` · last login ${new Date(user.lastLoginAt).toLocaleString()}`}

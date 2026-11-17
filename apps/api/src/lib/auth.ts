@@ -61,3 +61,11 @@ export function setSessionCookie(rawToken: string, jar: SessionCookieJar) {
 export function destroySession(jar: SessionCookieJar) {
   return service.destroySession(jar);
 }
+
+export function changeOwnPassword(
+  userId: string,
+  input: { currentPassword: string; newPassword: string },
+  keepSessionId: string,
+) {
+  return service.changeOwnPassword(userId, input, keepSessionId);
+}

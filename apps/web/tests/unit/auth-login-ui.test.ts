@@ -7,7 +7,11 @@ vi.mock("@/lib/theme/ThemeContext", () => ({ ThemeToggle: () => null }));
 import Login from "@/app/admin/login/page";
 it("provides associated labels, bounded autocomplete inputs and accessible password visibility", () => {
   const html = renderToStaticMarkup(React.createElement(Login));
-  expect(html).toContain('for="email"');
+  // Login memakai satu field `identifier` yang menerima username ATAU email — bukan lagi
+  // field khusus email. Label harus tetap terhubung ke input yang benar.
+  expect(html).toContain('for="identifier"');
+  expect(html).toContain('name="identifier"');
+  expect(html).not.toContain('type="email"');
   expect(html).toContain('for="password"');
   expect(html).toContain('autoComplete="username"');
   expect(html).toContain('autoComplete="current-password"');

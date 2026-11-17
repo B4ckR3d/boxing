@@ -149,7 +149,7 @@ export const translations = {
     // Admin
     adminPortalTitle: "PORTAL LOGIN KOMISI TFN",
     adminPortalSub: "Hanya untuk personel berwenang. Semua aktivitas dicatat dalam log audit.",
-    adminEmailLabel: "EMAIL RESMI KOMISI",
+    adminEmailLabel: "USERNAME ATAU EMAIL",
     adminPasswordLabel: "KATA SANDI KEAMANAN",
     adminBtnLogin: "MASUK KE DASHBOARD →",
     adminDemoTitle: "KREDENSIAL DEMO 1-KLIK",
@@ -303,7 +303,7 @@ export const translations = {
     // Admin
     adminPortalTitle: "TFN COMMISSION PORTAL LOGIN",
     adminPortalSub: "Authorized personnel only. Audit logs record all administrative actions.",
-    adminEmailLabel: "OFFICIAL COMMISSION EMAIL",
+    adminEmailLabel: "OFFICIAL COMMISSION USERNAME OR EMAIL",
     adminPasswordLabel: "SECURITY PASSPHRASE",
     adminBtnLogin: "ENTER DASHBOARD →",
     adminDemoTitle: "ONE-CLICK DEMO CREDENTIALS",

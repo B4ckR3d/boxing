@@ -18,6 +18,7 @@ import { z } from "zod";
 import type { PrismaClient } from "@tfn/db/client";
 import { isPermissionKey, type PermissionKey } from "./catalog";
 import { assertFourEyes } from "./permissions";
+import { hashPassword, passwordPolicy } from "./password";
 
 export class RbacError extends Error {
   constructor(message: string) {
@@ -90,6 +91,34 @@ export const setUserActiveSchema = z.object({
   isActive: z.boolean(),
 });
 
+/**
+ * Username adalah handle login, jadi aturannya sengaja lebih ketat dari `name`:
+ * tidak boleh mengandung `@` (kalau boleh, ia jadi ambigu dengan email di kolom login),
+ * tanpa spasi, dan dibatasi 3–64 karakter.
+ */
+export const usernameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3, "Username must be at least 3 characters")
+  .max(64, "Username must be at most 64 characters")
+  .regex(/^[a-z0-9._-]+$/, "Username may only contain letters, numbers, dot, underscore, or hyphen")
+  .refine((v) => !v.includes("@"), "Username cannot contain @");
+
+/** Password baru wajib memenuhi `passwordPolicy` (12+ karakter, besar/kecil/angka/simbol). */
+export const createUserSchema = z.object({
+  username: usernameSchema,
+  email: z.string().trim().max(191).email("Invalid email address").toLowerCase(),
+  name: z.string().trim().min(2, "Name must be at least 2 characters").max(120),
+  password: passwordPolicy,
+  roleIds: z.array(z.string().min(1)).default([]),
+});
+
+export const changeOwnPasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required").max(1024),
+  newPassword: passwordPolicy,
+});
+
 // ---------------------------------------------------------------------------
 // Tipe hasil
 // ---------------------------------------------------------------------------
@@ -108,6 +137,7 @@ export interface RoleDetail {
 
 export interface UserDetail {
   id: string;
+  username: string;
   email: string;
   name: string;
   isActive: boolean;
@@ -134,6 +164,7 @@ export interface RbacService {
   updateRolePermissions(actorId: string, input: unknown): Promise<void>;
   deleteRole(actorId: string, roleId: string): Promise<void>;
   listUsersDetailed(): Promise<UserDetail[]>;
+  createUser(actorId: string, input: unknown): Promise<{ id: string; username: string }>;
   listPendingRoleRequests(): Promise<PendingRoleRequest[]>;
   grantRole(actorId: string, input: unknown): Promise<{ requiresApproval: boolean }>;
   revokeRole(actorId: string, input: unknown): Promise<{ requiresApproval: boolean }>;
@@ -320,6 +351,7 @@ export function createRbacService(deps: RbacServiceDeps): RbacService {
 
       return users.map((u) => ({
         id: u.id,
+        username: u.username,
         email: u.email,
         name: u.name,
         isActive: u.isActive,
@@ -332,6 +364,78 @@ export function createRbacService(deps: RbacServiceDeps): RbacService {
           isSensitive: ur.role.isSensitive,
         })),
       }));
+    },
+
+    /**
+     * Membuat user baru (dipakai super admin).
+     *
+     * Password di-hash di sini, bukan di route, supaya aturan "tidak pernah ada plaintext yang
+     * tersimpan" hanya punya satu pintu. `passwordChangedAt` ikut diisi agar kebijakan
+     * "password harus diganti" di masa depan punya titik awal yang benar.
+     *
+     * Role sengaja diterima sebagai `roleIds` dan divalidasi satu per satu: `createMany` akan
+     * diam-diam menerima id yang tidak ada, sehingga user bisa lahir tanpa role apa pun.
+     */
+    async createUser(actorId, input) {
+      const data = createUserSchema.parse(input);
+
+      const [sameUsername, sameEmail] = await Promise.all([
+        db.user.findUnique({ where: { username: data.username } }),
+        db.user.findUnique({ where: { email: data.email } }),
+      ]);
+      if (sameUsername) throw new RbacError("Username is already taken");
+      if (sameEmail) throw new RbacError("Email is already registered");
+
+      const roles = await db.role.findMany({ where: { id: { in: data.roleIds } } });
+      if (roles.length !== data.roleIds.length) {
+        throw new RbacError("One or more roles do not exist");
+      }
+
+      /**
+       * Role sensitif TIDAK boleh diberikan lewat pembuatan user.
+       *
+       * Alasannya sama dengan alasan `grantRole` memakai four-eyes: pemegang `users.manage` tidak
+       * boleh bisa menaikkan hak akses. Kalau pembuatan user menerima role sensitif, seseorang
+       * cukup membuat akun baru dengan `super_admin` — menembus pemisahan permission yang ada.
+       * Jalur yang benar: buat user tanpa role sensitif, lalu ajukan lewat alur four-eyes.
+       */
+      const sensitive = roles.filter((role) => role.isSensitive);
+      if (sensitive.length > 0) {
+        throw new RbacError(
+          `Cannot assign sensitive roles on creation (${sensitive.map((r) => r.key).join(", ")}). Create the user first, then request the role through the four-eyes flow.`,
+        );
+      }
+
+      const passwordHash = await hashPassword(data.password);
+
+      const created = await db.$transaction(async (tx) => {
+        return tx.user.create({
+          data: {
+            username: data.username,
+            email: data.email,
+            name: data.name,
+            passwordHash,
+            passwordChangedAt: new Date(),
+            roles: {
+              create: roles.map((role) => ({
+                roleId: role.id,
+                assignedById: actorId,
+              })),
+            },
+          },
+        });
+      });
+
+      await audit({
+        actorId,
+        action: "USER_CREATE",
+        entityType: "USER",
+        entityId: created.id,
+        summary: `Created user ${created.username} (${created.email})${roles.length ? ` with roles: ${roles.map((r) => r.key).join(", ")}` : " without roles"}`,
+        metadata: { userId: created.id, username: created.username, roleIds: roles.map((r) => r.id) },
+      });
+
+      return { id: created.id, username: created.username };
     },
 
     async listPendingRoleRequests() {

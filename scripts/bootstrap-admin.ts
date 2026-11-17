@@ -83,7 +83,9 @@ async function main() {
   console.log("🔐 [Bootstrap Admin] Hashing password with Argon2id...");
   const passwordHash = await hashPassword(rawPass);
 
-  const accounts = [{ email: account.email, name: account.name, roleKey: "super_admin" }];
+  const accounts = [
+    { email: account.email, username: account.username, name: account.name, roleKey: "super_admin" },
+  ];
 
   console.log("🔐 [Bootstrap Admin] Upserting admin accounts...");
   for (const acc of accounts) {
@@ -92,6 +94,7 @@ async function main() {
       update: { passwordHash, isActive: true, failedLoginCount: 0, lockedUntil: null, passwordChangedAt: new Date() },
       create: {
         email: acc.email,
+        username: acc.username,
         name: acc.name,
         passwordHash,
         isActive: true,

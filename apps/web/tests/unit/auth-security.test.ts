@@ -19,7 +19,7 @@ import { encryptSecret } from "@/lib/security/crypto";
 
 const secret = "JBSWY3DPEHPK3PXP";
 function user(overrides = {}) {
-  return { id: "user-1", email: "admin@example.com", name: "Admin", isActive: true, passwordHash: "hash", failedLoginCount: 0, lockedUntil: null, mfaEnabled: true, mfaSecretEnc: encryptSecret(secret), roles: [{ role: { key: "admin", requiresMfa: true, permissions: [{ permission: { key: "admin.access" } }] } }], ...overrides };
+  return { id: "user-1", username: "admin", email: "admin@example.com", name: "Admin", isActive: true, passwordHash: "hash", failedLoginCount: 0, lockedUntil: null, mfaEnabled: true, mfaSecretEnc: encryptSecret(secret), roles: [{ role: { key: "admin", requiresMfa: true, permissions: [{ permission: { key: "admin.access" } }] } }], ...overrides };
 }
 beforeEach(() => {
   vi.clearAllMocks();

@@ -76,7 +76,18 @@ describe("Login proxy — batas request", () => {
     expect(res.status).toBe(200);
     const [path, options] = mocks.apiFetchRaw.mock.calls[0] ?? [];
     expect(path).toBe("/api/auth/login");
-    expect(options.body).toMatchObject({ email: "a@example.com", password: "ok", totpCode: "123456" });
+    // Field `email` dari klien lama dinormalisasi menjadi `identifier` — API yang memutuskan
+    // apakah itu username atau email (murni dari ada/tidaknya `@`).
+    expect(options.body).toMatchObject({ identifier: "a@example.com", password: "ok", totpCode: "123456" });
+  });
+
+  it("menerima username tanpa @ dan mengirimkannya sebagai identifier", async () => {
+    const res = await POST(request({ identifier: "  SuperAdmin  ", password: "ok" }));
+
+    expect(res.status).toBe(200);
+    const [, options] = mocks.apiFetchRaw.mock.calls[0] ?? [];
+    // Username disimpan lowercase, jadi normalisasi dilakukan di BFF.
+    expect(options.body).toMatchObject({ identifier: "superadmin", password: "ok" });
   });
 
   it("meneruskan Set-Cookie dari API ke browser apa adanya", async () => {

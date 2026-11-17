@@ -21,9 +21,16 @@ export function proxy(request: NextRequest) {
   const isDev = process.env.NODE_ENV === "development";
 
   // Content Security Policy
+  // Notes:
+  // - 'strict-dynamic' propagates trust to dynamically-loaded scripts (required for Next.js chunks).
+  //   When strict-dynamic is present, browsers ignore 'self' and 'unsafe-inline' for external scripts.
+  //   Next.js automatically injects the nonce onto its own <script> tags during SSR.
+  // - 'unsafe-inline' is included as a fallback for older browsers that don't support nonces —
+  //   it is ignored by nonce-aware browsers, so it doesn't weaken security on modern clients.
+  // - In dev, 'unsafe-eval' is required by React for error stack reconstruction.
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${isDev ? "'unsafe-eval'" : ""};
+    script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""};
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     img-src 'self' blob: data: https://*;
     font-src 'self' data: https://fonts.gstatic.com;

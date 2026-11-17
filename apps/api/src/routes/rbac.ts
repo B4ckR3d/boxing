@@ -129,6 +129,24 @@ export function createRbacRouter(): Router {
     }
   });
 
+  /**
+   * POST /api/rbac/users — buat user baru. Permission `users.manage` (super_admin).
+   *
+   * Password plaintext hanya lewat di body request lalu langsung di-hash di service; tidak pernah
+   * dikembalikan di response. Response sengaja hanya `{ id, username }` — bukan objek user penuh —
+   * supaya tidak ada jalur di mana hash atau field sensitif ikut terkirim ke klien.
+   */
+  router.post("/users", async (req, res, next) => {
+    try {
+      assertOrigin(req);
+      const user = await requirePermission(req, res, "users.manage");
+      const created = await withAuditContext(req, () => rbac.createUser(user.id, req.body));
+      res.status(201).json({ data: created });
+    } catch (error) {
+      next(toAppError(error));
+    }
+  });
+
   /** PUT /api/rbac/users/:userId/active — aktif/nonaktif. Nonaktif mencabut semua sesi hidup. */
   router.put("/users/:userId/active", async (req, res, next) => {
     try {
@@ -213,6 +231,7 @@ export const RBAC_ROUTE_PERMISSIONS: Record<string, PermissionKey> = {
   "PUT /roles/:roleId/permissions": "roles.manage",
   "DELETE /roles/:roleId": "roles.manage",
   "GET /users": "users.manage",
+  "POST /users": "users.manage",
   "PUT /users/:userId/active": "users.manage",
   "POST /user-roles/grant": "users.manage",
   "POST /user-roles/revoke": "users.manage",

@@ -16,14 +16,25 @@ import { hasValidAuthOrigin } from "../origin";
  * Rate limit tetap di lapisan ini karena store-nya in-process dan menghadap browser.
  */
 
-const loginSchema = z.object({
-  email: z.string().trim().max(191).email("Invalid email address"),
-  password: z.string().min(1, "Password is required").max(1024),
-  totpCode: z
-    .string()
-    .regex(/^\d{6}$/, "MFA code must contain six digits")
-    .optional(),
-});
+/**
+ * `identifier` = username ATAU email. `email` tetap diterima untuk kompatibilitas klien lama.
+ * Bentuk email TIDAK divalidasi di sini — username yang sah tidak mengandung `@`, jadi aturan
+ * "harus format email" justru akan memblokir login username sebelum sampai ke API.
+ */
+const loginSchema = z
+  .object({
+    identifier: z.string().trim().min(1, "Username or email is required").max(191).optional(),
+    email: z.string().trim().min(1).max(191).optional(),
+    password: z.string().min(1, "Password is required").max(1024),
+    totpCode: z
+      .string()
+      .regex(/^\d{6}$/, "MFA code must contain six digits")
+      .optional(),
+  })
+  .refine((data) => Boolean(data.identifier || data.email), {
+    message: "Username or email is required",
+    path: ["identifier"],
+  });
 
 type UpstreamLoginOk = {
   success: boolean;
@@ -79,11 +90,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const emailLimit = rateLimit("login", parsed.data.email.toLowerCase());
-  if (!emailLimit.allowed) {
+  // Kunci rate limit memakai identifier apa adanya (username atau email) — satu akun, satu jatah,
+  // supaya tidak bisa menghindari batas dengan berganti-ganti bentuk identifier.
+  const identifier = (parsed.data.identifier || parsed.data.email || "").toLowerCase();
+
+  const accountLimit = rateLimit("login", identifier);
+  if (!accountLimit.allowed) {
     return NextResponse.json(
-      { error: `Too many attempts for this account. Please wait ${emailLimit.retryAfterSeconds} seconds.` },
-      { status: 429, headers: { "retry-after": String(emailLimit.retryAfterSeconds) } },
+      { error: `Too many attempts for this account. Please wait ${accountLimit.retryAfterSeconds} seconds.` },
+      { status: 429, headers: { "retry-after": String(accountLimit.retryAfterSeconds) } },
     );
   }
 
@@ -92,7 +107,12 @@ export async function POST(request: NextRequest) {
   try {
     const upstream = await apiFetchRaw<UpstreamLoginOk>("/api/auth/login", {
       method: "POST",
-      body: parsed.data,
+      // Kirim sebagai `identifier` — apps/api yang menentukan username vs email.
+      body: {
+        identifier,
+        password: parsed.data.password,
+        ...(parsed.data.totpCode ? { totpCode: parsed.data.totpCode } : {}),
+      },
       requestId,
     });
 

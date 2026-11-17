@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: MONOREPO_ROOT,
   },
+  images: {
+    remotePatterns: [
+      // Clearbit Logo API — dipakai sebagai placeholder sponsor sampai logo asli tersedia.
+      { protocol: "https", hostname: "logo.clearbit.com" },
+    ],
+  },
 };
 
 export default nextConfig;

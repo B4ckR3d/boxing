@@ -34,7 +34,7 @@ async function sold(ticketTypeId: string) {
 }
 
 beforeAll(async () => {
-  adminId = (await prisma.user.create({ data: { email: `${PREFIX}admin@example.com`, name: "Cap Admin", passwordHash: "x", isActive: true } })).id;
+  adminId = (await prisma.user.create({ data: { username: `${PREFIX}admin`, email: `${PREFIX}admin@example.com`, name: "Cap Admin", passwordHash: "x", isActive: true } })).id;
   const event = await prisma.event.create({
     data: { name: `${PREFIX}Night`, slug: `${PREFIX}night`, venue: "Arena", city: "Temanggung", startsAt: new Date(Date.now() + 30 * 24 * 3600_000), status: "SCHEDULED", isPublished: true },
   });

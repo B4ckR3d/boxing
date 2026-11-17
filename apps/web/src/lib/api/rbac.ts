@@ -81,6 +81,11 @@ export function listUsersDetailed(): Promise<UserDetail[]> {
   return call<UserDetail[]>("/api/rbac/users");
 }
 
+/** Buat user baru. Password plaintext lewat body, langsung di-hash di `apps/api`. */
+export function createUser(_actorId: string, input: unknown): Promise<{ id: string; username: string }> {
+  return call<{ id: string; username: string }>("/api/rbac/users", { method: "POST", body: input });
+}
+
 export async function setUserActive(_actorId: string, input: unknown): Promise<void> {
   const { userId, ...rest } = input as { userId: string };
   await call(`/api/rbac/users/${encodeURIComponent(userId)}/active`, {

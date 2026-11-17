@@ -43,6 +43,7 @@ function orderInput(overrides: Partial<TicketOrderInput> = {}): TicketOrderInput
 beforeAll(async () => {
   const admin = await prisma.user.create({
     data: {
+      username: `${PREFIX}admin`,
       email: `${PREFIX}admin@example.com`,
       name: "ITest Admin",
       passwordHash: "not-a-real-hash",

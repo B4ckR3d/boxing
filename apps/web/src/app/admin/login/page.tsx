@@ -10,7 +10,7 @@ import { useLanguage, LanguageSwitcher } from "@/lib/i18n/LanguageContext";
 import { ThemeToggle } from "@/lib/theme/ThemeContext";
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [requiresMfa, setRequiresMfa] = useState(false);
@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, ...(requiresMfa ? { totpCode } : {}) }),
+        body: JSON.stringify({ identifier, password, ...(requiresMfa ? { totpCode } : {}) }),
       });
       const data = await res.json();
       if (data.requiresMfa) {
@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
         return;
       }
       if (!res.ok || data.success !== true) {
-        const message = data.error || (lang === "id" ? "Autentikasi gagal. Periksa email dan kata sandi." : "Authentication failed. Check your credentials.");
+        const message = data.error || (lang === "id" ? "Autentikasi gagal. Periksa username/email dan kata sandi." : "Authentication failed. Check your username/email and password.");
         setErrorMsg(message);
         toast.error(message);
         return;
@@ -81,8 +81,8 @@ export default function AdminLoginPage() {
         {errorMsg && <div id="login-error" role="alert" className="mt-4 p-3 bg-fight-red/10 border border-fight-red flex items-start gap-2 text-ink text-sm"><AlertCircle aria-hidden="true" className="w-4 h-4 text-fight-red shrink-0 mt-0.5" /><span>{errorMsg}</span></div>}
         <form onSubmit={handleLogin} aria-busy={isLoading} aria-describedby={errorMsg ? "login-error" : undefined} className="mt-6 space-y-4">
           <div>
-            <label htmlFor="email" className={labelClass}>{t("adminEmailLabel")}</label>
-            <input id="email" name="email" type="email" autoComplete="username" maxLength={191} value={email} onChange={(e) => { setEmail(e.target.value); setRequiresMfa(false); setTotpCode(""); }} required disabled={isLoading} className={inputClass} />
+            <label htmlFor="identifier" className={labelClass}>{t("adminEmailLabel")}</label>
+            <input id="identifier" name="identifier" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} maxLength={191} value={identifier} onChange={(e) => { setIdentifier(e.target.value); setRequiresMfa(false); setTotpCode(""); }} required disabled={isLoading} className={inputClass} />
           </div>
           <div>
             <label htmlFor="password" className={labelClass}>{t("adminPasswordLabel")}</label>

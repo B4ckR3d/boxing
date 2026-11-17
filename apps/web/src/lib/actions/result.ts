@@ -9,6 +9,9 @@ export interface ActionResult {
   ok: boolean;
   error?: string;
   requiresApproval?: boolean;
+  /** Diisi oleh aksi yang membuat entitas baru (mis. `createUserAction`). */
+  id?: string;
+  username?: string;
 }
 
 /**

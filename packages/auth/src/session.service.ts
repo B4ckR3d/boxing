@@ -19,7 +19,7 @@ import type { PrismaClient } from "@tfn/db/client";
 import type { AuthenticatedUser, SessionCookieJar, SessionCookieOptions } from "./session";
 import type { PermissionKey } from "./catalog";
 import { sha256Hex, randomToken, decryptSecret } from "./crypto";
-import { verifyPassword, verifyAgainstDummy } from "./password";
+import { verifyPassword, verifyAgainstDummy, hashPassword, passwordPolicy } from "./password";
 import { verifyTotp } from "./totp";
 
 export interface AuthEnv {
@@ -89,6 +89,16 @@ export interface AuthService {
   ): Promise<{ id: string; rawToken: string }>;
   setSessionCookie(rawToken: string, jar: SessionCookieJar): Promise<void>;
   destroySession(jar: SessionCookieJar): Promise<void>;
+  /**
+   * Ganti password milik sendiri. Wajib memverifikasi password lama: sesi yang dibajak
+   * (mis. cookie dicuri) tidak boleh bisa langsung mengunci pemilik akun yang sebenarnya.
+   * Sesi lain dicabut setelah berhasil — satu akun, satu sesi aktif.
+   */
+  changeOwnPassword(
+    userId: string,
+    input: { currentPassword: string; newPassword: string },
+    keepSessionId: string,
+  ): Promise<{ success: true } | { success: false; error: string }>;
   cookieName(): string;
 }
 
@@ -155,6 +165,7 @@ export function createAuthService(deps: AuthServiceDeps): AuthService {
 
     return {
       id: session.user.id,
+      username: session.user.username,
       email: session.user.email,
       name: session.user.name,
       isActive: session.user.isActive,
@@ -215,17 +226,103 @@ export function createAuthService(deps: AuthServiceDeps): AuthService {
     jar.delete("__Host-bx_session");
   }
 
-  /** Authenticates email/password with brute-force prevention and timing resistance */
+  /**
+   * Ganti password milik sendiri.
+   *
+   * Urutan pemeriksaan disengaja: password lama diverifikasi **sebelum** policy password baru
+   * dievaluasi. Kalau dibalik, penyerang yang memegang cookie bisa memakai pesan validasi untuk
+   * menebak policy tanpa tahu password lama — dan pemilik sah akan melihat error policy yang
+   * membingungkan padahal masalahnya salah password.
+   *
+   * Sesi lain dicabut, sesi yang sedang dipakai dipertahankan lewat `keepSessionId`.
+   */
+  async function changeOwnPassword(
+    userId: string,
+    input: { currentPassword: string; newPassword: string },
+    keepSessionId: string,
+  ): Promise<{ success: true } | { success: false; error: string }> {
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (!user) return { success: false, error: "Account not found" };
+
+    const isCurrentValid = await verifyPassword(user.passwordHash, input.currentPassword);
+    if (!isCurrentValid) {
+      await deps.audit?.({
+        actorId: userId,
+        action: "AUTH_PASSWORD_CHANGE_FAILED",
+        entityType: "USER",
+        entityId: userId,
+        summary: `Failed password change for ${user.username}: current password incorrect`,
+      });
+      return { success: false, error: "Current password is incorrect" };
+    }
+
+    if (input.newPassword === input.currentPassword) {
+      return { success: false, error: "New password must be different from the current password" };
+    }
+
+    // Policy lengkap (12+ karakter, besar/kecil/angka/simbol) — bukan hanya panjang.
+    // Dijalankan SETELAH password lama terverifikasi, lihat komentar di atas.
+    const policyCheck = passwordPolicy.safeParse(input.newPassword);
+    if (!policyCheck.success) {
+      return { success: false, error: policyCheck.error.issues[0]?.message ?? "Password does not meet the policy" };
+    }
+
+    const passwordHash = await hashPassword(input.newPassword);
+    const now = new Date();
+
+    await db.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          passwordHash,
+          passwordChangedAt: now,
+          // Password baru membatalkan lockout lama: pemilik sah sudah membuktikan identitasnya.
+          failedLoginCount: 0,
+          lockedUntil: null,
+        },
+      });
+
+      await tx.session.updateMany({
+        where: { userId, revokedAt: null, id: { not: keepSessionId } },
+        data: { revokedAt: now },
+      });
+    });
+
+    await deps.audit?.({
+      actorId: userId,
+      action: "AUTH_PASSWORD_CHANGE",
+      entityType: "USER",
+      entityId: userId,
+      summary: `User ${user.username} changed their password; all other sessions revoked`,
+    });
+
+    return { success: true };
+  }
+
+  /**
+   * Authenticates username-or-email/password with brute-force prevention and timing resistance.
+   *
+   * `identifier` menerima dua bentuk. Aturannya sederhana dan disengaja:
+   *   - mengandung `@` → dianggap email, dicocokkan ke kolom `email`;
+   *   - selain itu → dianggap username, dicocokkan ke kolom `username` (lowercase).
+   *
+   * Urutan ini penting: username tidak boleh mengandung `@` (ditegakkan `usernameSchema`), jadi
+   * tidak ada masukan yang bisa cocok ke dua kolom sekaligus. Kolom yang dipakai ikut dicatat di
+   * `LoginAttempt.email` agar penelusuran lockout tetap menunjukkan apa yang diketik user.
+   */
   async function authenticateCredentials(
-    email: string,
+    identifier: string,
     plainPassword: string,
     meta?: { ip?: string; userAgent?: string; totpCode?: string; jar?: SessionCookieJar },
   ): Promise<LoginResult> {
-    const normEmail = email.trim().toLowerCase();
+    const raw = identifier.trim();
+    const isEmail = raw.includes("@");
+    const normEmail = raw.toLowerCase();
+
     const now = new Date();
 
     const user = await db.user.findUnique({
-      where: { email: normEmail },
+      where: isEmail ? { email: normEmail } : { username: normEmail },
       include: {
         roles: {
           include: {
@@ -375,6 +472,7 @@ export function createAuthService(deps: AuthServiceDeps): AuthService {
       success: true,
       user: {
         id: user.id,
+        username: user.username,
         email: user.email,
         name: user.name,
         isActive: user.isActive,
@@ -388,5 +486,13 @@ export function createAuthService(deps: AuthServiceDeps): AuthService {
     };
   }
 
-  return { getSession, authenticateCredentials, createSession, setSessionCookie, destroySession, cookieName };
+  return {
+    getSession,
+    authenticateCredentials,
+    createSession,
+    setSessionCookie,
+    destroySession,
+    changeOwnPassword,
+    cookieName,
+  };
 }

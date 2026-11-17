@@ -40,7 +40,7 @@ async function soldOf(ticketTypeId: string) {
 
 beforeAll(async () => {
   const admin = await prisma.user.create({
-    data: { email: `${PREFIX}admin@example.com`, name: "ITest Expiry Admin", passwordHash: "not-a-real-hash", isActive: true },
+    data: { username: `${PREFIX}admin`, email: `${PREFIX}admin@example.com`, name: "ITest Expiry Admin", passwordHash: "not-a-real-hash", isActive: true },
   });
   adminId = admin.id;
 

@@ -20,6 +20,7 @@ import {
   UserCog,
   ShieldCheck,
   Settings,
+  KeyRound,
 } from "lucide-react";
 
 export const metadata = {
@@ -87,6 +88,8 @@ export default async function AdminDashboardLayout({
         },
       ]
       : []),
+    // Selalu ada: setiap user yang login berhak mengganti password-nya sendiri.
+    { label: "Akun Saya", href: "/admin/account", icon: KeyRound },
   ];
 
   return (

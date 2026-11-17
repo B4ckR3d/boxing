@@ -1,3 +1,76 @@
+## 2026-11-17 — Langkah H: Login username, ganti password sendiri, proteksi role sensitif
+
+**Cakupan:** kolom `username` di `User`, login dua bentuk (username **atau** email), endpoint
+`POST /api/auth/change-password` + halaman `/admin/account`, form tambah user, dan penutupan
+celah eskalasi hak akses pada `createUser`.
+
+### Skema & migrasi
+
+`User.username` — `@unique VARCHAR(64)`, wajib untuk `user.create`. Migrasi mengisi baris lama
+dari local-part email (disanitasi ke `[a-z0-9._-]`), jadi 8 akun demo kini punya username
+eksplisit yang sama dengan hasil migrasi: `superadmin`, `admin`, `rankings`, `tournaments`,
+`editor`, `data`, `reviewer`, `viewer`.
+
+### Login
+
+Satu field `identifier` menggantikan `email`. Berisi username **atau** email — tidak ada `@`?
+Diperlakukan sebagai username. Email tetap berfungsi, jadi klien lama tidak rusak.
+Respons login mengembalikan `user.username` sehingga UI bisa menampilkan identitasnya.
+
+### Ganti password sendiri
+
+`POST /api/auth/change-password` (sesi + origin) → verifikasi password lama, lalu cabut sesi
+perangkat lain; sesi yang sedang dipakai tetap hidup. Halaman `/admin/account` memanggilnya lewat
+BFF `apps/web/src/app/api/auth/change-password/route.ts` — **bukan** server action, karena API
+mengirim `Set-Cookie` yang harus sampai ke browser.
+
+Kebijakan password diseragamkan: `changeOwnPassword` sebelumnya hanya mengecek panjang ≥ 12,
+sekarang memakai `passwordPolicy` resmi yang sama dengan `createUserSchema` — minimal 12 karakter
+plus huruf besar, huruf kecil, angka, dan simbol.
+
+### Celah yang ditutup
+
+`createUser` menolak role sensitif (`isSensitive`). Sebelumnya siapa pun pemegang `users.manage`
+bisa mencetak `super_admin` langsung dari form tambah user, melewati alur *four-eyes* `grantRole`.
+Pemberian role sensitif **hanya** lewat `grantRole` yang butuh persetujuan kedua.
+
+### Bootstrap
+
+`getBootstrapAccount` mengembalikan `username` dari `BOOTSTRAP_ADMIN_USERNAME`, dengan fallback
+local-part email. `usernameSchema` **diimpor** dari `rbac.service.ts`, tidak diduplikasi (modul itu
+hanya memakai `import type` Prisma, jadi tidak ada siklus dependensi). `scripts/bootstrap-admin.ts`
+dan `prisma/seed.ts` ikut mengisi `username`.
+
+### Hasil verifikasi
+
+| Gate | Hasil |
+|---|---|
+| `pnpm turbo:verify --force` | 19/19 task, **0 cached** — web 93, api 52, worker 5 |
+| `pnpm verify:integration` | 7 file, **33 test** (MySQL `:3307`) |
+
+Probe live terhadap API `:4000` dan BFF `:3000`:
+
+| Skenario | Hasil |
+|---|---|
+| Login `superadmin` (tanpa `@`) / email / `SUPERADMIN` | 200, payload memuat `username` |
+| Login password salah | 401 |
+| Ganti password + login password baru | 200 → 200 |
+| Password lama setelah ganti | 401 |
+| `POST /api/rbac/users` | 201, user baru bisa login |
+| Username duplikat / password lemah / `@` di username | 400 |
+| Tanpa sesi | 401 |
+| Nonaktifkan user | 200 |
+
+### Catatan probe (bukan bug produk)
+
+Klik otomatis `browser_click` pada tombol submit tidak men-dispatch submit form, sehingga ganti
+password sempat tampak gagal padahal endpoint-nya benar. Submit via **Enter** berhasil dan
+password benar-benar berubah di server. Bila menguji ulang dengan otomasi, pakai Enter atau
+`form.requestSubmit()`.
+
+Satu lagi: setelah ganti password, sesi browser lama langsung ditolak dan diarahkan ke
+`/admin/login`. Itu perilaku yang diinginkan (sesi lain dicabut), bukan regresi.
+
 ## 2026-11-17 — Langkah G: RBAC dipindah ke `apps/api`
 
 **Cakupan:** router RBAC di `apps/api` + web menjadi pemanggil API, binding Prisma di web dihapus.

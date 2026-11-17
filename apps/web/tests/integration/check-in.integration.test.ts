@@ -55,8 +55,8 @@ async function expectTicketingError(promise: Promise<unknown>, code: string) {
 }
 
 beforeAll(async () => {
-  adminId = (await prisma.user.create({ data: { email: `${PREFIX}admin@example.com`, name: "Gate Admin", passwordHash: "x", isActive: true } })).id;
-  secondAdminId = (await prisma.user.create({ data: { email: `${PREFIX}admin2@example.com`, name: "Gate Admin 2", passwordHash: "x", isActive: true } })).id;
+  adminId = (await prisma.user.create({ data: { username: `${PREFIX}admin`, email: `${PREFIX}admin@example.com`, name: "Gate Admin", passwordHash: "x", isActive: true } })).id;
+  secondAdminId = (await prisma.user.create({ data: { username: `${PREFIX}admin2`, email: `${PREFIX}admin2@example.com`, name: "Gate Admin 2", passwordHash: "x", isActive: true } })).id;
 
   eventId = (
     await prisma.event.create({
