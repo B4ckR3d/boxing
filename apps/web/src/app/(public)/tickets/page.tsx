@@ -59,7 +59,7 @@ export default async function TicketsPage() {
       </section>
 
       {/* Official event + government backing, above the purchase panel */}
-      <OfficialSupport />
+      {/* <OfficialSupport /> */}
 
       <div className="mx-auto max-w-7xl space-y-12 px-4 py-12 sm:px-6 lg:px-8">
         {/* How it works */}
