@@ -165,20 +165,15 @@ export function MatchupShowcase() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5 shrink-0">
-                  <span className="inline-flex items-center gap-1.5 font-mono-data text-[10px] font-bold text-green-400 bg-green-950/40 border border-green-800/40 px-2.5 py-1">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    TERSEDIA
-                  </span>
-
+                <div className="flex items-center justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
                   <a
                     href={getWaLink(div.name, div.range)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 bg-fight-red hover:bg-fight-red-hover text-white px-3 py-1 font-mono-data text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm hover:scale-105 active:scale-95"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-[#FFCF1F] hover:bg-[#ffd84d] text-black font-display font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000] hover:scale-105 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
                   >
-                    <span>DAFTAR</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
+                    <span>Daftar</span>
+                    <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
                   </a>
                 </div>
               </div>
