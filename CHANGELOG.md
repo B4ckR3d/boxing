@@ -1,3 +1,53 @@
+## 2026-11-18 — Aplikasi tiket dikeluarkan dari repo ini → repo mandiri `ticket-pimpom`
+
+`TFN/ticket-tnf` sudah dipindah ke `~/Projects/My-Projects/ticket-pimpom` dan punya repo git
+sendiri. Riwayat perubahan khusus ticketing (rebrand "Ticket by Pimpom", tema gelap/terang,
+beranda marketplace, tipografi) kini dicatat di `ticket-pimpom/CHANGELOG.md`.
+
+## 2026-11-18 — Repo diringkas jadi dua project mandiri (`web-tnf` + `ticket-tnf`)
+
+**Cakupan:** monorepo (`apps/web`, `apps/api`, `apps/worker`, `packages/*`, root `prisma/`,
+Turborepo) dibubarkan. Root sekarang hanya berisi `web-tnf/`, `ticket-tnf/`, `docs/`, dan file
+dokumen — satu git repo, dua aplikasi yang tidak saling bergantung saat build.
+
+### Yang dipindah
+
+| Dari | Ke |
+|---|---|
+| `apps/web/` (Next + `/admin` CMS) | `web-tnf/` (root project) |
+| `apps/api/` | `web-tnf/api/` (`@tfn/api`, Express :4000) |
+| `apps/worker/` | `web-tnf/worker/` |
+| `packages/{db,core,auth,ticketing}` | `web-tnf/packages/*` |
+| root `prisma/` | `web-tnf/prisma/` (DB `boxing`) |
+| root `scripts/`, `storage/`, `docker/` | `web-tnf/{scripts,storage,docker}/` |
+| `docs/` | tetap di root |
+
+### Yang dihapus dari root
+
+`package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.json`,
+`prisma.config.ts`, `docker-compose.yml`, `.env`, `.npmrc`, `node_modules/`, `.turbo/`,
+`backups/`. Pemulihan: `git checkout HEAD -- <path>` atau `/tmp/TFN-full-backup-*.tar.gz`.
+
+### Konsekuensi kode
+
+- Alias esbuild `api/`: `../../packages/*` → `../packages/*`; `--schema ../prisma/schema.prisma`.
+- `api/src/lib/cookie-jar.ts`: import `../../../web/src/lib/auth/session-cookie-jar` → `../../../src/…`.
+- `worker/src/cli.ts` + `next.config.ts`: path `.env` sekarang milik project masing-masing.
+- `web-tnf/tsconfig.json` mengecualikan `api` dan `worker` (typecheck web tidak mencampur runtime node).
+- Perintah baru: `pnpm api:dev|api:build|api:start`, `pnpm worker:expire` di `web-tnf/`.
+
+### Bukti
+
+`web-tnf`: `tsc --noEmit` 0 error, `next build` 39 route, `api build` OK, `worker tsc` 0 error;
+`/health/ready` 200 (`database: up`), BFF `/api/v1/meta` 200. `ticket-tnf`: `pnpm probe` 5/5,
+`pnpm probe:admin` 9/9, `tsc` 0 error.
+
+### Catatan operasional
+
+PM2 di server **wajib** di-repoint (`boxing-tfn` → `web-tnf`, `tfn-api` → `web-tnf/api`, tambah
+`tfn-ticketing` → `ticket-tnf`) **sebelum** `git pull`, karena `apps/*` tidak ada lagi.
+Peta path lengkap: `docs/02-ARCHITECTURE/PATH-MIGRATION-2026-11.md`.
+
 ## 2026-11-17 — Langkah H: Login username, ganti password sendiri, proteksi role sensitif
 
 **Cakupan:** kolom `username` di `User`, login dua bentuk (username **atau** email), endpoint

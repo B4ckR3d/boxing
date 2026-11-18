@@ -45,7 +45,7 @@ data bersifat **ringan**; yang perlu dijaga adalah kontinuitas kode & konten, bu
 | Tahap | Isi | Data |
 |---|---|---|
 | M1 | Bekukan repo lama; tag rilis; backup DB produksi (`scripts/db-backup.mjs`) | backup `.sql` |
-| M2 | Buat monorepo, `packages/*`, `apps/api` skeleton; **schema Prisma dipindah apa adanya** | schema sama → tidak ada migrasi data |
+| M2 | Buat monorepo, `packages/*`, `web-tnf/api` skeleton; **schema Prisma dipindah apa adanya** | schema sama → tidak ada migrasi data |
 | M3 | Tambah `Organization` + backfill organisasi "TFN" + `organizationId` ke tabel bisnis | migration bertahap |
 | M4 | Pindahkan `ticketing`, `auth`, `rbac`, `media` ke API; app lama memanggil API | data tetap |
 | M5 | Bangun modul baru (registrasi, payment, POS, finance) langsung di API | data baru mulai masuk di DB target |

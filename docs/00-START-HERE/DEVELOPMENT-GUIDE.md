@@ -37,7 +37,7 @@ Satu iterasi = satu task. Jangan mencampur dua modul dalam satu commit besar.
 ## Struktur backend saat ini (dan targetnya)
 
 Sekarang: `src/app/api/*` (route handler) + `src/server/services/*` + `src/lib/*`.
-Target: `apps/api/src/modules/<module>/{routes,controller,service,repository,validation,types,tests}.ts`.
+Target: `web-tnf/api/src/modules/<module>/{routes,controller,service,repository,validation,types,tests}.ts`.
 Selama transisi: **logika bisnis tetap di service layer**, route handler hanya HTTP.
 
 ## Menambah migration (Prisma)

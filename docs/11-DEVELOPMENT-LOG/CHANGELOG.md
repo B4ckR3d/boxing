@@ -1,3 +1,53 @@
+## 2026-11-18 — Tiket keluar dari `web-tnf` (redirect ke `ticket-tnf`, admin bersih)
+
+**Perubahan:** `/tickets*` dan `/admin/ticketing*` di `web-tnf` sekarang **308 redirect** ke
+aplikasi ticketing terpisah (peta lengkap di `src/proxy.ts` + `02-ARCHITECTURE/MONOREPO-STRUCTURE.md`).
+Semua CTA tiket publik memakai `NEXT_PUBLIC_TICKETING_URL` lewat `src/lib/ticketing/external.ts`.
+Halaman, komponen, service, BFF `/api/ticketing`, 10 test tiket, dan menu admin "Tiket & Pembayaran"
+dihapus. `api/src/routes/ticketing.ts` tidak didaftarkan lagi (`/api/ticketing/*` → 404) tapi
+filenya disimpan sebagai referensi migrasi.
+
+**Verifikasi:** `typecheck` bersih · `lint` 0 error (13 warning lama) · `test` 14 file/79 test lulus ·
+`build` sukses · probe HTTP: `/tickets` 308→`:3010/`, `/tickets/status` 308→`/my-tickets`,
+`/tickets/<no>` 308→`/orders/<no>`, `/tickets/<no>/ticket` 308→`/api/tickets/<no>/pdf`,
+`/admin/ticketing` 308→`/admin/orders`, `/admin/ticketing/scan` 308→`/admin/scan`,
+`/health/ready` 200, `/api/v1/meta` (langsung & BFF) 200.
+
+**Sengaja dibiarkan:** tabel `TicketOrder`/`TicketType`/`TicketPayment` di DB `boxing` (data
+historis), `packages/ticketing`, job worker `expire-holds` — dibersihkan setelah keputusan data.
+
+## 2026-11-18 — Repo jadi dua project mandiri; pemeriksa integrasi Midtrans/Google
+
+**Restrukturisasi:** `apps/*` + `packages/*` + Turborepo dibubarkan; `web-tnf/` sekarang memuat
+web, `api/`, `worker/`, `packages/*`, dan `prisma/` sendiri. `ticket-tnf/` tetap mandiri. Ringkasan
+lengkap + tabel path: `CHANGELOG.md` root dan `02-ARCHITECTURE/PATH-MIGRATION-2026-11.md`.
+
+**Dokumentasi:** `02-ARCHITECTURE/MONOREPO-STRUCTURE.md` ditulis ulang (sebelumnya masih berisi
+*target* `apps/website|admin|pos` yang tak pernah diwujudkan). `10-DEPLOYMENT/DEPLOYMENT-GUIDE.md`
+diperbarui: proses PM2 `boxing-tfn` / `tfn-api` / `tfn-ticketing` beserta perintah `pnpm start` per
+project. `CURRENT-STATE.md`, `NEXT-TASKS.md`, `TASK-TRACKER.md` diberi banner bahwa perintah
+`turbo:*` dan path `apps/*` di dalamnya sudah tidak berlaku. Halaman baru:
+`10-DEPLOYMENT/INTEGRASI-MIDTRANS-GOOGLE.md`.
+
+**`ticket-tnf` — alat baru:**
+
+- `pnpm check:integrations [--live]` — 6–12 pemeriksaan konfigurasi Google/Midtrans: bentuk key,
+  kecocokan prefix dengan `MIDTRANS_MODE`, konsistensi `MIDTRANS_SNAP_SCRIPT_URL`, redirect URI,
+  notification URL, panjang `AUTH_SECRET`/`TICKET_SECRET`, status TOTP admin. Mode `--live` menukar
+  `code` palsu ke Google (`invalid_grant` = kredensial diterima) dan memanggil
+  `GET /v2/probe-nonexistent/status` ke Midtrans (`404` = server key valid). Exit 1 bila ada ❌.
+- `pnpm db:reset:data` — mengosongkan data DB ticketing (skema tetap) agar `pnpm probe` bisa
+  dijalankan berulang; menolak jalan saat `NODE_ENV=production`.
+- `scripts/_bootstrap.ts` menerima `ENV_FILE=/path/.env` untuk menguji konfigurasi alternatif tanpa
+  menyentuh `.env.local`.
+
+**Bukti:** `pnpm check:integrations` → 6 pemeriksaan, 0 gagal, 3 belum (kredensial memang kosong);
+dengan env salah (mode produksi + key sandbox + client ID tidak valid) → 5 ❌, exit 1. DB ticketing
+dibersihkan → `pnpm probe` 5/5 lulus, `pnpm probe:admin` 9/9 lulus.
+
+**Akun admin dev dibuat ulang:** `admin@tfn.test` / `TfnDev#2026!`, TOTP
+`IRNKXP7Z6OQ5PLCQFEWRQKRP4PQZWSVM` (hanya untuk lokal).
+
 ## 2026-11-17 — Akun demo lokal + tiga bug yang menghalangi login
 
 Audit "apakah ada akun demo untuk akses lokal" menemukan 8 akun `@boxing.local` sudah ada di seed,

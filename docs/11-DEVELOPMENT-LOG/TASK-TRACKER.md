@@ -1,13 +1,17 @@
 # Task Tracker
 
+> ⚠️ **Catatan historis.** Baris bertanda `turbo:verify` / path `apps/*` ditulis sebelum
+> restruktur 18 Nov 2026 dan tidak lagi mencerminkan kondisi repo. Lihat
+> `../02-ARCHITECTURE/PATH-MIGRATION-2026-11.md`.
+
 > Status hanya boleh berubah berdasarkan bukti. `DONE` = acceptance criteria terpenuhi + gate lulus.
 > Terakhir diperbarui: 17 Nov 2026 — Phase 1 **fondasi selesai & terverifikasi**; menunggu
-> keputusan Irhan untuk Langkah A (`apps/web`).
+> keputusan Irhan untuk Langkah A (`web-tnf`).
 
 | ID | Title | Priority | Status | Bukti / Catatan |
 |---|---|---|---|---|
 | TFN-001 | Project initialization & fondasi Next.js | P0 | **DONE** | App berjalan, `next build` pernah lulus, live produksi |
-| TFN-002 | Monorepo (pnpm + turbo): `apps/web` + `apps/api` + `packages/db` | P0 | **DONE** (17 Nov 2026) | Langkah A dijalankan: Next pindah ke `apps/web` (`@tfn/web`), Prisma Client jadi `@tfn/db`, root = orchestrator. `pnpm turbo:verify` **9/9 task** sukses; web 105 test (75 unit + 30 integration) + `next build` + probe 26 halaman (200/307 sesuai); api 19 test + `verify:dist` (bundle esbuild, `/health/ready` DB up). Bukti: CHANGELOG 2026-11-17, ADR-011/012 |
+| TFN-002 | Monorepo (pnpm + turbo): `web-tnf` + `web-tnf/api` + `packages/db` | P0 | **DONE** (17 Nov 2026) | Langkah A dijalankan: Next pindah ke `web-tnf` (`@tfn/web`), Prisma Client jadi `@tfn/db`, root = orchestrator. `pnpm turbo:verify` **9/9 task** sukses; web 105 test (75 unit + 30 integration) + `next build` + probe 26 halaman (200/307 sesuai); api 19 test + `verify:dist` (bundle esbuild, `/health/ready` DB up). Bukti: CHANGELOG 2026-11-17, ADR-011/012 |
 | TFN-003 | Database architecture & ERD | P0 | **REVIEW** | Schema 40 model terdokumentasi di `03-DATABASE/`; target tenant masih rencana |
 | TFN-004 | Authentication (session, MFA, lockout) | P0 | **DONE** | 75 unit test (termasuk auth/totp), login live |
 | TFN-005 | RBAC & permission management | P0 | **TESTING** | 24 permission + 8 role berjalan; role target (Cashier, Finance, Referee, …) belum ada |
@@ -35,7 +39,7 @@
 | TFN-022 | Selesaikan `src/app/layout.tsx` agar lint lulus | P0 | **DONE** | Tema via cookie/SSR (ADR-008); `theme-init.js` dihapus; `eslint .` **0 error 0 warning**; probe Playwright 0 mutasi class |
 | TFN-023 | Perbaiki `/sitemap.xml` & `/robots.txt` (404 di produksi) | P1 | **DONE** | `/sitemap.xml` 200, 15 URL (9 statis + 6 fighter); `/robots.txt` 200 + `noindex` di `/tickets/status` & admin |
 | TFN-024 | Desain data sensitif (NIK/KTP/BPJS): enkripsi, storage privat, retensi | P0 | **TODO** | Prasyarat TFN-009 |
-| TFN-025 | Swagger/OpenAPI untuk API | P2 | **BACKLOG** | Setelah `apps/api` ada |
+| TFN-025 | Swagger/OpenAPI untuk API | P2 | **BACKLOG** | Setelah `web-tnf/api` ada |
 
 ## Aturan status
 

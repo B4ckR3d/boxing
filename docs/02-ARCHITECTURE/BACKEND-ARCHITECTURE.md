@@ -1,12 +1,12 @@
 # Backend Architecture (TARGET)
 
 > **Status: 🟡 target.** Hari ini logika ada di `src/server/services/*` dan route handler Next.js.
-> Struktur di bawah menjadi acuan saat `apps/api` dibangun (Phase 1–2).
+> Struktur di bawah menjadi acuan saat `web-tnf/api` dibangun (Phase 1–2).
 
 ## 1. Struktur per modul
 
 ```
-apps/api/src/
+web-tnf/api/src/
 ├── config/            env (Zod), logger, swagger, prisma
 ├── middlewares/       auth, tenant, rbac, validate, rate-limit, error, request-log
 ├── modules/

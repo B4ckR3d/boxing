@@ -1,40 +1,45 @@
 # NEXT-TASKS
 
+> ⚠️ **Ditulis sebelum restruktur 18 Nov 2026.** `turbo.json` / `pnpm-workspace.yaml` di root
+> sudah dihapus dan `apps/*` sudah tidak ada. Verifikasi sekarang dijalankan per project:
+> `cd web-tnf && pnpm typecheck && pnpm lint && pnpm test`, idem untuk `ticket-tnf`.
+> Terjemahan path: `../02-ARCHITECTURE/PATH-MIGRATION-2026-11.md`.
+
 > Prioritas berurutan. Jangan lompat ke Phase 2 sebelum Phase 1 lulus gate.
 
 ## P0 — Phase 1: fondasi monorepo — ✅ FONDASI SELESAI 2026-11-17
 
 Bukti: `pnpm turbo:verify` → 7/7 task (root typecheck+lint+unit, api typecheck+lint+test+verify:dist) dalam
-9,6 s; `apps/api` 19 test lulus; `/health/ready` → `{"database":"up"}` (container :3307);
+9,6 s; `web-tnf/api` 19 test lulus; `/health/ready` → `{"database":"up"}` (container :3307);
 regresi app lama: 75 unit + 30 integration + `next build` lulus. Detail: CHANGELOG entri
 "Phase 1: fondasi monorepo".
 
 **Yang sudah ada:** `pnpm-workspace.yaml` (`.` + `apps/*` + `allowBuilds`), `turbo.json`,
-`.npmrc` (`node-linker=hoisted`), root `packageManager: pnpm@12.10.1`, `apps/api` (health,
+`.npmrc` (`node-linker=hoisted`), root `packageManager: pnpm@12.10.1`, `web-tnf/api` (health,
 meta, OpenAPI 3.1 + Swagger UI, error standard `{error:{code,message,requestId}}`, pino log,
 graceful shutdown).
 
 **BLOKIR BERIKUTNYA — butuh keputusan Irhan** (detail: `02-ARCHITECTURE/MIGRATION-PLAN-WEB.md`):
-1. ~~**NT-4** Setujui **Langkah A**: pindahkan app Next.js ke `apps/web` (tanpa mengubah logika)?~~
+1. ~~**NT-4** Setujui **Langkah A**: pindahkan app Next.js ke `web-tnf` (tanpa mengubah logika)?~~
    ✅ **SELESAI 17 Nov 2026** — dijalankan (ADR-012); blocker `src/generated/prisma` diselesaikan lewat `@tfn/db` (ADR-011).
-2. ~~**NT-5** Nama paket web: `@tfn/web`?~~ ✅ **SELESAI** — `apps/web/package.json` = `@tfn/web`.
+2. ~~**NT-5** Nama paket web: `@tfn/web`?~~ ✅ **SELESAI** — `web-tnf/package.json` = `@tfn/web`.
 3. ~~**NT-6** Pola akses FE→API: Next sebagai BFF (proxy) atau browser memanggil API langsung?~~
-   ✅ **SELESAI 17 Nov 2026** (ADR-013) — **Next = BFF/proxy**. `apps/web/src/lib/api/client.ts`
+   ✅ **SELESAI 17 Nov 2026** (ADR-013) — **Next = BFF/proxy**. `web-tnf/src/lib/api/client.ts`
    (`apiFetch`, envelope ADR-010 → `ApiClientError`), contoh rute hidup `GET /api/v1/meta`
    (200 saat API nyala, **503 `UPSTREAM_UNREACHABLE`** saat API mati), 7 unit test.
-4. ~~**NT-7** Worker: `apps/worker` terpisah atau cron di dalam API?~~
-   ✅ **SELESAI 17 Nov 2026** (ADR-014) — **`apps/worker` (`@tfn/worker`) terpisah**, memakai ulang
-   `expireStaleHolds` dari `apps/web` (tanpa duplikasi logika), 5 unit test, terbukti menyentuh DB
+4. ~~**NT-7** Worker: `web-tnf/worker` terpisah atau cron di dalam API?~~
+   ✅ **SELESAI 17 Nov 2026** (ADR-014) — **`web-tnf/worker` (`@tfn/worker`) terpisah**, memakai ulang
+   `expireStaleHolds` dari `web-tnf` (tanpa duplikasi logika), 5 unit test, terbukti menyentuh DB
    (`scanned=0 … 121ms`), `pnpm ticketing:expire-holds` kini delegasi ke worker.
 
 **NT-8 — ✅ SELESAI 17 Nov (ADR-010).** Envelope kanonik adalah yang sudah berjalan di
-`apps/api`: `{"error":{code,message,details?,requestId}}`, sukses = JSON domain langsung.
+`web-tnf/api`: `{"error":{code,message,details?,requestId}}`, sukses = JSON domain langsung.
 Envelope `{"success":true,"data":…}` di `04-API/API-STANDARDS.md` ternyata **tidak pernah
 diimplementasikan** dan sekarang ditandai DITOLAK. Route Next lama (`{"error":"string"}`) tidak
 disentuh; diseragamkan saat modulnya pindah (Langkah B/C).
 
 Selama pertanyaan di atas belum dijawab: **jangan** memindahkan file app lama, **jangan**
-membuat `apps/web`/`apps/worker`, dan modul baru tetap ditahan.
+membuat `web-tnf`/`web-tnf/worker`, dan modul baru tetap ditahan.
 
 ## P0 — Buka blocker — ✅ SELESAI 2026-11-17 (lihat `11-DEVELOPMENT-LOG/CHANGELOG.md`)
 
@@ -74,14 +79,14 @@ membuat `apps/web`/`apps/worker`, dan modul baru tetap ditahan.
 - **Acceptance:** `/sitemap.xml` 200 dengan URL publik, `/robots.txt` 200 dan menunjuk sitemap;
   diverifikasi pada **build produksi** (`npm run start`), bukan dev.
 
-## P0 — Langkah B (pindah auth ke `apps/api`) — ✅ SELESAI 2026-11-17
+## P0 — Langkah B (pindah auth ke `web-tnf/api`) — ✅ SELESAI 2026-11-17
 
 Tiga slice, semua diverifikasi dengan bukti hidup terhadap MySQL nyata (bukan hanya unit test):
 
 1. **1/3 — Lepas `next/headers` dari jalur auth.** `SessionCookieJar` (get/set/delete) +
    `createMemoryCookieJar`; `next-session-cookie-jar.ts` jadi satu-satunya penyentuh `next/headers`.
    Pemanggil lama tidak berubah perilaku karena parameter `jar?` opsional.
-2. **2/3 — Auth hidup di `apps/api`.** `POST /api/auth/login|logout`, `GET /api/auth/me` memakai
+2. **2/3 — Auth hidup di `web-tnf/api`.** `POST /api/auth/login|logout`, `GET /api/auth/me` memakai
    `auth.service` yang **sama** dengan web (tanpa duplikasi). Bukti: login 200 + `Set-Cookie` HttpOnly,
    `/me` 24 permission, logout → `/me` 401. Test API **31/31**.
 3. **3/3 — Next jadi proxy tipis.** `/api/auth/*` di web meneruskan ke API, cookie diterbitkan API
@@ -102,7 +107,7 @@ Sebelumnya "50 paralel" hanya ada di dokumen; tes nyata cuma 2 order. Sekarang a
   (membuktikan guard benar-benar aktif, bukan hijau kebetulan).
 
 Jalankan dengan `pnpm test:gate-a2` (butuh MySQL :3307 hidup). Setelah ticketing pindah ke
-`apps/api`, angka ini **harus sama persis**.
+`web-tnf/api`, angka ini **harus sama persis**.
 
 **Celah gate:** `turbo:verify` hanya menjalankan unit test (89). Integrasi (33) dijalankan lewat
 `pnpm verify:integration` karena butuh DB — jangan diasumsikan tercakup `turbo:verify`.
@@ -110,8 +115,8 @@ Jalankan dengan `pnpm test:gate-a2` (butuh MySQL :3307 hidup). Setelah ticketing
 ## P0 — Butuh persetujuan dulu
 
 ### NT-4 · ADR-001 (strategi migrasi) → kemudian TFN-002 monorepo
-Setelah disetujui: buat `pnpm-workspace.yaml`, `turbo.json`, `apps/api` (Express + health + Swagger),
-`apps/worker` skeleton, `packages/{types,validators,utils,config}`. **Jangan pindahkan modul** pada
+Setelah disetujui: buat `pnpm-workspace.yaml`, `turbo.json`, `web-tnf/api` (Express + health + Swagger),
+`web-tnf/worker` skeleton, `packages/{types,validators,utils,config}`. **Jangan pindahkan modul** pada
 langkah ini — hanya fondasi + CI gate.
 
 ### NT-5 · TFN-024 — Desain data sensitif (sebelum TFN-009)
@@ -141,11 +146,11 @@ endpoint dipakai UI ✅ · dokumentasi + tracker diperbarui ✅.
 
 ### Langkah C — SELESAI (2026-11-17), sisa 1 item
 
-Ticketing sudah berjalan di `apps/api`; web hanya proxy. Terbukti hidup: create → confirm → PDF 11 KB
+Ticketing sudah berjalan di `web-tnf/api`; web hanya proxy. Terbukti hidup: create → confirm → PDF 11 KB
 `%PDF-1.7` → check-in 200 → `ALREADY_USED` saat ulang.
 
-**Selesai di Langkah D:** service sudah pindah fisik ke `packages/ticketing`. `apps/api` tidak lagi
-mengimpor `apps/web` untuk ticketing — arah dependensi terbalik sudah dicabut.
+**Selesai di Langkah D:** service sudah pindah fisik ke `packages/ticketing`. `web-tnf/api` tidak lagi
+mengimpor `web-tnf` untuk ticketing — arah dependensi terbalik sudah dicabut.
 
 **Sisa:**
 1. **`saveTicketTypeAction`** (CRUD kategori tiket) masih `prisma` langsung di web.

@@ -1,5 +1,9 @@
 # CURRENT-STATE
 
+> ⚠️ **Ditulis 17 Nov 2026, sebelum restruktur 18 Nov 2026.** Path `apps/*` dan perintah
+> `pnpm turbo:*` di bawah **sudah tidak berlaku** — sekarang repo hanya berisi `web-tnf/` dan
+> `ticket-tnf/`. Terjemahan path: `../02-ARCHITECTURE/PATH-MIGRATION-2026-11.md`.
+
 > Diperbarui: **17 November 2026** — Phase 0 selesai + **fondasi Phase 1 terverifikasi**.
 > Sumber: eksekusi nyata (bukan rencana).
 > Setiap sesi berikutnya **wajib** memperbarui file ini.
@@ -8,11 +12,11 @@
 
 | Aspek | Kondisi |
 |---|---|
-| Phase | 0 selesai. Phase 1: **fondasi selesai** (workspace + turbo + `apps/api`); Langkah A (`apps/web`) **belum** disetujui |
-| Kode | Phase 0: tidak ada perubahan. Phase 1: **hanya penambahan** (`apps/api`, `pnpm-workspace.yaml`, `turbo.json`, `.npmrc`, 2 file docs); file app lama tidak dipindah/dihapus |
+| Phase | 0 selesai. Phase 1: **fondasi selesai** (workspace + turbo + `web-tnf/api`); Langkah A (`web-tnf`) **belum** disetujui |
+| Kode | Phase 0: tidak ada perubahan. Phase 1: **hanya penambahan** (`web-tnf/api`, `pnpm-workspace.yaml`, `turbo.json`, `.npmrc`, 2 file docs); file app lama tidak dipindah/dihapus |
 | Repo | `main`, commit `119b39f`; working tree **kotor**: `src/app/layout.tsx` |
 | Produksi | `https://tfn.pimpom.id` hidup, Next.js :3000, data = demo seed |
-| Arsitektur | **Monorepo parsial**: app Next.js masih di root (semua route bisnis di `src/app/api/*`), `apps/api` Express hidup di :4000 tapi **masih skeleton** (health/meta/docs saja) |
+| Arsitektur | **Monorepo parsial**: app Next.js masih di root (semua route bisnis di `src/app/api/*`), `web-tnf/api` Express hidup di :4000 tapi **masih skeleton** (health/meta/docs saja) |
 
 ## 2. Modul selesai (terverifikasi)
 
@@ -74,11 +78,11 @@ K-02 (DB lokal), K-03 (lint), K-01 (sitemap/robots), K-07 (data demo di produksi
 
 ## Status terbaru (17 Nov 2026, terverifikasi) — Langkah A selesai
 
-- Struktur: `apps/web` (Next 16, `@tfn/web`) + `apps/api` (Express 5, `@tfn/api`) + `packages/db` (`@tfn/db`).
+- Struktur: `web-tnf` (Next 16, `@tfn/web`) + `web-tnf/api` (Express 5, `@tfn/api`) + `packages/db` (`@tfn/db`).
   Root = orchestrator (pnpm + turbo + Prisma schema/migrasi + `scripts/` ops + `docker/` + `docs/`).
-- Satu `.env` di root repo; dimuat eksplisit oleh `apps/web/next.config.ts` dan `apps/web/tests/setup.ts`;
-  `apps/api` mencarinya lewat `process.cwd()` + induk.
-- `next build`/`next start` dijalankan dari `apps/web`; `turbopack.root` & `outputFileTracingRoot` = root repo.
+- Satu `.env` di root repo; dimuat eksplisit oleh `web-tnf/next.config.ts` dan `web-tnf/tests/setup.ts`;
+  `web-tnf/api` mencarinya lewat `process.cwd()` + induk.
+- `next build`/`next start` dijalankan dari `web-tnf`; `turbopack.root` & `outputFileTracingRoot` = root repo.
 - Gate tunggal: `pnpm turbo:verify` → 9 task (root typecheck; web typecheck+lint+test; api
   typecheck+lint+test+verify:dist; db typecheck). Terakhir: **9/9 sukses**.
 - Aplikasi web: 105 test lulus (75 unit + 30 integration), 26 `page.tsx`, probe produksi 200/307 sesuai.

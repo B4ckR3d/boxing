@@ -5,6 +5,39 @@
 
 ---
 
+## 📁 Struktur repo (sejak 18 Nov 2026)
+
+Repo ini hanya berisi **dua project mandiri**. Masing-masing punya `package.json`,
+`pnpm-workspace.yaml`, `.npmrc`, `node_modules`, env, dan proses PM2 sendiri — satu repo, dua app.
+
+```
+TFN/
+├── web-tnf/      Website + CMS admin (Next.js 16) + backend
+│   ├── src/        App Router: public site & /admin
+│   ├── api/        Express API (:4000) — target BFF, /health/ready
+│   ├── worker/     Job runner (expire-holds)
+│   ├── packages/   Library bersama: db, core, auth, ticketing
+│   ├── prisma/     Schema + migrations DB `boxing`
+│   └── docs/       ADR, panduan deploy, dsb.
+└── ticket-tnf/   Ticketing terpisah (Next.js 16 + Prisma 7)
+    ├── src/        Halaman pembeli (login Google) & /admin (password + TOTP)
+    └── prisma/     Schema + migrations DB `tfn_ticketing`
+```
+
+| Perintah | Lokasi | Fungsi |
+|---|---|---|
+| `pnpm dev` | `web-tnf/` | Website + admin CMS |
+| `pnpm api:dev` | `web-tnf/` | API backend (:4000) |
+| `pnpm api:build && pnpm api:start` | `web-tnf/` | API produksi (esbuild → `dist/`) |
+| `pnpm worker:expire` | `web-tnf/` | Expire hold order |
+| `pnpm dev` / `pnpm start` | `ticket-tnf/` | Ticketing (:3010) |
+| `pnpm probe` / `pnpm probe:admin` | `ticket-tnf/` | E2E domain + gate admin |
+
+> `web-tnf` **wajib** punya `api` (:4000) hidup — halaman berdata memanggil `API_INTERNAL_URL`
+> lewat BFF dan akan balas `503 UPSTREAM_UNREACHABLE` bila API mati.
+
+---
+
 ## 🥊 Features Overview
 
 1. **Public Landing Page (Cinematic Brutalism):**

@@ -6,7 +6,7 @@
 | Phase | Fokus | Output yang bisa dipakai | Depends on |
 |---|---|---|---|
 | 0 | Audit & discovery | laporan audit, arsitektur target, task tracker | — |
-| 1 | Foundation | monorepo pnpm+turbo, `apps/api` (Express+Prisma) health + Swagger, `apps/worker`, Docker Compose dev, logger, error handler, env validation | Phase 0 disetujui |
+| 1 | Foundation | monorepo pnpm+turbo, `web-tnf/api` (Express+Prisma) health + Swagger, `web-tnf/worker`, Docker Compose dev, logger, error handler, env validation | Phase 0 disetujui |
 | 2 | Core system | `Organization`, tenant scoping, user & role per organisasi, event management lengkap (status, periode, kuota, kategori, ruleset, budget) | Phase 1 |
 | 3 | Fighter & registration | club/coach, NIK/KTP/BPJS privat, consent versioned, formulir publik, verifikasi admin, invoice registrasi | Phase 2 |
 | 4 | Payment, ticketing, POS | abstraksi `PaymentProvider` + QRIS + webhook idempotent, ticketing lanjutan (on-the-spot, refund), app POS, check-in multi-gate | Phase 3 |

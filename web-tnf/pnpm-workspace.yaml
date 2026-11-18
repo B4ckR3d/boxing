@@ -1,0 +1,16 @@
+# Workspace project web-tnf.
+# Folder `packages/*` = library bersama (db, core, auth, ticketing).
+# Folder `api/`   = backend Express (BFF target, `API_INTERNAL_URL`).
+# Folder `worker/`= job runner (expire-holds).
+packages:
+  - "packages/*"
+  - "api"
+  - "worker"
+
+allowBuilds:
+  "@prisma/engines": true
+  prisma: true
+  esbuild: true
+  sharp: true
+  "@node-rs/argon2": true
+  "@scarf/scarf": false

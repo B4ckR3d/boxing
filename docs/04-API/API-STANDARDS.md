@@ -1,10 +1,10 @@
 # API Standards
 
-> Berlaku untuk `apps/api` dan route handler Next.js yang masih ada.
+> Berlaku untuk `web-tnf/api` dan route handler Next.js yang masih ada.
 
 > ⚠️ **Koreksi status (17 Nov 2026, dibaca dari kode).** Dokumen ini sebelumnya menulis envelope
 > `{ "success": true, "data": … }` — **envelope itu tidak pernah diimplementasikan di mana pun**.
-> Route handler Next.js existing mengembalikan `{ "error": "string" }`, sedangkan `apps/api`
+> Route handler Next.js existing mengembalikan `{ "error": "string" }`, sedangkan `web-tnf/api`
 > mengembalikan `{ "error": { code, message, details, requestId } }`. Yang **berlaku sekarang**
 > adalah §2a. Envelope lama dipindah ke §2b sebagai usulan yang ditolak (ADR-010).
 
@@ -16,7 +16,7 @@ https://api.tfn.pimpom.id/api/v1
 
 Versi di path. Perubahan breaking → `v2`; penambahan field bersifat aditif (tidak menaikkan versi).
 
-## 2a. Envelope yang BERLAKU (`apps/api`)
+## 2a. Envelope yang BERLAKU (`web-tnf/api`)
 
 Sukses: JSON domain langsung, tanpa pembungkus — mis.
 `{"status":"ready","checks":{"database":"up"}}`.

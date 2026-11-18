@@ -201,7 +201,7 @@ Legenda: **DONE** = ada kode + ada bukti verifikasi · **PARTIAL** = ada sebagia
 |---|---|---|---|
 | R1 | DB lokal mati & volume kosong | Developer baru tidak bisa jalan dalam 5 menit | Perbaiki port compose (3307) / dokumentasikan, lalu seed ulang; tambah `npm run db:doctor` |
 | R2 | Lint gagal karena perubahan belum commit | Gate "Definition of Done" tidak terpenuhi; rilis bisa lolos dengan error | Selesaikan `layout.tsx` (pakai `next/script` + nonce atau izinkan aturan untuk inline theme dengan justifikasi) |
-| R3 | Backend menyatu dengan Next.js | Tidak sesuai spec; sulit dipakai POS/worker | Strangler ke `apps/api` (Express) bertahap |
+| R3 | Backend menyatu dengan Next.js | Tidak sesuai spec; sulit dipakai POS/worker | Strangler ke `web-tnf/api` (Express) bertahap |
 | R4 | Tidak ada tenant/organisasi | Blocker untuk SaaS & event ganda | Tambah `Organization` + `organizationId` sebelum data bisnis nyata masuk |
 | R5 | Session cookie + satu domain | Subdomain admin/api butuh kebijakan cookie (`SameSite`, `Domain`) | Putuskan pola auth final sebelum memecah app |
 | R6 | Rate limit in-memory | Bypass saat lebih dari 1 instance | Redis + rate limiter terdistribusi |
@@ -219,7 +219,7 @@ Tiga opsi yang dipertimbangkan (detail + keputusan di `11-DEVELOPMENT-LOG/DECISI
 | Opsi | Isi | Risiko | Waktu |
 |---|---|---|---|
 | A. Big-bang rewrite ke monorepo penuh | Bangun ulang 4 app + API, buang kode lama | Tinggi — invariant ticketing/RBAC harus dibuktikan ulang | 6–10 minggu sebelum ada yang bisa dipakai |
-| **B. Strangler + monorepo bertahap (REKOMENDASI)** | Monorepo dibuat sekarang; app lama tetap hidup sebagai `apps/web` (website+admin). API Express dibangun modul demi modul; modul baru (registrasi, payment, POS, finance) langsung ke API. Halaman lama dipindah setelah parity. | Sedang — dua backend sementara, perlu disiplin | Bertahap, tiap phase menghasilkan sesuatu yang bisa dipakai |
+| **B. Strangler + monorepo bertahap (REKOMENDASI)** | Monorepo dibuat sekarang; app lama tetap hidup sebagai `web-tnf` (website+admin). API Express dibangun modul demi modul; modul baru (registrasi, payment, POS, finance) langsung ke API. Halaman lama dipindah setelah parity. | Sedang — dua backend sementara, perlu disiplin | Bertahap, tiap phase menghasilkan sesuatu yang bisa dipakai |
 | C. Lanjutkan Next.js fullstack, monorepo nanti | Cepat, tapi menyalahi spec §3 & §5 (frontend/backend terpisah, POS app) | Teknis: utang arsitektur menumpuk | Cepat di awal, mahal di akhir |
 
 **Rekomendasi: Opsi B.** Alasan:

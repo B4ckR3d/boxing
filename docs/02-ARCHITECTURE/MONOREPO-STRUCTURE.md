@@ -1,168 +1,133 @@
-# Monorepo Structure (TARGET)
+# Struktur Repo (kondisi nyata, 18 Nov 2026)
 
-> **Status: 🟡 sebagian terwujud (17 Nov 2026).** Yang **sudah ada**: `pnpm-workspace.yaml`,
-> `turbo.json`, `apps/api` (Express skeleton). Yang **belum**: `apps/web` (app Next masih di
-> root), `apps/worker`, `packages/*`, `infrastructure/*` — lihat §Status implementasi di bawah
-> dan `MIGRATION-PLAN-WEB.md` (draft, menunggu persetujuan).
+> **Status: 🟢 berlaku.** Dokumen ini sebelumnya berisi *target* monorepo `tfn-platform/`
+> (`apps/website`, `apps/admin`, `apps/pos`, …) yang **tidak pernah diwujudkan** dan sekarang
+> **tidak berlaku**. Sejak 18 Nov 2026 repo diringkas menjadi **dua project mandiri**.
+> Riwayat keputusan lama tetap ada di `MIGRATION-PLAN-WEB.md` dan `DECISIONS.md` — itu arsip,
+> bukan panduan aktif. Peta path lama → baru: `PATH-MIGRATION-2026-11.md`.
 
-```
-tfn-platform/
-├── apps/
-│   ├── website/          Next.js — publik (SEO, RSC)
-│   ├── admin/            Next.js — dashboard internal
-│   ├── pos/              Next.js (PWA) — kasir & gate, prioritas tablet/HP
-│   ├── api/              Express + Prisma — semua logika bisnis
-│   └── worker/           BullMQ consumer — job async
-├── packages/
-│   ├── ui/               komponen presentational + design tokens
-│   ├── types/            DTO & tipe domain bersama
-│   ├── validators/       skema Zod bersama (dipakai API + form)
-│   ├── api-client/       client tipis (fetch wrapper + tipe)
-│   ├── config/           eslint, tsconfig, tailwind preset
-│   └── utils/            helper murni (tanggal, uang, format)
-├── infrastructure/
-│   ├── docker/           Dockerfile per app
-│   ├── nginx/            vhost per domain
-│   ├── scripts/          deploy, backup, restore
-│   └── monitoring/       healthcheck, log config
-├── docs/
-├── docker-compose.yml
-├── pnpm-workspace.yaml
-├── turbo.json
-└── package.json
-```
+## Prinsip
 
-## Aturan dependensi
+1. **Satu repo, dua aplikasi mandiri.** Tidak ada workspace bersama di root, tidak ada Turborepo.
+2. Tiap project punya `package.json`, `pnpm-workspace.yaml`, `.npmrc`, `pnpm-lock.yaml`,
+   `node_modules`, env, dan proses PM2 **sendiri**. `pnpm install` dijalankan di dalam project.
+3. Kode yang dipakai bersama tidak ditaruh di root: disalin ke `web-tnf/packages/*` (db, core,
+   auth, ticketing). `ticket-tnf` sengaja **tidak** memakai paket itu — ia punya skema Prisma,
+   service, dan DB sendiri (`tfn_ticketing`) agar tidak bisa merusak DB platform.
 
-| Boleh | Dilarang |
-|---|---|
-| `apps/*` → `packages/*` | `packages/*` → `apps/*` |
-| `apps/pos` → `packages/api-client`, `ui`, `types`, `validators` | frontend mengimpor `apps/api/src/**` |
-| `apps/api` → `packages/validators`, `types`, `utils` | `packages/ui` mengimpor Prisma |
-| `apps/worker` → `packages/types`, `utils` (+ service internal API via HTTP/queue) | worker mengakses DB tabel milik modul lain tanpa aturan |
-
-## Pipeline Turborepo (target)
-
-```json
-{
-  "tasks": {
-    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
-    "typecheck": { "dependsOn": ["^build"] },
-    "lint": {},
-    "test": { "dependsOn": ["^build"] },
-    "dev": { "cache": false, "persistent": true }
-  }
-}
-```
-
-Setiap app wajib bisa: `pnpm --filter <app> dev|build|test|lint` secara independen.
-
-## Migrasi dari struktur sekarang
-
-| Sekarang | Target |
-|---|---|
-| `src/app/(public)/*`, `src/components/*` | `apps/website` (komponen UI dipindah ke `packages/ui` bila reusable) |
-| `src/app/admin/*`, `src/components/admin/*` | `apps/admin` |
-| `src/app/api/*`, `src/server/services/*` | `apps/api/src/modules/*` |
-| `scripts/expire-holds.ts`, `scripts/cron/*` | `apps/worker/src/jobs/*` |
-| `src/lib/{security,permissions,db,env}` | `apps/api/src/{shared,middlewares,config}` + `packages/utils` |
-| `src/lib/ticketing/*` (label, token) | `packages/{utils,types}` (yang murni) |
-| `prisma/` | `apps/api/prisma` (satu schema, satu DB) |
-
-Langkah aman: pindahkan **tanpa mengubah logika**, jalankan gate, baru refactor.
-
----
-
-## Status implementasi (17 Nov 2026, terverifikasi)
-
-Kondisi nyata repo hari ini — **bukan** target di atas:
+## Pohon
 
 ```
 TFN/
-├── apps/
-│   └── api/                  ✅ ADA — Express 5 + TS skeleton
-│       ├── src/{app,index}.ts       createApp() factory + graceful shutdown
-│       ├── src/config/env.ts        zod, fail fast, .env api → root
-│       ├── src/lib/{logger,errors}  pino + taksonomi error (AppError cs.)
-│       ├── src/middleware/*         requestContext, notFound, errorHandler
-│       ├── src/db/prisma.ts         Prisma 7 + adapter-mariadb (schema root)
-│       ├── src/routes/{health,v1}   /health, /health/ready, /api/v1/meta
-│       ├── src/docs/openapi.ts      OpenAPI 3.1 + Swagger UI
-│       └── tests/*.test.ts          19 test (health, error, env, docs)
-├── src/                      ⚠️ app Next.js MASIH DI ROOT (belum apps/web)
-├── prisma/                   ⚠️ masih di root — ADR-009: satu schema, jangan diduplikasi
-├── pnpm-workspace.yaml       ✅ workspace `"."` + `apps/*`, `allowBuilds`
-├── turbo.json                ✅ task build/typecheck/lint/test/dev/db:generate
-├── .npmrc                    ✅ node-linker=hoisted (app lama tetap jalan)
-└── package.json              ✅ packageManager pnpm@12.10.1 + turbo
+├── web-tnf/                        Website + CMS + backend
+│   ├── package.json                name: web-tnf (Next.js 16 App Router)
+│   ├── pnpm-workspace.yaml         packages/*, api, worker
+│   ├── src/                        app/ (public + /admin), components, lib, server, proxy
+│   ├── api/                        @tfn/api — Express :4000 (esbuild bundle → dist/)
+│   ├── worker/                     @tfn/worker — job `expire-holds`
+│   ├── packages/
+│   │   ├── db/                     Prisma client (schema ada di web-tnf/prisma)
+│   │   ├── core/                   audit, settings, sponsors, redact
+│   │   ├── auth/                   session, RBAC, password, TOTP, rate-limit
+│   │   └── ticketing/              kode ticketing lama — TIDAK dipakai lagi (arsip migrasi)
+│   ├── prisma/                     schema.prisma + migrations (DB `boxing`)
+│   ├── docker/                     compose MySQL lokal
+│   ├── storage/                    file upload lokal (STORAGE_DRIVER=local)
+│   └── docs/                       ADR & panduan (dokumen ini ada di sini)
+└── ticket-tnf/                     Ticketing terpisah
+    ├── package.json                name: ticket-tnf (Next.js 16 + Prisma 7)
+    ├── pnpm-workspace.yaml         mandiri, tanpa packages/*
+    ├── src/                        app/, lib/ (auth, payments, ticketing), server/
+    └── prisma/                     schema.prisma + migrations (DB `tfn_ticketing`)
 ```
 
-### Perintah gate monorepo
+Root hanya berisi: `README.md`, `CHANGELOG.md`, `prd.md`, `AGENTS.md`, `docs/`, `.gitignore`,
+dan dua folder project di atas.
+
+## Batas tanggung jawab
+
+| Hal | `web-tnf` | `ticket-tnf` |
+|---|---|---|
+| Domain produksi | domain utama | subdomain tiket |
+| Port dev | 3000 (web) · 4000 (api) | 3010 |
+| Database | `boxing` | `tfn_ticketing` |
+| Login | email+password + MFA (CMS) | pembeli: Google OAuth · admin: password + TOTP |
+| Cookie | `tfn_session` | `tkt_session` (pembeli) · `tkt_admin` (panel) |
+| Prisma schema | `web-tnf/prisma/schema.prisma` | `ticket-tnf/prisma/schema.prisma` |
+| Payment | — | Midtrans Snap (`mock` untuk dev) |
+| Tiket publik | **tidak ada** — `/tickets*` → 308 ke `ticket-tnf` | `/`, `/events/[slug]`, `/orders/[no]`, `/my-tickets` |
+| Panel admin | CMS saja (tanpa menu tiket) | `/admin` (gerbang & pesanan) |
+| API tiket | `/api/ticketing` **dimatikan** (router lama diarsipkan) | milik sendiri di `ticket-tnf` |
+
+## Keputusan 18 Nov 2026 — tiket keluar dari `web-tnf`
+
+Penjualan tiket **tidak lagi** hidup di `web-tnf`. Semua tautan tiket publik (Navbar, hero,
+footer, matchup showcase) menunjuk ke base URL `NEXT_PUBLIC_TICKETING_URL` lewat helper
+`src/lib/ticketing/external.ts`, dan URL lama tetap hidup sebagai redirect 308 di `src/proxy.ts`:
+
+| URL lama `web-tnf` | Tujuan `ticket-tnf` |
+|---|---|
+| `/tickets` | `/` |
+| `/tickets/status` | `/my-tickets` |
+| `/tickets/<order>` | `/orders/<order>` |
+| `/tickets/<order>/ticket` | `/api/tickets/<order>/pdf` |
+| `/admin/ticketing` | `/admin/orders` |
+| `/admin/ticketing/scan` | `/admin/scan` |
+
+Yang dihapus dari `web-tnf`: halaman `/tickets/*` + `/admin/ticketing/*`, komponen
+`TicketOrderForm`/`OrderStatusLookup`/`TicketScanner`, `server/services/ticketing.service.ts`
+dan `ticket-pdf.service.ts`, `src/app/api/ticketing/**`, 10 test tiket, dan menu
+"Tiket & Pembayaran". Yang **sengaja dibiarkan**: tabel & migrasi `TicketOrder`/`TicketType`/
+`TicketPayment` di DB `boxing` (data historis, belum di-drop), `packages/ticketing`, dan
+`api/src/routes/ticketing.ts` (referensi migrasi, tidak didaftarkan).
+
+Env baru: `TICKETING_URL` (server, dipakai proxy) dan `NEXT_PUBLIC_TICKETING_URL` (client,
+dipakai komponen). Dev: `http://localhost:3010`.
+
+`web-tnf` **wajib** menjalankan `api` (:4000). Semua panggilan data dari browser lewat BFF Next
+(`src/lib/api/client.ts`), yang meneruskan ke `API_INTERNAL_URL`. API mati → `503
+UPSTREAM_UNREACHABLE` (bukan error 500 yang membingungkan).
+
+## Perintah
 
 ```bash
-pnpm install                # wajib: pnpm, bukan npm (lockfile & build scripts)
-pnpm turbo:verify           # typecheck + lint + test + verify:dist untuk SEMUA package
-pnpm api:dev                # apps/api di :4000 (tsx watch)
-pnpm --filter @tfn/api test # hanya test API (tidak butuh MySQL — checkDb di-inject)
+# web-tnf
+cd web-tnf
+pnpm install
+pnpm dev            # Next dev
+pnpm api:dev        # API (tsx watch)
+pnpm api:build      # esbuild → api/dist/index.js
+pnpm api:start      # node dist
+pnpm worker:expire  # job expire-holds
+pnpm typecheck && pnpm lint && pnpm test
+
+# ticket-tnf
+cd ticket-tnf
+pnpm install
+pnpm dev            # Next dev :3010
+pnpm probe          # E2E domain (order → bayar → tiket → gate)
+pnpm probe:admin    # gate admin: password + TOTP, lockout, scan
+pnpm typecheck && pnpm lint && pnpm test
 ```
 
-### Jebakan yang sudah ditemui (jangan diulang)
+Tidak ada lagi `pnpm turbo:verify` / `verify:integration` di root — jalankan verifikasi per
+project seperti di atas. Skrip `verify:integration` milik `web-tnf/api` tetap ada di dalam
+project itu (Vitest, MySQL test :3307).
 
-| Gejala | Penyebab | Solusi |
+## Deploy (ringkas)
+
+PM2 + aaPanel, tanpa Dockerfile:
+
+| Proses PM2 | cwd | perintah |
 |---|---|---|
-| `ERR_PNPM_IGNORED_BUILDS` | pnpm 12 memblokir postinstall dependency | `allowBuilds` **mapping** di `pnpm-workspace.yaml`; `package.json#pnpm.onlyBuiltDependencies` sudah **diabaikan** |
-| `Failed to parse pnpm-workspace.yaml` | `allowBuilds` ditulis sebagai list | harus mapping `paket: true|false` |
-| `Could not resolve workspace` (turbo) | `packageManager` tidak ada | `"packageManager": "pnpm@12.10.1"` di root |
-| Turbo hanya menjalankan task `apps/api` | root tidak terdaftar sebagai workspace project | `packages: ["."]` |
-| `typescript-eslint does not support TS 7.0` | `pnpm add -D typescript` menarik v7 | pin `typescript@5.9.3` |
+| `boxing-tfn` | `TFN/web-tnf` | `pnpm start` (Next :3000) |
+| `tfn-api` | `TFN/web-tnf/api` | `node dist/index.js` (:4000, wajib sehat) |
+| `tfn-ticketing` | `TFN/ticket-tnf` | `pnpm start` (:3010) |
 
-### Batas yang disengaja
+Detail: `../10-DEPLOYMENT/DEPLOYMENT-GUIDE.md`.
 
-`apps/api` **belum** punya auth, modul bisnis, atau worker. Semua route bisnis masih di
-`src/app/api/*` milik app Next.js. Modul baru **hanya** boleh ditambah di `apps/api`, dan
-pemindahan kode lama menunggu `MIGRATION-PLAN-WEB.md` disetujui.
+## Hal yang TIDAK boleh dikembalikan tanpa keputusan baru
 
-### Struktur final setelah Langkah A (17 Nov 2026)
-
-```
-tfn/
-├── apps/
-│   ├── web/     @tfn/web  — Next.js 16 (src/app, components, lib, server, public, tests, scripts/verify)
-│   └── api/     @tfn/api  — Express 5 + TS (esbuild bundle → dist/index.js)
-├── packages/
-│   ├── db/        @tfn/db        — Prisma Client bersama (src/generated/prisma, gitignored)
-│   ├── ticketing/ @tfn/ticketing — domain ticketing (order, PDF, token QR, check-in, expiry)
-│   └── core/      @tfn/core      — audit, settings, sponsor + util murni (redact, schemas, tiers)
-├── prisma/      schema.prisma + migrations + seed.ts  (dijalankan dari root)
-├── scripts/     skrip ops: bootstrap-admin, reset-password, expire-holds, wait-for-db, db-backup, monorepo/
-├── docker/ · docs/ · turbo.json · pnpm-workspace.yaml · tsconfig.json (skrip ops saja)
-```
-
-Aturan yang mengikat struktur ini:
-
-| Aturan | Alasan |
-|---|---|
-| Satu `.env` di root; web memuatnya eksplisit di `next.config.ts` & `tests/setup.ts` | Next hanya membaca `.env` di direktori app |
-| `turbopack.root` + `outputFileTracingRoot` = root repo | `node_modules` ada di root (`node-linker=hoisted`); kalau diarahkan ke `apps/web`, `next` dianggap tidak terpasang |
-| `transpilePackages: ["@tfn/db"]` | `@tfn/db` mengirim TypeScript source, bukan JS hasil build |
-| esbuild `--alias:@tfn/db*` di `apps/api` | `--packages=external` akan meng-external-kan `@tfn/db` → `ERR_MODULE_NOT_FOUND` saat runtime |
-| Root `tsconfig.json` memetakan `@/*` → `apps/web/src/*` | Skrip ops (`tsx scripts/*.ts`) tetap memakai alias yang sama tanpa duplikasi path |
-
-## Worker (`apps/worker`) — ADR-014
-
-| Aspek | Nilai |
-|---|---|
-| Paket | `@tfn/worker` (private, ESM) |
-| Entry | `pnpm --filter @tfn/worker <script>` → `tsx src/cli.ts <command>` |
-| Command | `expire-holds` (`--verbose` untuk selalu mencetak ringkasan) |
-| Reuse | impor `@tfn/ticketing` (bukan `@/*` ke `apps/web/src/*`); dependensi diinjeksi di `apps/worker/src/lib/*` |
-| Wajib | tidak ada syarat `--conditions` (binding worker tidak memakai `server-only`); flag `react-server` tinggal sisa |
-| Cron | `scripts/cron/expire-holds.sh` → `pnpm worker:expire-holds` |
-
-## BFF (`apps/web` → `apps/api`) — ADR-013
-
-- Klien: `apps/web/src/lib/api/client.ts` (`apiFetch`, `ApiClientError`). **Server-only.**
-- Base URL: `API_INTERNAL_URL` (default `http://127.0.0.1:4000`) — tidak pernah ke browser.
-- Pemetaan: error hulu → envelope ADR-010; jaringan mati/timeout → **503**; error lain → **502**.
-- Contoh hidup: `GET /api/v1/meta` (200 saat api nyala, 503 `UPSTREAM_UNREACHABLE` saat api mati).
-- Modul bisnis lama belum dipindah; pola ini dipakai saat modulnya pindah ke `apps/api`.
+- Menaruh kode bersama di root repo (mematikan kemandirian dua project).
+- Menghidupkan lagi Turborepo.
+- Menyatukan `ticket-tnf` ke dalam `web-tnf` (skema & DB ticketing harus tetap terpisah).

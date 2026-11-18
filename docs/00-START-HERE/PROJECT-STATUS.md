@@ -8,7 +8,7 @@
 | Phase | Isi | Status |
 |---|---|---|
 | 0 | Audit & project discovery | ✅ **SELESAI** (laporan: `PHASE-0-AUDIT.md`) |
-| 1 | Fondasi monorepo + API + worker + Docker | 🟡 **SEDANG JALAN — fondasi DONE** (workspace pnpm + Turborepo + `apps/api` Express hidup di :4000 dengan health/docs/error standard; app lama **tidak** dipindah). Sisa: `apps/web`, `apps/worker`, Docker per app → menunggu persetujuan Langkah A) |
+| 1 | Fondasi monorepo + API + worker + Docker | 🟡 **SEDANG JALAN — fondasi DONE** (workspace pnpm + Turborepo + `web-tnf/api` Express hidup di :4000 dengan health/docs/error standard; app lama **tidak** dipindah). Sisa: `web-tnf`, `web-tnf/worker`, Docker per app → menunggu persetujuan Langkah A) |
 | 2 | Core system: organization, tenant, event config, RBAC baru | ⬜ |
 | 3 | Fighter, club, registrasi, dokumen privat, consent | ⬜ |
 | 4 | Payment abstraction, QRIS, ticketing lanjutan, POS, check-in | 🟡 ticketing & check-in dasar sudah ada |

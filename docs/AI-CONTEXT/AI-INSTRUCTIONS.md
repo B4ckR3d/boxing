@@ -117,7 +117,7 @@ menunggu persetujuan ADR-001.
 ## 11. Cara melanjutkan
 
 Ikuti `NEXT-TASKS.md` berurutan. Jangan melewati gate. Jangan menambah modul baru ke Next.js
-route handler — modul baru masuk ke `apps/api` setelah Phase 1 disetujui.
+route handler — modul baru masuk ke `web-tnf/api` setelah Phase 1 disetujui.
 
 ## 12. Larangan eksplisit
 
