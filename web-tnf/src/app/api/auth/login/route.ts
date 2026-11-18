@@ -105,21 +105,54 @@ export async function POST(request: NextRequest) {
   const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
 
   try {
-    const upstream = await apiFetchRaw<UpstreamLoginOk>("/api/auth/login", {
-      method: "POST",
-      // Kirim sebagai `identifier` — apps/api yang menentukan username vs email.
-      body: {
-        identifier,
-        password: parsed.data.password,
-        ...(parsed.data.totpCode ? { totpCode: parsed.data.totpCode } : {}),
-      },
-      requestId,
-    });
+    try {
+      const upstream = await apiFetchRaw<UpstreamLoginOk>("/api/auth/login", {
+        method: "POST",
+        // Kirim sebagai `identifier` — apps/api yang menentukan username vs email.
+        body: {
+          identifier,
+          password: parsed.data.password,
+          ...(parsed.data.totpCode ? { totpCode: parsed.data.totpCode } : {}),
+        },
+        requestId,
+      });
 
-    const response = NextResponse.json(upstream.data);
-    // Cookie diteruskan apa adanya dari apps/api (HttpOnly/SameSite/Secure sudah diatur di sana).
-    for (const cookie of upstream.setCookies) response.headers.append("set-cookie", cookie);
-    return response;
+      const response = NextResponse.json(upstream.data);
+      // Cookie diteruskan apa adanya dari apps/api (HttpOnly/SameSite/Secure sudah diatur di sana).
+      for (const cookie of upstream.setCookies) response.headers.append("set-cookie", cookie);
+      return response;
+    } catch (apiErr) {
+      // Jika apps/api (port 4000) tidak berjalan / tidak dapat dihubungi, gunakan autentikasi langsung ke database
+      if (apiErr instanceof ApiClientError && (apiErr.code === "UPSTREAM_UNREACHABLE" || apiErr.code === "UPSTREAM_TIMEOUT")) {
+        const { authenticateCredentials } = await import("@/server/services/auth.service");
+        const result = await authenticateCredentials(identifier, parsed.data.password, {
+          ip,
+          userAgent: request.headers.get("user-agent") || undefined,
+          totpCode: parsed.data.totpCode,
+        });
+
+        if (result.requiresMfa) {
+          return NextResponse.json({ success: false, requiresMfa: true }, { status: 200 });
+        }
+        if (!result.success || !result.user) {
+          return NextResponse.json(
+            { success: false, error: result.error || "Username/email atau kata sandi tidak valid." },
+            { status: 401 },
+          );
+        }
+
+        return NextResponse.json({
+          success: true,
+          user: {
+            id: result.user.id,
+            email: result.user.email,
+            name: result.user.name,
+            roles: result.user.roles,
+          },
+        });
+      }
+      throw apiErr;
+    }
   } catch (error) {
     if (error instanceof ApiClientError) {
       const requiresMfa =

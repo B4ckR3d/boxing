@@ -11,10 +11,20 @@ export async function GET(request: NextRequest) {
   const cookie = request.headers.get("cookie");
 
   try {
-    const upstream = await apiFetchRaw<{ user: unknown }>("/api/auth/me", {
-      ...(cookie ? { headers: { cookie } } : {}),
-    });
-    return NextResponse.json(upstream.data);
+    try {
+      const upstream = await apiFetchRaw<{ user: unknown }>("/api/auth/me", {
+        ...(cookie ? { headers: { cookie } } : {}),
+      });
+      return NextResponse.json(upstream.data);
+    } catch (apiErr) {
+      if (apiErr instanceof ApiClientError && (apiErr.code === "UPSTREAM_UNREACHABLE" || apiErr.code === "UPSTREAM_TIMEOUT")) {
+        const { getSession } = await import("@/server/services/auth.service");
+        const session = await getSession();
+        if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ user: session });
+      }
+      throw apiErr;
+    }
   } catch (error) {
     if (error instanceof ApiClientError) {
       return NextResponse.json(

@@ -16,14 +16,23 @@ export async function POST(request: NextRequest) {
   const cookie = request.headers.get("cookie");
 
   try {
-    const upstream = await apiFetchRaw<{ success: boolean }>("/api/auth/logout", {
-      method: "POST",
-      ...(cookie ? { headers: { cookie } } : {}),
-    });
+    try {
+      const upstream = await apiFetchRaw<{ success: boolean }>("/api/auth/logout", {
+        method: "POST",
+        ...(cookie ? { headers: { cookie } } : {}),
+      });
 
-    const response = NextResponse.json(upstream.data);
-    for (const value of upstream.setCookies) response.headers.append("set-cookie", value);
-    return response;
+      const response = NextResponse.json(upstream.data);
+      for (const value of upstream.setCookies) response.headers.append("set-cookie", value);
+      return response;
+    } catch (apiErr) {
+      if (apiErr instanceof ApiClientError && (apiErr.code === "UPSTREAM_UNREACHABLE" || apiErr.code === "UPSTREAM_TIMEOUT")) {
+        const { destroySession } = await import("@/server/services/auth.service");
+        await destroySession();
+        return NextResponse.json({ success: true });
+      }
+      throw apiErr;
+    }
   } catch (error) {
     if (error instanceof ApiClientError) {
       // Sesi yang tidak ada dianggap logout berhasil (idempoten) — UI tidak perlu tahu bedanya.
