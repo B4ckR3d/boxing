@@ -27,34 +27,57 @@ export default async function PublicHomePage() {
   // 2. Fetch Sponsor aktif + Latest Published Heavyweight Ranking Version & Entries
   const sponsors = await getPublicSponsors();
 
-  const hwVersion = await prisma.rankingVersion.findFirst({
-    where: {
-      type: "DIVISION",
-      status: "PUBLISHED",
-      weightClass: { slug: "heavyweight" },
-    },
-    orderBy: { versionNumber: "desc" },
-    include: {
-      weightClass: true,
-      entries: {
-        include: {
-          fighter: {
-            include: { weightClass: true },
-          },
-        },
-        orderBy: [
-          { isChampion: "desc" },
-          { rank: "asc" },
-        ],
+  const hwVersion =
+    (await prisma.rankingVersion.findFirst({
+      where: {
+        type: "DIVISION",
+        status: "PUBLISHED",
+        weightClass: { slug: "heavyweight" },
       },
-    },
-  });
+      orderBy: { versionNumber: "desc" },
+      include: {
+        weightClass: true,
+        entries: {
+          include: {
+            fighter: {
+              include: { weightClass: true },
+            },
+          },
+          orderBy: [
+            { isChampion: "desc" },
+            { rank: "asc" },
+          ],
+        },
+      },
+    })) ||
+    (await prisma.rankingVersion.findFirst({
+      where: {
+        type: "DIVISION",
+        status: "PUBLISHED",
+      },
+      orderBy: { versionNumber: "desc" },
+      include: {
+        weightClass: true,
+        entries: {
+          include: {
+            fighter: {
+              include: { weightClass: true },
+            },
+          },
+          orderBy: [
+            { isChampion: "desc" },
+            { rank: "asc" },
+          ],
+        },
+      },
+    }));
 
   // 3. Fetch Heavyweight Championship Belt and Active Reign
   const hwBelt = await prisma.championshipBelt.findFirst({
     where: { slug: "wbc-x-world-heavyweight-championship" },
     include: {
       weightClass: true,
+      image: true,
       reigns: {
         where: { status: "ACTIVE" },
         include: {
@@ -87,7 +110,7 @@ export default async function PublicHomePage() {
   // 5. Fetch Featured Roster Fighters
   const featuredFighters = await prisma.fighter.findMany({
     where: { status: "ACTIVE", deletedAt: null },
-    include: { weightClass: true, currentRankings: true },
+    include: { weightClass: true, currentRankings: true, portrait: true },
     take: 6,
     orderBy: [{ wins: "desc" }],
   });
@@ -112,7 +135,7 @@ export default async function PublicHomePage() {
     wonDate: activeReign?.wonAt ? new Date(activeReign.wonAt).toLocaleDateString("id-ID") : undefined,
     nextDefense: hwBelt?.nextDefenseNote || "Menunggu Jadwal Laga Wajib",
     defensesCount: activeReign?.defenses?.length || 0,
-    imageUrl: "/images/belts/tfn-world-heavyweight-belt.jpg",
+    imageUrl: hwBelt?.image?.url || "/images/belts/tfn-world-heavyweight-belt.jpg",
   };
 
   // Transform Ranking Entries
@@ -180,7 +203,7 @@ export default async function PublicHomePage() {
     stance: f.stance,
     nationality: f.nationality,
     isChampion: f.currentRankings.some((r) => r.isChampion),
-    imageUrl: fighterImages[f.slug] || null,
+    imageUrl: f.portrait?.url || fighterImages[f.slug] || null,
   }));
 
   // Local visual assets are illustrative, not verified fight announcements.
@@ -209,7 +232,7 @@ export default async function PublicHomePage() {
     heroSlides.length > 0
       ? heroSlides.map((s) => ({
         id: s.id,
-        isDemo: true,
+        isDemo: false,
         eventTitle: s.eventTitle,
         category: s.category,
         headline: s.headline,

@@ -35,6 +35,7 @@ export default async function PublicFightersPage({
       include: {
         weightClass: true,
         currentRankings: true,
+        portrait: true,
       },
       orderBy: [{ wins: "desc" }, { lastName: "asc" }],
     }),
@@ -120,7 +121,7 @@ export default async function PublicFightersPage({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {fighters.map((f) => {
             const isChamp = f.currentRankings.some((r) => r.isChampion);
-            const photoUrl = fighterImages[f.slug] || "/images/fighters/marcus-vale.jpg";
+            const photoUrl = f.portrait?.url || fighterImages[f.slug] || "/images/fighters/marcus-vale.jpg";
 
             return (
               <div

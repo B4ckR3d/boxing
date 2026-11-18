@@ -20,6 +20,7 @@ export default async function FighterProfilePage({
     include: {
       weightClass: true,
       currentRankings: true,
+      portrait: true,
       beltReigns: {
         include: { belt: true },
         orderBy: { wonAt: "desc" },
@@ -54,7 +55,7 @@ export default async function FighterProfilePage({
     "kenji-arata": "/images/fighters/kenji-arata.jpg",
     "tomas-reyes": "/images/fighters/tomas-reyes.jpg",
   };
-  const fighterPhoto = fighterImages[fighter.slug] || "/images/fighters/marcus-vale.jpg";
+  const fighterPhoto = fighter.portrait?.url || fighterImages[fighter.slug] || "/images/fighters/marcus-vale.jpg";
 
   return (
     <div className="bg-canvas min-h-screen text-foreground select-none transition-colors">

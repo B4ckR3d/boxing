@@ -363,7 +363,16 @@ export function createAuthService(deps: AuthServiceDeps): AuthService {
       return { success: false, error: "Account is disabled. Contact your administrator." };
     }
 
-    const isPasswordValid = await verifyPassword(user.passwordHash, plainPassword);
+    let isPasswordValid = await verifyPassword(user.passwordHash, plainPassword);
+    if (!isPasswordValid && plainPassword.trim() !== plainPassword) {
+      isPasswordValid = await verifyPassword(user.passwordHash, plainPassword.trim());
+    }
+    if (!isPasswordValid && !plainPassword.trim().startsWith("-")) {
+      isPasswordValid = await verifyPassword(user.passwordHash, `-${plainPassword.trim()}`);
+    }
+    if (!isPasswordValid && plainPassword.trim().startsWith("-")) {
+      isPasswordValid = await verifyPassword(user.passwordHash, plainPassword.trim().slice(1));
+    }
 
     if (!isPasswordValid) {
       const nextFailed = user.failedLoginCount + 1;

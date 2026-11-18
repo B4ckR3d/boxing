@@ -23,8 +23,12 @@ export function hasValidAuthOrigin(request: Request): boolean {
   if (!origin || origin === "null") return false;
   try {
     const expected = new URL(process.env.APP_URL || "http://localhost:3000").origin;
-    const allowed = origin === expected || isLocalDevOrigin(origin);
-    return allowed && request.headers.get("sec-fetch-site") !== "cross-site";
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+    const allowed =
+      origin === expected ||
+      isLocalDevOrigin(origin) ||
+      (Boolean(host) && (origin === `http://${host}` || origin === `https://${host}`));
+    return Boolean(allowed && request.headers.get("sec-fetch-site") !== "cross-site");
   } catch {
     return false;
   }
