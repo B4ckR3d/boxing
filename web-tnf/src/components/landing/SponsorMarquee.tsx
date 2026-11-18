@@ -107,6 +107,12 @@ export function SponsorMarquee({ sponsors = [] }: SponsorMarqueeProps) {
       ? sponsors.map((s) => ({ ...s }))
       : PLACEHOLDER_SPONSORS;
 
+  const waMessage =
+    lang === "id"
+      ? encodeURIComponent("Halo Admin TFN, saya tertarik untuk menjadi partner / sponsor Temanggung Fight Night.")
+      : encodeURIComponent("Hello TFN Admin, I am interested in becoming a partner / sponsor for Temanggung Fight Night.");
+  const waUrl = `https://wa.me/6285714883551?text=${waMessage}`;
+
   return (
     <section
       aria-labelledby="sponsor-marquee-title"
@@ -125,7 +131,9 @@ export function SponsorMarquee({ sponsors = [] }: SponsorMarqueeProps) {
           </div>
 
           <a
-            href="mailto:info@tfn.id"
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start border border-dashed border-subtle px-4 font-mono-data text-[10px] font-bold uppercase tracking-[0.18em] text-ink-subtle transition-colors hover:border-fight-red hover:text-ink sm:self-auto"
           >
             <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
