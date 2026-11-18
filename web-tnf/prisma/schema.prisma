@@ -1152,3 +1152,56 @@ model OrganizationSetting {
   updatedAt   DateTime @updatedAt
 }
 
+// -----------------------------------------------------------------------------
+// GALLERY & NEWS
+// -----------------------------------------------------------------------------
+
+model GalleryCategory {
+  id          String        @id @default(cuid())
+  name        String        @db.VarChar(120)
+  slug        String        @unique @db.VarChar(120)
+  description String?       @db.VarChar(255)
+  sortOrder   Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  items       GalleryItem[]
+
+  @@index([isActive, sortOrder])
+}
+
+model GalleryItem {
+  id          String          @id @default(cuid())
+  title       String          @db.VarChar(180)
+  description String?         @db.VarChar(500)
+  imageUrl    String          @db.VarChar(500)
+  categoryId  String
+  sortOrder   Int             @default(0)
+  isActive    Boolean         @default(true)
+  takenAt     DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  category    GalleryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId, isActive, sortOrder])
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  title       String    @db.VarChar(200)
+  slug        String    @unique @db.VarChar(200)
+  excerpt     String    @db.VarChar(500)
+  content     String    @db.Text
+  coverUrl    String?   @db.VarChar(500)
+  category    String    @default("Berita") @db.VarChar(80)
+  isPublished Boolean   @default(true)
+  publishedAt DateTime  @default(now())
+  authorName  String    @default("Redaksi TFN") @db.VarChar(120)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isPublished, publishedAt])
+}
+

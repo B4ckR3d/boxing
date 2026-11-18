@@ -1,24 +1,55 @@
+import React from "react";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { getPublicGalleryData } from "@/server/services/gallery.service";
+import { PublicNewsAndGallery } from "@/components/news/PublicNewsAndGallery";
+
+export const revalidate = 60;
 
 export const metadata = {
-  title: "Berita & Cerita | TFN — Temanggung Fight Night",
-  description: "Informasi dan cerita seputar Temanggung Fight Night. Materi pratinjau ditandai sebagai demo.",
+  title: "Berita & Galeri | TFN — Temanggung Fight Night",
+  description:
+    "Dokumentasi foto pertarungan Volume 1 - 5, rilis pers, dan cerita resmi seputar Temanggung Fight Night.",
 };
 
-export default function NewsPage() {
+export default async function NewsAndGalleryPage() {
+  const data = await getPublicGalleryData();
+
   return (
-    <div className="bg-canvas text-ink">
-      <header className="relative isolate overflow-hidden border-b border-subtle bg-charcoal py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"><p className="font-mono-data text-xs uppercase tracking-widest text-fight-red">TFN / RINGSIDE STORIES</p><h1 className="mt-4 font-display text-5xl font-bold sm:text-7xl">BERITA & CERITA</h1><p className="mt-5 max-w-xl text-sm leading-7 text-ink-muted">Cerita dari sasana, petarung, dan arena Temanggung Fight Night. Pengumuman acara dapat ditemukan melalui halaman agenda.</p></div>
-      </header>
-      <section aria-labelledby="news-status" className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-24">
-        <figure className="border border-subtle bg-charcoal overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/hero/boxing-ring-arena.jpg" width={960} height={640} alt="Ilustrasi ring tinju dan pencahayaan arena" className="aspect-[4/3] w-full object-cover" />
-        </figure>
-        <div><p className="font-mono-data text-xs uppercase tracking-widest text-fight-red">RUANG REDAKSI TFN</p><h2 id="news-status" className="mt-4 font-display text-3xl font-bold sm:text-4xl">BELUM ADA ARTIKEL TERBIT.</h2><p className="mt-5 text-sm leading-7 text-ink-muted">Halaman ini tidak menampilkan hasil pertandingan, kutipan petarung, atau pengumuman yang belum diverifikasi. Kembali lagi untuk membaca pembaruan berikutnya.</p><Link href="/events" className="mt-7 inline-flex min-h-12 items-center gap-4 border border-subtle px-5 text-sm font-bold hover:border-fight-red">Lihat agenda acara<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link></div>
-      </section>
+    <div className="bg-canvas min-h-screen text-ink select-none transition-colors">
+      {/* 1. Header Banner */}
+      <div
+        className="relative bg-cover bg-center py-20 border-b border-subtle text-center"
+        style={{
+          backgroundImage:
+            "linear-gradient(to bottom, var(--overlay-scrim), color-mix(in srgb, var(--overlay-scrim) 95%, var(--canvas))), url('/images/hero/boxing-ring-arena.jpg')",
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4">
+          <h1 className="font-display text-4xl sm:text-6xl text-ink uppercase font-black tracking-tight">
+            BERITA & DOKUMENTASI GALERI TFN
+          </h1>
+          <div className="flex items-center justify-center gap-2 font-mono-data text-xs text-ink-muted mt-2 uppercase tracking-widest">
+            <Link href="/" className="hover:text-ink transition-colors">
+              BERANDA
+            </Link>
+            <ChevronRight className="w-3.5 h-3.5 text-ink-subtle" />
+            <span className="text-fight-red font-bold">GALERI & RILIS PERS</span>
+          </div>
+          <p className="mt-4 max-w-2xl mx-auto text-sm leading-relaxed text-ink-muted">
+            Arsip visual lengkap malam pertarungan (Volume 1 hingga Volume 5), sesi timbang badan, pengalungan sabuk juara, dan publikasi resmi ring tinju Temanggung.
+          </p>
+        </div>
+      </div>
+
+      {/* 2. Main Content: Gallery & Articles */}
+      <div className="py-12">
+        <PublicNewsAndGallery
+          categories={data.categories}
+          items={data.items}
+          articles={data.articles}
+        />
+      </div>
     </div>
   );
 }

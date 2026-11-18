@@ -217,3 +217,18 @@ export type Notification = Prisma.NotificationModel
  * Key/value settings. Each key's JSON value is validated by a Zod schema (src/features/settings/schemas.ts)
  */
 export type OrganizationSetting = Prisma.OrganizationSettingModel
+/**
+ * Model GalleryCategory
+ * 
+ */
+export type GalleryCategory = Prisma.GalleryCategoryModel
+/**
+ * Model GalleryItem
+ * 
+ */
+export type GalleryItem = Prisma.GalleryItemModel
+/**
+ * Model Article
+ * 
+ */
+export type Article = Prisma.ArticleModel

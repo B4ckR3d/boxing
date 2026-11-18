@@ -90,7 +90,10 @@ export const ModelName = {
   Sponsor: 'Sponsor',
   AuditLog: 'AuditLog',
   Notification: 'Notification',
-  OrganizationSetting: 'OrganizationSetting'
+  OrganizationSetting: 'OrganizationSetting',
+  GalleryCategory: 'GalleryCategory',
+  GalleryItem: 'GalleryItem',
+  Article: 'Article'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -796,6 +799,54 @@ export const OrganizationSettingScalarFieldEnum = {
 export type OrganizationSettingScalarFieldEnum = (typeof OrganizationSettingScalarFieldEnum)[keyof typeof OrganizationSettingScalarFieldEnum]
 
 
+export const GalleryCategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  sortOrder: 'sortOrder',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GalleryCategoryScalarFieldEnum = (typeof GalleryCategoryScalarFieldEnum)[keyof typeof GalleryCategoryScalarFieldEnum]
+
+
+export const GalleryItemScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  imageUrl: 'imageUrl',
+  categoryId: 'categoryId',
+  sortOrder: 'sortOrder',
+  isActive: 'isActive',
+  takenAt: 'takenAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GalleryItemScalarFieldEnum = (typeof GalleryItemScalarFieldEnum)[keyof typeof GalleryItemScalarFieldEnum]
+
+
+export const ArticleScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  excerpt: 'excerpt',
+  content: 'content',
+  coverUrl: 'coverUrl',
+  category: 'category',
+  isPublished: 'isPublished',
+  publishedAt: 'publishedAt',
+  authorName: 'authorName',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ArticleScalarFieldEnum = (typeof ArticleScalarFieldEnum)[keyof typeof ArticleScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1316,4 +1367,39 @@ export const OrganizationSettingOrderByRelevanceFieldEnum = {
 } as const
 
 export type OrganizationSettingOrderByRelevanceFieldEnum = (typeof OrganizationSettingOrderByRelevanceFieldEnum)[keyof typeof OrganizationSettingOrderByRelevanceFieldEnum]
+
+
+export const GalleryCategoryOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description'
+} as const
+
+export type GalleryCategoryOrderByRelevanceFieldEnum = (typeof GalleryCategoryOrderByRelevanceFieldEnum)[keyof typeof GalleryCategoryOrderByRelevanceFieldEnum]
+
+
+export const GalleryItemOrderByRelevanceFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  imageUrl: 'imageUrl',
+  categoryId: 'categoryId'
+} as const
+
+export type GalleryItemOrderByRelevanceFieldEnum = (typeof GalleryItemOrderByRelevanceFieldEnum)[keyof typeof GalleryItemOrderByRelevanceFieldEnum]
+
+
+export const ArticleOrderByRelevanceFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  excerpt: 'excerpt',
+  content: 'content',
+  coverUrl: 'coverUrl',
+  category: 'category',
+  authorName: 'authorName'
+} as const
+
+export type ArticleOrderByRelevanceFieldEnum = (typeof ArticleOrderByRelevanceFieldEnum)[keyof typeof ArticleOrderByRelevanceFieldEnum]
 

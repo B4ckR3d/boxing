@@ -26,6 +26,11 @@ function createClient(): PrismaClient {
 
 const globalForPrisma = globalThis as unknown as { __prisma?: PrismaClient };
 
+// Invalidate stale client if schema changed while dev server kept running
+if (globalForPrisma.__prisma && !("galleryCategory" in (globalForPrisma.__prisma as unknown as Record<string, unknown>))) {
+  delete globalForPrisma.__prisma;
+}
+
 export const prisma: PrismaClient = globalForPrisma.__prisma ?? createClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.__prisma = prisma;

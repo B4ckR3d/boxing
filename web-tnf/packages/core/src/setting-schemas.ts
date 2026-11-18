@@ -37,6 +37,19 @@ export const SETTING_SCHEMAS = {
     maintenanceMode: z.boolean().default(false),
     showDemoContent: z.boolean().default(true),
   }),
+  "popup.event": z.object({
+    isEnabled: z.boolean().default(true),
+    badge: z.string().max(60).default("LAGA MENDATANG · TIKET RESMI"),
+    title: z.string().max(120).default("TEMANGGUNG FIGHT NIGHT VOL. 1"),
+    subtitle: z.string().max(160).default("SABTU, 24 DESEMBER 2026 · GOR BAMBU RUNCING"),
+    description: z
+      .string()
+      .max(350)
+      .default("Perebutan sabuk emas kelas berat & welter. Dapatkan tiket Anda sebelum kehabisan!"),
+    imageUrl: z.string().max(500).default("/images/hero/boxing-ring-arena.jpg"),
+    buttonLabel: z.string().max(60).default("BELI TIKET SEKARANG"),
+    buttonUrl: z.string().max(500).default("https://tiket.pimpom.id"),
+  }),
 } as const;
 
 export type SettingKey = keyof typeof SETTING_SCHEMAS;
@@ -56,4 +69,5 @@ export const SETTING_LABELS: Record<SettingKey, string> = {
   "landing.featured": "Landing — Featured Section",
   "footer.general": "Footer",
   "system.flags": "System Flags",
+  "popup.event": "Pop-up Event Promosi",
 };

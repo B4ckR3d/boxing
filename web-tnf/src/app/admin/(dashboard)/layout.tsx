@@ -15,6 +15,7 @@ import {
   Award,
   CalendarDays,
   Sliders,
+  Newspaper,
   Handshake,
   ClipboardList,
   UserCog,
@@ -60,6 +61,7 @@ export default async function AdminDashboardLayout({
     { label: "Sabuk Kejuaraan", href: "/admin/belts", icon: Award },
     { label: "Jadwal Event", href: "/admin/events", icon: CalendarDays },
     { label: "Hero Banner", href: "/admin/hero-slides", icon: Sliders },
+    { label: "Berita & Galeri", href: "/admin/gallery", icon: Newspaper },
     ...(can("content.manage")
       ? [{ label: "Sponsor & Mitra", href: "/admin/sponsors", icon: Handshake }]
       : []),

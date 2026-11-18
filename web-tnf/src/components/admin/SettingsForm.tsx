@@ -50,6 +50,20 @@ const FIELD_SPECS: Record<SettingKey, FieldSpec[]> = {
       type: "boolean",
     },
   ],
+  "popup.event": [
+    {
+      name: "isEnabled",
+      label: "Aktifkan Pop-up Saat Pengunjung Masuk",
+      type: "boolean",
+    },
+    { name: "badge", label: "Label / Badge", type: "text", placeholder: "LAGA MENDATANG · TIKET RESMI" },
+    { name: "title", label: "Judul Event", type: "text", placeholder: "TEMANGGUNG FIGHT NIGHT VOL. 1" },
+    { name: "subtitle", label: "Jadwal & Lokasi", type: "text", placeholder: "SABTU, 24 DESEMBER 2026 · GOR BAMBU RUNCING" },
+    { name: "description", label: "Deskripsi Promosi", type: "textarea" },
+    { name: "imageUrl", label: "URL Gambar Flyer / Poster", type: "text", placeholder: "/images/hero/boxing-ring-arena.jpg" },
+    { name: "buttonLabel", label: "Label Tombol Beli Tiket", type: "text", placeholder: "BELI TIKET SEKARANG" },
+    { name: "buttonUrl", label: "Tautan Pembelian Tiket", type: "text", placeholder: "https://tiket.pimpom.id" },
+  ],
 };
 
 const GROUP_DESCRIPTIONS: Record<SettingKey, string> = {
@@ -59,6 +73,7 @@ const GROUP_DESCRIPTIONS: Record<SettingKey, string> = {
     "Heading and call-to-action for the featured fighters section on the landing page.",
   "footer.general": "Footer text and contact details on the public site.",
   "system.flags": "Operational switches. Changes apply immediately.",
+  "popup.event": "Pop-up flyer promosi event yang muncul saat pengunjung pertama kali membuka website, dengan tombol langsung ke pemesanan tiket.",
 };
 
 export function SettingsForm({ settings }: { settings: SettingValues }) {
