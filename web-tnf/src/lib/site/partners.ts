@@ -74,22 +74,46 @@ export const GOVERNMENT_SUPPORTERS: Partner[] = [
 ];
 
 /**
+ * Asosiasi Resmi & Badan Sanksi Olahraga Combat Temanggung.
+ */
+export const SANCTIONING_ASSOCIATIONS: Partner[] = [
+  {
+    id: "perbati-temanggung",
+    name: "Pengurus Besar Tinju Indonesia (PERBATI) Kab. Temanggung",
+    shortName: "PERBATI",
+    tier: "SUPPORTED_BY",
+    kind: "government",
+    logo: "/images/partners/perbati-temanggung.png",
+    note: {
+      id: "Badan Sanksioning & Regulasi Tinju Resmi Kabupaten Temanggung.",
+      en: "Official Boxing Sanctioning & Regulatory Board of Temanggung Regency.",
+    },
+  },
+  {
+    id: "kickboxing-temanggung",
+    name: "Pengurus Cabang Kickboxing Indonesia Kab. Temanggung",
+    shortName: "KBI",
+    tier: "SUPPORTED_BY",
+    kind: "government",
+    logo: "/images/partners/kickboxing-temanggung.png",
+    note: {
+      id: "Asosiasi Resmi Cabang Kickboxing Indonesia Kabupaten Temanggung.",
+      en: "Official Kickboxing Indonesia Branch of Temanggung Regency.",
+    },
+  },
+];
+
+/**
  * Commercial, community, and media partners.
  * Empty by design — fill in as agreements are signed. No placeholder brands.
  */
-export const PARTNERS: Partner[] = [
-  // {
-  //   id: "contoh-sponsor",
-  //   name: "Nama Perusahaan",
-  //   shortName: "ABC",
-  //   tier: "OFFICIAL_PARTNER",
-  //   kind: "company",
-  //   logo: "/images/partners/nama-perusahaan.png",
-  //   note: { id: "Partner resmi TFN 2026.", en: "Official TFN 2026 partner." },
-  // },
-];
+export const PARTNERS: Partner[] = [];
 
-export const ALL_PARTNERS: Partner[] = [...GOVERNMENT_SUPPORTERS, ...PARTNERS];
+export const ALL_PARTNERS: Partner[] = [
+  ...GOVERNMENT_SUPPORTERS,
+  ...SANCTIONING_ASSOCIATIONS,
+  ...PARTNERS,
+];
 
 /** Partners in a given tier — the UI skips tiers that come back empty. */
 export function partnersByTier(tier: PartnerTier): Partner[] {

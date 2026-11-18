@@ -2,6 +2,7 @@ import React from "react";
 import { prisma } from "@/lib/db/prisma";
 import { getPublicSponsors } from "@/server/services/sponsor.service";
 import { HeroSlider } from "@/components/landing/HeroSlider";
+import { OfficialSanctionRibbon } from "@/components/landing/OfficialSanctionRibbon";
 import { SponsorRibbon } from "@/components/landing/SponsorRibbon";
 import { SponsorShowcase } from "@/components/landing/SponsorShowcase";
 import { OfficialSupport } from "@/components/landing/OfficialSupport";
@@ -253,11 +254,8 @@ export default async function PublicHomePage() {
       {/* 1. Cinematic Hero Slider (Reference Image 2 & 3 with 5 Fighter Slides) */}
       <HeroSlider slides={activeHeroSlides} />
 
-      {/* 2. TFN identity ribbon; no unverified sponsor claims. */}
-      {/* <SponsorRibbon /> */}
-
-      {/* 2b. Official event / government backing — sourced from src/lib/site/partners.ts */}
-      {/* <OfficialSupport variant="home" /> */}
+      {/* 2. Official Sanctioning Bodies & Combat Associations (PERBATI & KBI) */}
+      <OfficialSanctionRibbon />
 
       {/* 2c. Sponsor & mitra komersial — dari database, hanya yang aktif */}
       <SponsorShowcase sponsors={sponsors} />
