@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { CheckCircle2, Swords, MessageSquare, ChevronDown, ChevronUp, Sparkles, Shield } from "lucide-react";
+import { CheckCircle2, MessageSquare, Sparkles } from "lucide-react";
 
 interface WeightDivision {
   number: number;
@@ -48,9 +48,6 @@ const SKILL_TIERS = [
 
 export function Vol6ExhibitionCard() {
   const [selectedSkill, setSelectedSkill] = useState<string>("all");
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
-
-  const displayedDivisions = isExpanded ? DIVISIONS : DIVISIONS.slice(0, 5);
 
   const getWaLink = (divName: string, range: string) => {
     const skillName =
@@ -64,9 +61,9 @@ export function Vol6ExhibitionCard() {
   };
 
   return (
-    <div className="mt-8 border border-subtle bg-charcoal/90 p-5 sm:p-6 shadow-xl transition-all">
+    <div className="w-full border border-subtle bg-charcoal/90 p-5 sm:p-7 shadow-2xl transition-all">
       {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-subtle">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-subtle">
         <div>
           <div className="flex items-center gap-2">
             <span className="bg-fight-red text-white font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
@@ -76,10 +73,10 @@ export function Vol6ExhibitionCard() {
               <Sparkles className="w-3 h-3 text-gold" /> LOW CONTACT
             </span>
           </div>
-          <h3 className="font-display text-xl sm:text-2xl font-black uppercase text-ink mt-1.5 leading-snug">
+          <h3 className="font-display text-2xl sm:text-3xl font-black uppercase text-ink mt-2 leading-tight">
             KELAS TANDING & REGULASI SETIAP PARTAI
           </h3>
-          <p className="font-mono-data text-xs text-ink-muted mt-0.5">
+          <p className="font-mono-data text-xs text-ink-muted mt-1">
             Rules: Boxing & Kickboxing (Low Contact) · Terbuka untuk 11 Kelas Timbangan
           </p>
         </div>
@@ -88,19 +85,19 @@ export function Vol6ExhibitionCard() {
           href="https://wa.me/6285714883551?text=Halo%20Admin%20TFN,%20saya%20ingin%20tanya%20seputar%20pendaftaran%20dan%20ketersediaan%20slot%20TFN%20Vol.6%20Exhibition."
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 bg-fight-red hover:bg-fight-red-hover text-white px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 shadow-md"
+          className="inline-flex items-center justify-center gap-2 bg-fight-red hover:bg-fight-red-hover text-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 shadow-lg"
         >
-          <MessageSquare className="w-3.5 h-3.5" />
+          <MessageSquare className="w-4 h-4" />
           <span>DAFTAR PARTAI VIA WA</span>
         </a>
       </div>
 
       {/* 3 Kategori Skill */}
-      <div className="py-4 border-b border-subtle">
-        <p className="font-mono-data text-[10px] uppercase tracking-widest text-ink-muted font-bold mb-2.5">
+      <div className="py-5 border-b border-subtle">
+        <p className="font-mono-data text-[10px] uppercase tracking-widest text-ink-muted font-bold mb-3">
           PILIH KATEGORI PENGALAMAN / SKILL:
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {SKILL_TIERS.map((tier) => {
             const isSelected = selectedSkill === tier.id;
             return (
@@ -108,18 +105,18 @@ export function Vol6ExhibitionCard() {
                 key={tier.id}
                 type="button"
                 onClick={() => setSelectedSkill(isSelected ? "all" : tier.id)}
-                className={`p-3 text-left border transition-all ${
+                className={`p-3.5 text-left border transition-all ${
                   isSelected
-                    ? "border-fight-red bg-fight-red/10 text-white shadow-md"
+                    ? "border-fight-red bg-fight-red/10 text-white shadow-md ring-1 ring-fight-red"
                     : "border-subtle bg-canvas/60 hover:bg-canvas text-ink"
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-sm font-black uppercase tracking-wide">
+                  <span className="font-display text-base font-black uppercase tracking-wide">
                     {tier.name}
                   </span>
                   <span
-                    className={`font-mono-data text-[8px] font-bold uppercase px-1.5 py-0.5 ${
+                    className={`font-mono-data text-[9px] font-bold uppercase px-2 py-0.5 ${
                       isSelected
                         ? "bg-fight-red text-white"
                         : "bg-charcoal text-ink-muted border border-white/10"
@@ -128,7 +125,7 @@ export function Vol6ExhibitionCard() {
                     {tier.badge}
                   </span>
                 </div>
-                <p className="mt-1 text-[11px] leading-tight text-ink-muted font-mono-data">
+                <p className="mt-1 text-xs leading-snug text-ink-muted font-mono-data">
                   {tier.desc}
                 </p>
               </button>
@@ -137,85 +134,60 @@ export function Vol6ExhibitionCard() {
         </div>
       </div>
 
-      {/* Daftar 11 Kelas Berat */}
-      <div className="pt-4">
-        <div className="flex items-center justify-between mb-3">
+      {/* Daftar 11 Kelas Berat (Lebar: 2 Kolom Grid di Layar Sedang & Besar) */}
+      <div className="pt-5">
+        <div className="flex items-center justify-between mb-4">
           <p className="font-mono-data text-[10px] uppercase tracking-widest text-ink-muted font-bold">
             STATUS KETERSEDIAAN 11 DIVISI KELAS BERAT:
           </p>
-          <span className="font-mono-data text-[10px] text-green-400 font-bold uppercase flex items-center gap-1">
+          <span className="font-mono-data text-[10px] text-green-400 font-bold uppercase flex items-center gap-1.5 bg-green-950/40 border border-green-800/40 px-2.5 py-1">
             <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            SLOT DIBUKA
+            SEMUA SLOT DIBUKA
           </span>
         </div>
 
-        <div className="space-y-2">
-          {displayedDivisions.map((div) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {DIVISIONS.map((div) => (
             <div
               key={div.number}
-              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2.5 sm:px-3.5 bg-canvas/80 border border-subtle hover:border-fight-red/50 transition-colors"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 p-3.5 bg-canvas/80 border border-subtle hover:border-fight-red/50 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center font-mono-data text-[10px] font-bold bg-charcoal text-ink-muted border border-subtle">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center font-mono-data text-xs font-bold bg-charcoal text-ink-muted border border-subtle">
                   {div.number}
                 </span>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono-data text-xs sm:text-sm font-black text-white">
+                    <span className="font-mono-data text-sm font-black text-white">
                       {div.range}
                     </span>
-                    <span className="font-display text-xs sm:text-sm font-bold uppercase text-fight-red">
+                    <span className="font-display text-sm font-bold uppercase text-fight-red">
                       {div.name}
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono-data text-ink-muted">
+                  <span className="text-[11px] font-mono-data text-ink-muted">
                     {div.indonesianName}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between sm:justify-end gap-3 pt-1 sm:pt-0 border-t sm:border-t-0 border-white/5">
+              <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
                 <span className="inline-flex items-center gap-1 font-mono-data text-[10px] font-bold text-green-400 bg-green-950/40 border border-green-800/40 px-2 py-0.5">
                   <CheckCircle2 className="w-3 h-3 text-green-400" />
-                  TERSEDIA (OPEN)
+                  TERSEDIA
                 </span>
 
                 <a
                   href={getWaLink(div.name, div.range)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono-data text-[10px] font-bold text-ink hover:text-fight-red underline uppercase"
+                  className="font-mono-data text-[11px] font-bold text-ink hover:text-fight-red underline uppercase"
                 >
-                  Daftar Kelas Ini →
+                  Daftar →
                 </a>
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Toggle Expand / Collapse */}
-        <div className="mt-4 pt-3 border-t border-subtle flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="inline-flex items-center gap-1.5 font-mono-data text-xs font-bold uppercase text-ink-muted hover:text-ink transition-colors"
-          >
-            {isExpanded ? (
-              <>
-                <ChevronUp className="w-4 h-4 text-fight-red" />
-                <span>Tampilkan Lebih Sedikit (5 Kelas)</span>
-              </>
-            ) : (
-              <>
-                <ChevronDown className="w-4 h-4 text-fight-red" />
-                <span>Lihat Seluruh 11 Kelas Berat ({DIVISIONS.length} Kelas Lengkap)</span>
-              </>
-            )}
-          </button>
-
-          <span className="font-mono-data text-[10px] text-ink-subtle uppercase">
-            Total {DIVISIONS.length} Divisi Pertandingan
-          </span>
         </div>
       </div>
     </div>

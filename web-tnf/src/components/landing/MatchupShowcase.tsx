@@ -10,59 +10,62 @@ export function MatchupShowcase() {
   const { lang } = useLanguage();
   return (
     <section className="border-b border-subtle bg-canvas py-16 sm:py-24">
-      <div className="mx-auto grid max-w-7xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:px-8">
-        <div>
-          <p className="font-mono-data text-xs font-bold uppercase tracking-widest text-fight-red">
-            {lang === "id" ? "DI DALAM ARENA TFN" : "INSIDE THE TFN ARENA"}
-          </p>
-          <h2 className="mt-4 font-display text-4xl font-bold leading-tight sm:text-5xl">
-            {lang === "id" ? "SETIAP RONDE PUNYA CERITA." : "EVERY ROUND HAS A STORY."}
-          </h2>
-          <p className="mt-5 max-w-lg text-sm leading-7 text-ink-muted">
-            {lang === "id"
-              ? "Dari persiapan di sasana hingga langkah pertama menuju ring. Kenali petarung dan ikuti informasi kompetisi melalui halaman acara TFN."
-              : "From gym preparation to that first step into the ring. Discover the fighters and follow competition information on the TFN events page."}
-          </p>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
+        {/* Top 2-Column Split: Intro + Ring Photo */}
+        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+          <div>
+            <p className="font-mono-data text-xs font-bold uppercase tracking-widest text-fight-red">
+              {lang === "id" ? "DI DALAM ARENA TFN" : "INSIDE THE TFN ARENA"}
+            </p>
+            <h2 className="mt-4 font-display text-4xl font-bold leading-tight sm:text-5xl">
+              {lang === "id" ? "SETIAP RONDE PUNYA CERITA." : "EVERY ROUND HAS A STORY."}
+            </h2>
+            <p className="mt-5 max-w-lg text-sm leading-7 text-ink-muted">
+              {lang === "id"
+                ? "Dari persiapan di sasana hingga langkah pertama menuju ring. Kenali petarung dan ikuti informasi kompetisi melalui halaman acara TFN."
+                : "From gym preparation to that first step into the ring. Discover the fighters and follow competition information on the TFN events page."}
+            </p>
 
-          {/* Kedua Tombol Asli (TIDAK DIHAPUS) */}
-          <div className="mt-7 flex flex-wrap gap-4">
-            <Link
-              href="/fighters"
-              className="inline-flex min-h-12 items-center gap-4 border border-subtle px-5 text-sm font-bold hover:border-fight-red"
-            >
-              {lang === "id" ? "Kenali petarung" : "Meet the fighters"}
-              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-            <Link
-              href={ticketingUrl("/")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-12 items-center gap-4 bg-fight-red px-5 text-sm font-bold text-white hover:bg-fight-red-hover"
-            >
-              {lang === "id" ? "Cari tiket" : "Find tickets"}
-              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
+            {/* Kedua Tombol Asli (TETAP ADA) */}
+            <div className="mt-7 flex flex-wrap gap-4">
+              <Link
+                href="/fighters"
+                className="inline-flex min-h-12 items-center gap-4 border border-subtle px-5 text-sm font-bold hover:border-fight-red"
+              >
+                {lang === "id" ? "Kenali petarung" : "Meet the fighters"}
+                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+              <Link
+                href={ticketingUrl("/")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-12 items-center gap-4 bg-fight-red px-5 text-sm font-bold text-white hover:bg-fight-red-hover"
+              >
+                {lang === "id" ? "Cari tiket" : "Find tickets"}
+                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </div>
           </div>
 
-          {/* Detail Kelas Berat & Kategori Skill Vol.6 Exhibition Tepat di Bawah Tombol */}
-          <Vol6ExhibitionCard />
+          <figure className="relative border border-subtle bg-charcoal overflow-hidden shadow-2xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/hero/boxing-ring-arena.jpg"
+              width={960}
+              height={640}
+              loading="lazy"
+              alt={
+                lang === "id"
+                  ? "Ilustrasi ring tinju di bawah sorotan lampu arena"
+                  : "Illustration of a boxing ring under arena lights"
+              }
+              className="aspect-[4/3] w-full object-cover"
+            />
+          </figure>
         </div>
 
-        <figure className="relative sticky top-24 border border-subtle bg-charcoal overflow-hidden shadow-2xl">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/images/hero/boxing-ring-arena.jpg"
-            width={960}
-            height={640}
-            loading="lazy"
-            alt={
-              lang === "id"
-                ? "Ilustrasi ring tinju di bawah sorotan lampu arena"
-                : "Illustration of a boxing ring under arena lights"
-            }
-            className="aspect-[4/3] w-full object-cover"
-          />
-        </figure>
+        {/* Section Vol.6 Exhibition Full Width di Bawah Grid (Lebar & Simetris) */}
+        <Vol6ExhibitionCard />
       </div>
     </section>
   );
