@@ -14,13 +14,13 @@ const ASSOCIATIONS: Association[] = [
   {
     id: "perbati",
     fullName: "PENGURUS BESAR TINJU INDONESIA",
-    branch: "KABUPATEN TEMANGGUNG",
+    branch: "WILAYAH KABUPATEN TEMANGGUNG",
     logo: "/images/partners/perbati-temanggung.png",
   },
   {
     id: "kbi",
     fullName: "PENGURUS CABANG KICKBOXING INDONESIA",
-    branch: "KABUPATEN TEMANGGUNG",
+    branch: "WILAYAH KABUPATEN TEMANGGUNG",
     logo: "/images/partners/kickboxing-temanggung.png",
   },
 ];
