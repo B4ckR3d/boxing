@@ -116,9 +116,6 @@ export function SponsorMarquee({ sponsors = [] }: SponsorMarqueeProps) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="mb-2 inline-block border border-fight-red px-2 py-0.5 font-mono-data text-[10px] font-bold uppercase tracking-[0.2em] text-fight-red">
-              {lang === "id" ? "Didukung Oleh" : "Supported By"}
-            </p>
             <h2
               id="sponsor-marquee-title"
               className="font-display text-2xl font-black uppercase tracking-tight text-ink sm:text-3xl"
@@ -162,17 +159,6 @@ export function SponsorMarquee({ sponsors = [] }: SponsorMarqueeProps) {
           </ul>
         </div>
       </div>
-
-      {/* Footer note */}
-      <p className="mx-auto mt-8 max-w-7xl px-4 font-mono-data text-[9px] uppercase tracking-[0.2em] text-ink-subtle sm:px-6 lg:px-8">
-        {sponsors.length === 0
-          ? lang === "id"
-            ? "⚠ Data placeholder — tambahkan sponsor via Admin CMS"
-            : "⚠ Placeholder data — add sponsors via Admin CMS"
-          : lang === "id"
-            ? "★ Slot sponsor tersedia — hubungi panitia untuk informasi kemitraan"
-            : "★ Sponsor slots available — contact the committee for partnership info"}
-      </p>
     </section>
   );
 }
