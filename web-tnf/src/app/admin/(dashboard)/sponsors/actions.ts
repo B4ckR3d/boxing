@@ -16,6 +16,7 @@ export interface SponsorInput {
   name: string;
   tier: string;
   url?: string;
+  logoId?: string;
   logoUrl?: string;
   sortOrder?: number;
   isActive: boolean;
@@ -93,7 +94,11 @@ export async function createSponsorAction(input: SponsorInput): Promise<ActionRe
     await requirePermission("content.manage");
 
     const data = validateInput(input);
-    const logoId = data.logoUrl ? await createLogoAsset(data.logoUrl, data.name) : null;
+    const logoId = input.logoId
+      ? input.logoId
+      : data.logoUrl
+        ? await createLogoAsset(data.logoUrl, data.name)
+        : null;
 
     await prisma.sponsor.create({
       data: {
@@ -124,10 +129,13 @@ export async function updateSponsorAction(id: string, input: SponsorInput): Prom
     if (!existing) return { ok: false, error: "Sponsor tidak ditemukan" };
 
     const data = validateInput(input);
-    const logoId =
-      data.logoUrl && data.logoUrl !== existing.logo?.url
-        ? await createLogoAsset(data.logoUrl, data.name)
-        : existing.logoId;
+    const logoId = input.logoId
+      ? input.logoId
+      : data.logoUrl === null
+        ? null
+        : data.logoUrl !== existing.logo?.url
+          ? await createLogoAsset(data.logoUrl, data.name)
+          : existing.logoId;
 
     await prisma.sponsor.update({
       where: { id },

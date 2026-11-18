@@ -16,6 +16,7 @@ export default async function AdminEventsPage() {
 
   const rawEvents = await prisma.event.findMany({
     include: {
+      poster: true,
       _count: {
         select: { fights: true },
       },
@@ -34,6 +35,7 @@ export default async function AdminEventsPage() {
     startsAt: e.startsAt.toISOString(),
     status: e.status,
     isPublished: e.isPublished,
+    posterUrl: e.poster?.url ?? null,
     fightsCount: e._count.fights,
   }));
 

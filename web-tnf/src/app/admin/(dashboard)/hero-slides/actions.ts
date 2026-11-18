@@ -11,7 +11,9 @@ export interface CreateHeroSlideInput {
   headline: string;
   description?: string;
   eventDate?: string;
+  fighterImageId?: string;
   fighterImageUrl?: string;
+  backgroundId?: string;
   backgroundImageUrl?: string;
   ctaPrimaryLabel?: string;
   ctaPrimaryHref?: string;
@@ -32,8 +34,8 @@ export async function createHeroSlideAction(input: CreateHeroSlideInput): Promis
       return { ok: false, error: "Headline slide wajib diisi" };
     }
 
-    let fighterImageId: string | undefined = undefined;
-    if (input.fighterImageUrl && input.fighterImageUrl.trim().length > 0) {
+    let fighterImageId: string | undefined = input.fighterImageId || undefined;
+    if (!fighterImageId && input.fighterImageUrl && input.fighterImageUrl.trim().length > 0) {
       const asset = await prisma.mediaAsset.create({
         data: {
           storageKey: `hero-fighter-${Date.now()}-${Math.random().toString(36).substring(7)}`,
@@ -48,8 +50,8 @@ export async function createHeroSlideAction(input: CreateHeroSlideInput): Promis
       fighterImageId = asset.id;
     }
 
-    let backgroundId: string | undefined = undefined;
-    if (input.backgroundImageUrl && input.backgroundImageUrl.trim().length > 0) {
+    let backgroundId: string | undefined = input.backgroundId || undefined;
+    if (!backgroundId && input.backgroundImageUrl && input.backgroundImageUrl.trim().length > 0) {
       const bgAsset = await prisma.mediaAsset.create({
         data: {
           storageKey: `hero-bg-${Date.now()}-${Math.random().toString(36).substring(7)}`,

@@ -12,6 +12,7 @@ import {
   Swords,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 import {
   createEventAction,
   togglePublishEventAction,
@@ -29,6 +30,7 @@ export interface EventItem {
   startsAt: string | Date;
   status: "DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED" | "CANCELLED" | "POSTPONED" | string;
   isPublished: boolean;
+  posterUrl?: string | null;
   fightsCount: number;
 }
 
@@ -54,6 +56,8 @@ export function EventManager({
   const [status, setStatus] = useState<"DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED">("SCHEDULED");
   const [isPublished, setIsPublished] = useState(true);
   const [description, setDescription] = useState("");
+  const [posterUrl, setPosterUrl] = useState("");
+  const [posterId, setPosterId] = useState<string | undefined>(undefined);
 
   const filteredEvents = events.filter((e) => {
     const matchSearch =
@@ -81,6 +85,7 @@ export function EventManager({
         status,
         isPublished,
         description: description.trim() || undefined,
+        posterId,
       });
 
       if (res.ok) {
@@ -89,6 +94,8 @@ export function EventManager({
         setName("");
         setSlug("");
         setDescription("");
+        setPosterUrl("");
+        setPosterId(undefined);
         router.refresh();
       } else {
         toast.error(res.error || "Gagal membuat event");
@@ -216,6 +223,16 @@ export function EventManager({
                 key={evt.id}
                 className="bg-charcoal border border-subtle flex flex-col justify-between shadow-xl hover:border-fight-red transition-all group overflow-hidden"
               >
+                {evt.posterUrl && (
+                  <div className="h-36 w-full bg-neutral-950 border-b border-subtle overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={evt.posterUrl}
+                      alt={evt.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
                 <div className="p-5 space-y-4">
                   {/* Status & Badge Row */}
                   <div className="flex items-center justify-between">
@@ -399,6 +416,17 @@ export function EventManager({
                   </select>
                 </div>
               </div>
+
+              <ImageUploader
+                label="Upload Poster Event (Opsional)"
+                folder="events"
+                value={posterUrl}
+                onChange={({ url, mediaAssetId }) => {
+                  setPosterUrl(url);
+                  setPosterId(mediaAssetId);
+                }}
+                disabled={isPending}
+              />
 
               <div>
                 <label className="block text-ink font-bold uppercase mb-1">

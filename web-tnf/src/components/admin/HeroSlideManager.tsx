@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 import {
   createHeroSlideAction,
   toggleActiveHeroSlideAction,
@@ -48,8 +49,10 @@ export function HeroSlideManager({
   const [headline, setHeadline] = useState("");
   const [description, setDescription] = useState("");
   const [eventDate, _setEventDate] = useState("2026-12-24T19:00");
-  const [fighterImageUrl, setFighterImageUrl] = useState("/images/hero/hero_fighter_1_marcus.jpg");
-  const [backgroundImageUrl, setBackgroundImageUrl] = useState("/images/hero/boxing-ring-arena.jpg");
+  const [fighterImageUrl, setFighterImageUrl] = useState("");
+  const [fighterImageId, setFighterImageId] = useState<string | undefined>(undefined);
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
+  const [backgroundId, setBackgroundId] = useState<string | undefined>(undefined);
   const [ctaPrimaryLabel, setCtaPrimaryLabel] = useState("BACA SELENGKAPNYA");
   const [ctaPrimaryHref, setCtaPrimaryHref] = useState("/events");
   const [ctaSecondaryLabel, setCtaSecondaryLabel] = useState("LIHAT FIGHT CARD");
@@ -70,7 +73,9 @@ export function HeroSlideManager({
         headline,
         description: description.trim() || undefined,
         eventDate: eventDate ? new Date(eventDate).toISOString() : undefined,
+        fighterImageId,
         fighterImageUrl: fighterImageUrl.trim() || undefined,
+        backgroundId,
         backgroundImageUrl: backgroundImageUrl.trim() || undefined,
         ctaPrimaryLabel,
         ctaPrimaryHref,
@@ -85,6 +90,10 @@ export function HeroSlideManager({
         setIsModalOpen(false);
         setHeadline("");
         setDescription("");
+        setFighterImageUrl("");
+        setFighterImageId(undefined);
+        setBackgroundImageUrl("");
+        setBackgroundId(undefined);
         router.refresh();
       } else {
         toast.error(res.error || "Gagal membuat hero slide");
@@ -319,30 +328,26 @@ export function HeroSlideManager({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-ink font-bold uppercase mb-1">
-                    Path / URL Foto Petarung
-                  </label>
-                  <input
-                    type="text"
-                    value={fighterImageUrl}
-                    onChange={(e) => setFighterImageUrl(e.target.value)}
-                    placeholder="/images/hero/hero_fighter_1_marcus.jpg"
-                    className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none text-[11px]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-ink font-bold uppercase mb-1">
-                    Path / URL Background Arena
-                  </label>
-                  <input
-                    type="text"
-                    value={backgroundImageUrl}
-                    onChange={(e) => setBackgroundImageUrl(e.target.value)}
-                    placeholder="/images/hero/boxing-ring-arena.jpg"
-                    className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none text-[11px]"
-                  />
-                </div>
+                <ImageUploader
+                  label="Upload Foto Petarung / Banner"
+                  folder="hero"
+                  value={fighterImageUrl}
+                  onChange={({ url, mediaAssetId }) => {
+                    setFighterImageUrl(url);
+                    setFighterImageId(mediaAssetId);
+                  }}
+                  disabled={isPending}
+                />
+                <ImageUploader
+                  label="Upload Background Arena (Opsional)"
+                  folder="hero"
+                  value={backgroundImageUrl}
+                  onChange={({ url, mediaAssetId }) => {
+                    setBackgroundImageUrl(url);
+                    setBackgroundId(mediaAssetId);
+                  }}
+                  disabled={isPending}
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

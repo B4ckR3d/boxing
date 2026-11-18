@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Handshake, Image as ImageIcon, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ImageUploader } from "@/components/admin/ImageUploader";
 import { SPONSOR_TIERS, sponsorTierLabel, type SponsorTierKey } from "@/lib/sponsors/tiers";
 import {
   createSponsorAction,
@@ -30,6 +31,7 @@ interface FormState {
   tier: string;
   url: string;
   logoUrl: string;
+  logoId?: string;
   sortOrder: number;
   isActive: boolean;
 }
@@ -39,6 +41,7 @@ const EMPTY_FORM: FormState = {
   tier: "PLATINUM",
   url: "",
   logoUrl: "",
+  logoId: undefined,
   sortOrder: 0,
   isActive: true,
 };
@@ -97,6 +100,7 @@ export function SponsorManager({
         name: form.name,
         tier: form.tier,
         url: form.url.trim() || undefined,
+        logoId: form.logoId,
         logoUrl: form.logoUrl.trim() || undefined,
         sortOrder: Number(form.sortOrder) || 0,
         isActive: form.isActive,
@@ -348,20 +352,16 @@ export function SponsorManager({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-ink font-bold uppercase mb-1">Path / URL Logo</label>
-                <input
-                  type="text"
-                  value={form.logoUrl}
-                  onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
-                  placeholder="/images/sponsors/bank-jateng.png"
-                  className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none text-[11px]"
-                />
-                <p className="text-[10px] text-ink-subtle mt-1">
-                  Upload file ke <code>public/images/sponsors/</code> lalu tempel path-nya, atau pakai URL https.
-                  Disarankan PNG transparan.
-                </p>
-              </div>
+              <ImageUploader
+                label="Upload Logo Sponsor (Disarankan PNG Transparan)"
+                folder="sponsors"
+                value={form.logoUrl}
+                onChange={({ url, mediaAssetId }) =>
+                  setForm({ ...form, logoUrl: url, logoId: mediaAssetId })
+                }
+                aspectClass="h-28"
+                disabled={isPending}
+              />
 
               <div>
                 <label className="block text-ink font-bold uppercase mb-1">Situs Web Sponsor (opsional)</label>
@@ -373,13 +373,6 @@ export function SponsorManager({
                   className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none text-[11px]"
                 />
               </div>
-
-              {form.logoUrl.trim() && (
-                <div className="border border-subtle bg-white p-3 flex items-center justify-center h-24">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={form.logoUrl} alt="Pratinjau logo" className="max-h-full max-w-full object-contain" />
-                </div>
-              )}
 
               <div className="flex items-center gap-2 pt-1">
                 <input

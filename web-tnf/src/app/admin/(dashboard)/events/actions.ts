@@ -16,14 +16,17 @@ export interface CreateEventInput {
   status: "DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED" | "CANCELLED" | "POSTPONED";
   isPublished: boolean;
   description?: string;
+  posterId?: string;
 }
 
 function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  return (
+    text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "event"
+  );
 }
 
 export async function createEventAction(input: CreateEventInput): Promise<ActionResult> {
@@ -37,20 +40,24 @@ export async function createEventAction(input: CreateEventInput): Promise<Action
       return { ok: false, error: "Nama event wajib diisi" };
     }
 
-    const rawSlug = input.slug && input.slug.trim().length > 0 ? input.slug : slugify(input.name);
-    const finalSlug = `${rawSlug}-${Date.now().toString().slice(-4)}`;
+    const rawSlug = input.slug && input.slug.trim().length > 0 ? slugify(input.slug) : slugify(input.name);
+    const finalSlug = `${rawSlug.slice(0, 140)}-${Date.now().toString().slice(-5)}`;
+    const parsedDate = input.startsAt ? new Date(input.startsAt) : new Date();
+    const startsAt = Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+    const country = (input.country?.trim().toUpperCase() || "ID").slice(0, 2);
 
     await prisma.event.create({
       data: {
-        name: input.name.trim(),
+        name: input.name.trim().slice(0, 160),
         slug: finalSlug,
-        venue: input.venue?.trim() || "Gedung Pemuda Temanggung",
-        city: input.city?.trim() || "Temanggung",
-        country: input.country?.trim() || "ID",
-        startsAt: new Date(input.startsAt || Date.now()),
+        venue: input.venue?.trim().slice(0, 160) || "Gedung Pemuda Temanggung",
+        city: input.city?.trim().slice(0, 120) || "Temanggung",
+        country,
+        startsAt,
         status: input.status || "SCHEDULED",
         isPublished: Boolean(input.isPublished),
         description: input.description?.trim() || null,
+        posterId: input.posterId || null,
       },
     });
 
