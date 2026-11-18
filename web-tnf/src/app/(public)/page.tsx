@@ -1,6 +1,7 @@
 import React from "react";
 import { prisma } from "@/lib/db/prisma";
 import { getPublicSponsors } from "@/server/services/sponsor.service";
+import { getSettings } from "@/server/services/settings.service";
 import { HeroSlider } from "@/components/landing/HeroSlider";
 import { OfficialSanctionRibbon } from "@/components/landing/OfficialSanctionRibbon";
 import { SponsorRibbon } from "@/components/landing/SponsorRibbon";
@@ -23,6 +24,14 @@ export default async function PublicHomePage() {
     include: { fighterImage: true, background: true },
     orderBy: { sortOrder: "asc" },
   });
+
+  // 1b. Fetch Organization Settings (Exhibition, etc.)
+  let settings;
+  try {
+    settings = await getSettings();
+  } catch (err) {
+    console.error("PublicHomePage getSettings error:", err);
+  }
 
   // 2. Fetch Sponsor aktif + Latest Published Heavyweight Ranking Version & Entries
   const sponsors = await getPublicSponsors();
@@ -259,8 +268,8 @@ export default async function PublicHomePage() {
       {/* 2c. Sponsor & mitra komersial — dari database, hanya yang aktif */}
       <SponsorShowcase sponsors={sponsors} />
 
-      {/* 4. Editorial introduction */}
-      <MatchupShowcase />
+      {/* 4. Editorial introduction & Vol. 6 Exhibition */}
+      <MatchupShowcase config={settings?.["exhibition.vol6"]} />
 
       {/* Only show published rankings, never a fabricated version. */}
       {hwVersion && <RankingPreview

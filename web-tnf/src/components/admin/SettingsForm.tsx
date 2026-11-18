@@ -64,6 +64,39 @@ const FIELD_SPECS: Record<SettingKey, FieldSpec[]> = {
     { name: "buttonLabel", label: "Label Tombol Beli Tiket", type: "text", placeholder: "BELI TIKET SEKARANG" },
     { name: "buttonUrl", label: "Tautan Pembelian Tiket", type: "text", placeholder: "https://tiket.pimpom.id" },
   ],
+  "exhibition.vol6": [
+    {
+      name: "isEnabled",
+      label: "Tampilkan Section Exhibition & Partai di Beranda",
+      type: "boolean",
+    },
+    { name: "badge", label: "Label Badge", type: "text", placeholder: "VOL. 6 EXHIBITION" },
+    { name: "title", label: "Judul Utama", type: "text", placeholder: "SETIAP RONDE PUNYA CERITA." },
+    {
+      name: "rulesText",
+      label: "Keterangan Regulasi & Rules",
+      type: "text",
+      placeholder: "Rules: Boxing & Kickboxing (Low Contact) · Terbuka untuk 11 Kelas Timbangan",
+    },
+    {
+      name: "whatsappNumber",
+      label: "Nomor WhatsApp Pendaftaran (Format: 628xxx)",
+      type: "text",
+      placeholder: "6285714883551",
+    },
+    {
+      name: "ctaLabel",
+      label: "Label Tombol WhatsApp Header",
+      type: "text",
+      placeholder: "DAFTAR PARTAI VIA WA",
+    },
+    {
+      name: "closedDivisions",
+      label: "Nomor Divisi yang Sudah Penuh (pisahkan koma, cth: 2, 5)",
+      type: "text",
+      placeholder: "cth: 2, 5 (kosongkan jika semua masih dibuka)",
+    },
+  ],
 };
 
 const GROUP_DESCRIPTIONS: Record<SettingKey, string> = {
@@ -74,6 +107,7 @@ const GROUP_DESCRIPTIONS: Record<SettingKey, string> = {
   "footer.general": "Footer text and contact details on the public site.",
   "system.flags": "Operational switches. Changes apply immediately.",
   "popup.event": "Pop-up flyer promosi event yang muncul saat pengunjung pertama kali membuka website, dengan tombol langsung ke pemesanan tiket.",
+  "exhibition.vol6": "Konfigurasi partai tanding Vol. 6 Exhibition (nomor WA, regulasi, dan kontrol slot divisi penuh/tersedia).",
 };
 
 export function SettingsForm({ settings }: { settings: SettingValues }) {

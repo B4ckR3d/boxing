@@ -48,9 +48,35 @@ const SKILL_TIERS = [
   },
 ];
 
-export function MatchupShowcase() {
+export interface ExhibitionConfig {
+  isEnabled?: boolean;
+  badge?: string;
+  title?: string;
+  rulesText?: string;
+  whatsappNumber?: string;
+  ctaLabel?: string;
+  closedDivisions?: string;
+}
+
+export function MatchupShowcase({ config }: { config?: ExhibitionConfig } = {}) {
+  if (config?.isEnabled === false) return null;
+
   const { lang } = useLanguage();
   const [selectedSkill, setSelectedSkill] = useState<string>("all");
+
+  const badge = config?.badge || "VOL. 6 EXHIBITION";
+  const title = config?.title || (lang === "id" ? "SETIAP RONDE PUNYA CERITA." : "EVERY ROUND HAS A STORY.");
+  const rulesText = config?.rulesText || "Rules: Boxing & Kickboxing (Low Contact) · Terbuka untuk 11 Kelas Timbangan";
+  const rawWa = config?.whatsappNumber?.replace(/\D/g, "") || "6285714883551";
+  const waNumber = rawWa.startsWith("0") ? `62${rawWa.slice(1)}` : rawWa;
+  const ctaLabel = config?.ctaLabel || "DAFTAR PARTAI VIA WA";
+
+  const closedSet = new Set(
+    (config?.closedDivisions || "")
+      .split(",")
+      .map((s) => parseInt(s.trim(), 10))
+      .filter((n) => !isNaN(n))
+  );
 
   const getWaLink = (divName: string, range: string) => {
     const skillName =
@@ -60,7 +86,7 @@ export function MatchupShowcase() {
     const msg = encodeURIComponent(
       `Halo Admin TFN, saya ingin mendaftar Temanggung Fight Night Vol.6 Exhibition di divisi ${divName} (${range}) kategori skill: ${skillName}. Apakah slotnya masih tersedia?`
     );
-    return `https://wa.me/6285714883551?text=${msg}`;
+    return `https://wa.me/${waNumber}?text=${msg}`;
   };
 
   return (
@@ -69,24 +95,29 @@ export function MatchupShowcase() {
         {/* 1. Header Judul & Tombol WA Pendaftaran */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-subtle">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className="bg-fight-red text-white font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
-                VOL. 6 EXHIBITION
+                {badge}
+              </span>
+              <span className="text-[11px] font-mono-data text-ink-muted font-bold hidden sm:inline">
+                {rulesText}
               </span>
             </div>
             <h2 className="font-display text-4xl sm:text-5xl font-black uppercase text-ink leading-tight tracking-tight">
-              {lang === "id" ? "SETIAP RONDE PUNYA CERITA." : "EVERY ROUND HAS A STORY."}
+              {title}
             </h2>
           </div>
 
           <a
-            href="https://wa.me/6285714883551?text=Halo%20Admin%20TFN,%20saya%20ingin%20tanya%20seputar%20pendaftaran%20dan%20ketersediaan%20slot%20TFN%20Vol.6%20Exhibition."
+            href={`https://wa.me/${waNumber}?text=${encodeURIComponent(
+              "Halo Admin TFN, saya ingin tanya seputar pendaftaran dan ketersediaan slot TFN Vol.6 Exhibition."
+            )}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 bg-fight-red hover:bg-fight-red-hover text-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 shadow-lg"
           >
             <MessageSquare className="w-4 h-4" />
-            <span>DAFTAR PARTAI VIA WA</span>
+            <span>{ctaLabel}</span>
           </a>
         </div>
 
@@ -166,15 +197,21 @@ export function MatchupShowcase() {
                 </div>
 
                 <div className="flex items-center justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
-                  <a
-                    href={getWaLink(div.name, div.range)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-[#FFCF1F] hover:bg-[#ffd84d] text-black font-display font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000] hover:scale-105 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
-                  >
-                    <span>Daftar</span>
-                    <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
-                  </a>
+                  {closedSet.has(div.number) ? (
+                    <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-white/10 text-ink-muted font-display font-bold text-xs uppercase tracking-wider border border-white/15">
+                      Slot Penuh
+                    </span>
+                  ) : (
+                    <a
+                      href={getWaLink(div.name, div.range)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-[#FFCF1F] hover:bg-[#ffd84d] text-black font-display font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000] hover:scale-105 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                    >
+                      <span>Daftar</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </a>
+                  )}
                 </div>
               </div>
             ))}

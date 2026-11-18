@@ -50,6 +50,21 @@ export const SETTING_SCHEMAS = {
     buttonLabel: z.string().max(60).default("BELI TIKET SEKARANG"),
     buttonUrl: z.string().max(500).default("https://tiket.pimpom.id"),
   }),
+  "exhibition.vol6": z.object({
+    isEnabled: z.boolean().default(true),
+    badge: z.string().max(60).default("VOL. 6 EXHIBITION"),
+    title: z.string().max(120).default("SETIAP RONDE PUNYA CERITA."),
+    rulesText: z
+      .string()
+      .max(250)
+      .default("Rules: Boxing & Kickboxing (Low Contact) · Terbuka untuk 11 Kelas Timbangan"),
+    whatsappNumber: z.string().max(30).default("6285714883551"),
+    ctaLabel: z.string().max(60).default("DAFTAR PARTAI VIA WA"),
+    closedDivisions: z
+      .string()
+      .max(200)
+      .default(""),
+  }),
 } as const;
 
 export type SettingKey = keyof typeof SETTING_SCHEMAS;
@@ -70,4 +85,5 @@ export const SETTING_LABELS: Record<SettingKey, string> = {
   "footer.general": "Footer",
   "system.flags": "System Flags",
   "popup.event": "Pop-up Event Promosi",
+  "exhibition.vol6": "Partai & Regulasi Vol. 6",
 };

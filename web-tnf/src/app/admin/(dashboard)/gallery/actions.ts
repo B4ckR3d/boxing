@@ -154,3 +154,88 @@ export async function deleteArticleAction(id: string) {
   revalidatePath("/news");
   return { success: true };
 }
+
+// -----------------------------------------------------------------------------
+// UPDATE ACTIONS
+// -----------------------------------------------------------------------------
+
+export async function updateCategoryAction(id: string, formData: FormData) {
+  await assertCanManage();
+
+  const name = String(formData.get("name") || "").trim();
+  const description = String(formData.get("description") || "").trim() || null;
+  const sortOrder = parseInt(String(formData.get("sortOrder") || "0"), 10) || 0;
+
+  if (!name) throw new Error("Nama kategori wajib diisi");
+
+  await prisma.galleryCategory.update({
+    where: { id },
+    data: {
+      name,
+      description,
+      sortOrder,
+    },
+  });
+
+  revalidatePath("/admin/gallery");
+  revalidatePath("/news");
+  return { success: true };
+}
+
+export async function updateGalleryItemAction(id: string, formData: FormData) {
+  await assertCanManage();
+
+  const title = String(formData.get("title") || "").trim();
+  const description = String(formData.get("description") || "").trim() || null;
+  const imageUrl = String(formData.get("imageUrl") || "").trim();
+  const categoryId = String(formData.get("categoryId") || "").trim();
+  const sortOrder = parseInt(String(formData.get("sortOrder") || "0"), 10) || 0;
+
+  if (!title) throw new Error("Judul foto wajib diisi");
+  if (!imageUrl) throw new Error("URL gambar foto wajib diisi");
+  if (!categoryId) throw new Error("Pilih kategori foto");
+
+  await prisma.galleryItem.update({
+    where: { id },
+    data: {
+      title,
+      description,
+      imageUrl,
+      categoryId,
+      sortOrder,
+    },
+  });
+
+  revalidatePath("/admin/gallery");
+  revalidatePath("/news");
+  return { success: true };
+}
+
+export async function updateArticleAction(id: string, formData: FormData) {
+  await assertCanManage();
+
+  const title = String(formData.get("title") || "").trim();
+  const excerpt = String(formData.get("excerpt") || "").trim();
+  const content = String(formData.get("content") || "").trim();
+  const coverUrl = String(formData.get("coverUrl") || "").trim() || null;
+  const category = String(formData.get("category") || "Berita").trim();
+  const authorName = String(formData.get("authorName") || "Redaksi TFN").trim();
+
+  if (!title || !content) throw new Error("Judul dan konten berita wajib diisi");
+
+  await prisma.article.update({
+    where: { id },
+    data: {
+      title,
+      excerpt: excerpt || title,
+      content,
+      coverUrl,
+      category,
+      authorName,
+    },
+  });
+
+  revalidatePath("/admin/gallery");
+  revalidatePath("/news");
+  return { success: true };
+}
