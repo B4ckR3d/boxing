@@ -77,16 +77,10 @@ export default async function PublicGrandPrixPage() {
                   <h2 className="font-display text-3xl sm:text-5xl text-ink uppercase font-black">
                     TFN {t.name}
                   </h2>
-                  {t.prize && (
-                    <p className="font-mono-data text-xs text-fight-red font-bold mt-1">
-                      TOTAL HADIAH (PURSE): {t.prize}
-                    </p>
-                  )}
                 </div>
 
                 <div className="text-right font-mono-data text-xs text-ink-muted">
-                  <p>FORMAT: {t.size}-MAN SISTEM GUGUR TUNGGAL</p>
-                  <p className="text-ink font-bold mt-0.5">DATA TURNAMEN TERBITAN TFN</p>
+                  <p className="text-ink font-bold">DATA TURNAMEN TERBITAN TFN</p>
                 </div>
               </div>
 
