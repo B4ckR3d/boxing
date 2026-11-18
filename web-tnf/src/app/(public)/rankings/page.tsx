@@ -69,18 +69,18 @@ export default async function PublicRankingsPage() {
               <div className="bg-charcoal text-ink overflow-x-auto shadow-2xl border border-subtle">
                 <table className="w-full text-left border-collapse font-sans text-xs sm:text-sm">
                   <thead>
-                    <tr className="bg-canvas text-ink font-display text-xs uppercase tracking-wider">
-                      <th className="py-3 px-4 w-20 text-center font-bold">POSISI</th>
-                      <th className="py-3 px-4 font-bold">PETARUNG</th>
-                      <th className="py-3 px-4 font-bold">SASANA / KLUB</th>
-                      <th className="py-3 px-4 text-center font-bold">NEGARA</th>
+                    <tr className="bg-canvas border-b border-subtle text-neutral-300 font-mono-data text-xs uppercase tracking-wider">
+                      <th className="py-3.5 px-4 w-20 text-center font-bold">POSISI</th>
+                      <th className="py-3.5 px-4 font-bold">PETARUNG</th>
+                      <th className="py-3.5 px-4 font-bold">SASANA / KLUB</th>
+                      <th className="py-3.5 px-4 text-center font-bold">NEGARA</th>
                       {/* Red WINS Column */}
-                      <th className="py-3 px-4 text-center bg-fight-red text-ink font-black w-20">
+                      <th className="py-3.5 px-4 text-center bg-fight-red text-white font-extrabold w-20">
                         MENANG
                       </th>
-                      <th className="py-3 px-4 text-center font-bold w-20">KALAH</th>
-                      <th className="py-3 px-4 text-center font-bold w-20">SERI</th>
-                      <th className="py-3 px-4 text-center font-bold w-24">POIN</th>
+                      <th className="py-3.5 px-4 text-center font-bold w-20">KALAH</th>
+                      <th className="py-3.5 px-4 text-center font-bold w-20">SERI</th>
+                      <th className="py-3.5 px-4 text-center font-bold w-24">POIN</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-subtle font-sans">
@@ -93,17 +93,17 @@ export default async function PublicRankingsPage() {
                           key={entry.id}
                           className={`transition-colors hover:bg-surface-elevated ${
                             isChamp
-                              ? "bg-amber-50/70 font-semibold"
+                              ? "bg-amber-500/15 border-l-4 border-amber-500 font-semibold"
                               : isEven
                               ? "bg-charcoal"
                               : "bg-surface"
                           }`}
                         >
                           {/* Position */}
-                          <td className="py-3.5 px-4 text-center font-display text-lg font-bold text-ink">
+                          <td className="py-3.5 px-4 text-center font-mono-data text-base sm:text-lg font-extrabold text-ink">
                             {isChamp ? (
-                              <span className="inline-flex items-center justify-center gap-1 text-fight-red font-black">
-                                <Trophy className="w-4 h-4" /> C
+                              <span className="inline-flex items-center justify-center gap-1.5 text-amber-400 font-black">
+                                <Trophy className="w-4 h-4 text-amber-400" /> C
                               </span>
                             ) : (
                               <span>{entry.rank ?? idx + 1}</span>
@@ -112,15 +112,17 @@ export default async function PublicRankingsPage() {
 
                           {/* Fighter */}
                           <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2.5">
                               <Link
                                 href={`/fighters/${entry.fighter.slug}`}
-                                className="font-display text-base sm:text-lg font-bold text-ink hover:text-fight-red transition-colors uppercase"
+                                className={`font-sans text-sm sm:text-base font-extrabold tracking-wide uppercase transition-colors ${
+                                  isChamp ? "text-amber-300 hover:text-white" : "text-ink hover:text-fight-red"
+                                }`}
                               >
                                 {entry.fighter.firstName} {entry.fighter.lastName}
                               </Link>
                               {isChamp && (
-                                <span className="bg-fight-red text-ink font-mono-data text-[9px] font-black px-1.5 py-0.5 uppercase">
+                                <span className="bg-fight-red text-white font-mono-data text-[10px] font-black px-2 py-0.5 uppercase tracking-wider shadow-sm">
                                   JUARA BERTAHAN
                                 </span>
                               )}
@@ -128,34 +130,34 @@ export default async function PublicRankingsPage() {
                           </td>
 
                           {/* Club */}
-                          <td className="py-3.5 px-4 text-ink-subtle font-medium">
+                          <td className="py-3.5 px-4 text-neutral-300 font-sans text-xs sm:text-sm font-medium tracking-wide">
                             TEMANGGUNG COMBAT CLUB
                           </td>
 
                           {/* Nationality */}
                           <td className="py-3.5 px-4 text-center">
-                            <span className="font-mono-data text-xs font-bold bg-surface-elevated text-ink px-2 py-0.5">
+                            <span className="font-mono-data text-xs font-bold bg-surface-elevated text-neutral-200 px-2.5 py-1 border border-subtle">
                               {entry.fighter.nationality}
                             </span>
                           </td>
 
                           {/* WINS (Bolded) */}
-                          <td className="py-3.5 px-4 text-center font-mono-data text-sm font-black text-ink bg-fight-red/5">
+                          <td className="py-3.5 px-4 text-center font-mono-data text-sm font-extrabold text-white bg-fight-red/20">
                             {entry.fighter.wins}
                           </td>
 
                           {/* DEFEAT */}
-                          <td className="py-3.5 px-4 text-center font-mono-data text-sm text-ink-subtle">
+                          <td className="py-3.5 px-4 text-center font-mono-data text-sm text-neutral-300">
                             {entry.fighter.losses}
                           </td>
 
                           {/* DRAWS */}
-                          <td className="py-3.5 px-4 text-center font-mono-data text-sm text-ink-subtle">
+                          <td className="py-3.5 px-4 text-center font-mono-data text-sm text-neutral-300">
                             {entry.fighter.draws}
                           </td>
 
                           {/* POINTS */}
-                          <td className="py-3.5 px-4 text-center font-mono-data text-sm font-bold text-ink">
+                          <td className="py-3.5 px-4 text-center font-mono-data text-sm font-bold text-neutral-100">
                             {entry.points ? Number(entry.points).toFixed(1) : "25.0"}
                           </td>
                         </tr>
@@ -165,7 +167,7 @@ export default async function PublicRankingsPage() {
                 </table>
 
                 {/* Footer Note */}
-                <div className="p-3 bg-neutral-50 border-t border-subtle text-ink-subtle font-mono-data text-[10px]">
+                <div className="p-3 bg-surface border-t border-subtle text-neutral-400 font-mono-data text-xs">
                   * - PETARUNG YANG BERTANDING DALAM 10 EVENT RESMI TFN TERAKHIR
                 </div>
               </div>

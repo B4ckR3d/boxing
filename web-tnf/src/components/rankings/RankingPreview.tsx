@@ -72,17 +72,17 @@ export function RankingPreview({
           <table className="w-full text-left border-collapse font-sans text-xs sm:text-sm">
             {/* Header row: Black background, WINS column has RED background */}
             <thead>
-              <tr className="bg-canvas text-ink font-display text-xs uppercase tracking-wider">
-                <th className="py-3 px-4 w-20 text-center font-bold">{t("colPosition")}</th>
-                <th className="py-3 px-4 font-bold">{t("colFighter")}</th>
-                <th className="py-3 px-4 font-bold">{t("colClub")}</th>
-                <th className="py-3 px-4 text-center font-bold">{t("colNat")}</th>
-                <th className="py-3 px-4 text-center bg-fight-red text-ink font-black w-20">
+              <tr className="bg-canvas border-b border-subtle text-neutral-300 font-mono-data text-xs uppercase tracking-wider">
+                <th className="py-3.5 px-4 w-20 text-center font-bold">{t("colPosition")}</th>
+                <th className="py-3.5 px-4 font-bold">{t("colFighter")}</th>
+                <th className="py-3.5 px-4 font-bold">{t("colClub")}</th>
+                <th className="py-3.5 px-4 text-center font-bold">{t("colNat")}</th>
+                <th className="py-3.5 px-4 text-center bg-fight-red text-white font-extrabold w-20">
                   {t("colWins")}
                 </th>
-                <th className="py-3 px-4 text-center font-bold w-20">{t("colDefeat")}</th>
-                <th className="py-3 px-4 text-center font-bold w-20">{t("colDraws")}</th>
-                <th className="py-3 px-4 text-center font-bold w-24">{t("colPoints")}</th>
+                <th className="py-3.5 px-4 text-center font-bold w-20">{t("colDefeat")}</th>
+                <th className="py-3.5 px-4 text-center font-bold w-20">{t("colDraws")}</th>
+                <th className="py-3.5 px-4 text-center font-bold w-24">{t("colPoints")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle font-sans">
@@ -100,17 +100,17 @@ export function RankingPreview({
                     key={e.fighterId || idx}
                     className={`transition-colors hover:bg-surface-elevated ${
                       isChamp
-                        ? "bg-amber-50/80 font-semibold"
+                        ? "bg-amber-500/15 border-l-4 border-amber-500 font-semibold"
                         : isEven
                         ? "bg-charcoal"
                         : "bg-surface"
                     }`}
                   >
                     {/* Position */}
-                    <td className="py-3.5 px-4 text-center font-display text-lg font-bold text-ink">
+                    <td className="py-3.5 px-4 text-center font-mono-data text-base sm:text-lg font-extrabold text-ink">
                       {isChamp ? (
-                        <span className="inline-flex items-center justify-center gap-1 text-fight-red font-black">
-                          <Trophy className="w-4 h-4" /> C
+                        <span className="inline-flex items-center justify-center gap-1.5 text-amber-400 font-black">
+                          <Trophy className="w-4 h-4 text-amber-400" /> C
                         </span>
                       ) : (
                         <span>{e.rank ?? idx + 1}</span>
@@ -119,15 +119,17 @@ export function RankingPreview({
 
                     {/* Fighter Name */}
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2.5">
                         <Link
                           href={`/fighters/${e.fighterSlug}`}
-                          className="font-display text-base sm:text-lg font-bold text-ink hover:text-fight-red transition-colors uppercase"
+                          className={`font-sans text-sm sm:text-base font-extrabold tracking-wide uppercase transition-colors ${
+                            isChamp ? "text-amber-300 hover:text-white" : "text-ink hover:text-fight-red"
+                          }`}
                         >
                           {e.fighterName}
                         </Link>
                         {isChamp && (
-                          <span className="bg-fight-red text-ink font-mono-data text-[9px] font-black px-1.5 py-0.2 uppercase">
+                          <span className="bg-fight-red text-white font-mono-data text-[10px] font-black px-2 py-0.5 uppercase tracking-wider shadow-sm">
                             CHAMPION
                           </span>
                         )}
@@ -135,34 +137,34 @@ export function RankingPreview({
                     </td>
 
                     {/* Club / Gym */}
-                    <td className="py-3.5 px-4 text-ink-subtle font-medium">
+                    <td className="py-3.5 px-4 text-neutral-300 font-sans text-xs sm:text-sm font-medium tracking-wide">
                       TEMANGGUNG BOXING CAMP
                     </td>
 
                     {/* Nationality */}
                     <td className="py-3.5 px-4 text-center">
-                      <span className="font-mono-data text-xs font-bold bg-surface-elevated text-ink px-2 py-0.5">
+                      <span className="font-mono-data text-xs font-bold bg-surface-elevated text-neutral-200 px-2.5 py-1 border border-subtle">
                         {e.nationality}
                       </span>
                     </td>
 
                     {/* WINS (Highlighted) */}
-                    <td className="py-3.5 px-4 text-center font-mono-data text-sm font-black text-ink bg-fight-red/5">
+                    <td className="py-3.5 px-4 text-center font-mono-data text-sm font-extrabold text-white bg-fight-red/20">
                       {wins}
                     </td>
 
                     {/* DEFEAT */}
-                    <td className="py-3.5 px-4 text-center font-mono-data text-sm text-ink-subtle">
+                    <td className="py-3.5 px-4 text-center font-mono-data text-sm text-neutral-300">
                       {losses}
                     </td>
 
                     {/* DRAWS */}
-                    <td className="py-3.5 px-4 text-center font-mono-data text-sm text-ink-subtle">
+                    <td className="py-3.5 px-4 text-center font-mono-data text-sm text-neutral-300">
                       {draws}
                     </td>
 
                     {/* POINTS */}
-                    <td className="py-3.5 px-4 text-center font-mono-data text-sm font-bold text-ink">
+                    <td className="py-3.5 px-4 text-center font-mono-data text-sm font-bold text-neutral-100">
                       {e.points ? Number(e.points).toFixed(1) : "25.0"}
                     </td>
                   </tr>
@@ -172,7 +174,7 @@ export function RankingPreview({
           </table>
 
           {/* Table Footer Note (Image 4 footnote) */}
-          <div className="p-3 bg-neutral-50 border-t border-subtle text-ink-subtle font-mono-data text-[10px]">
+          <div className="p-3 bg-surface border-t border-subtle text-neutral-400 font-mono-data text-xs">
             {t("rankingFootnote")}
           </div>
         </div>

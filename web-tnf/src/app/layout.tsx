@@ -1,9 +1,24 @@
 import type { Metadata, Viewport } from "next";
+import { Oswald, Inter } from "next/font/google";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/lib/theme/ThemeContext";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import "@/styles/globals.css";
+
+const oswald = Oswald({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-oswald",
+  display: "swap",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || "http://localhost:3000"),
@@ -61,7 +76,7 @@ export default async function RootLayout({
   // ThemeProvider mirrors the user's choice back into this cookie on change.
   const themeCookie = (await cookies()).get("tfn_theme")?.value;
   const initialTheme = themeCookie === "light" ? "light" : "dark";
-  const htmlClassName = initialTheme === "light" ? "light scroll-smooth" : "dark scroll-smooth";
+  const htmlClassName = `${initialTheme === "light" ? "light" : "dark"} scroll-smooth ${oswald.variable} ${inter.variable}`;
 
   return (
     <html lang="id" className={htmlClassName} suppressHydrationWarning>
