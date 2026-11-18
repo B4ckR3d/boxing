@@ -56,8 +56,6 @@ export function HeroSlider({ slides, autoplayIntervalMs = 7000 }: HeroSliderProp
       <div aria-hidden="true" className="tfn-hero-scrim absolute inset-0" />
       <div className="relative mx-auto flex min-h-[660px] max-w-7xl flex-col justify-center px-4 pb-28 pt-16 sm:px-6 sm:pt-20 lg:min-h-[740px] lg:px-8">
         <div className="max-w-xl lg:max-w-[58%]" aria-live={isPlaying ? "off" : "polite"} aria-atomic="true">
-          <p className="mb-5 font-mono-data text-xs font-bold uppercase tracking-[0.18em] text-[#f5c542]">{slide.isDemo ? (lang === "id" ? "PRATINJAU TFN / KONTEN DEMO" : "TFN PREVIEW / DEMO CONTENT") : slide.category || "TEMANGGUNG FIGHT NIGHT"}</p>
-          <p className="mb-4 font-mono-data text-xs uppercase tracking-wider text-neutral-300">{slide.eventTitle}</p>
           <h1 className="font-display text-[clamp(2.75rem,7vw,6rem)] font-bold uppercase leading-[1.03] tracking-tight [text-wrap:balance]">{slide.headline}</h1>
           <p className="mt-6 max-w-lg text-sm leading-7 text-neutral-300 sm:text-base">{slide.description}</p>
           {slide.eventDate && !slide.isDemo && <p className="mt-4 font-mono-data text-sm text-[#f5c542]">{new Date(slide.eventDate).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jakarta" })}</p>}
@@ -65,7 +63,6 @@ export function HeroSlider({ slides, autoplayIntervalMs = 7000 }: HeroSliderProp
             <Link href={ticketingUrl("/")} className="inline-flex min-h-13 items-center justify-center gap-3 bg-fight-red px-7 text-sm font-bold uppercase tracking-wider text-white hover:bg-fight-red-hover"><Ticket className="h-4 w-4" aria-hidden="true" />{lang === "id" ? "Jelajahi tiket" : "Explore tickets"}<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
             <Link href={slide.ctaSecondaryHref || "/events"} className="inline-flex min-h-13 items-center justify-center border border-white/40 bg-black/30 px-6 text-sm font-bold uppercase tracking-wider text-white hover:bg-white/10">{slide.ctaSecondaryLabel || (lang === "id" ? "Lihat agenda" : "View events")}</Link>
           </div>
-          {slide.isDemo && <p className="mt-4 max-w-md text-xs leading-5 text-neutral-400">{lang === "id" ? "Visual dan petarung ilustratif. Bukan pengumuman jadwal, gelar, atau ketersediaan tiket." : "Illustrative visuals and fighters. Not an announcement of dates, titles, or ticket availability."}</p>}
         </div>
         {slides.length > 1 && <div className="absolute inset-x-4 bottom-6 flex items-center justify-between gap-4 border-t border-white/20 pt-5 sm:inset-x-6 lg:inset-x-8">
           <div className="flex gap-2">{slides.map((item, index) => <button key={item.id} type="button" aria-label={`${lang === "id" ? "Tampilkan slide" : "Show slide"} ${index + 1}`} aria-current={currentIdx === index ? "true" : undefined} onClick={() => { setCurrentIdx(index); setIsPlaying(false); }} className="flex h-11 w-7 items-center justify-center sm:w-10"><span className={`h-1 w-full ${currentIdx === index ? "bg-[#f5c542]" : "bg-white/30"}`} /></button>)}</div>
