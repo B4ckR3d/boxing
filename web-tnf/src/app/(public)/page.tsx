@@ -6,7 +6,6 @@ import { OfficialSanctionRibbon } from "@/components/landing/OfficialSanctionRib
 import { SponsorRibbon } from "@/components/landing/SponsorRibbon";
 import { SponsorShowcase } from "@/components/landing/SponsorShowcase";
 import { OfficialSupport } from "@/components/landing/OfficialSupport";
-import { FightHighlights } from "@/components/landing/FightHighlights";
 import { MatchupShowcase } from "@/components/landing/MatchupShowcase";
 import { RankingPreview } from "@/components/rankings/RankingPreview";
 import { Belt3DViewer } from "@/components/belts/Belt3DViewer";
@@ -259,9 +258,6 @@ export default async function PublicHomePage() {
 
       {/* 2c. Sponsor & mitra komersial — dari database, hanya yang aktif */}
       <SponsorShowcase sponsors={sponsors} />
-
-      {/* 3. Public discovery links */}
-      <FightHighlights />
 
       {/* 4. Editorial introduction */}
       <MatchupShowcase />
