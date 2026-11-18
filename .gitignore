@@ -30,6 +30,8 @@ public/uploads/*
 # backups
 backups/
 *.sql
+!prisma/migrations/**/*.sql
+!web-tnf/prisma/migrations/**/*.sql
 
 # scheduler state (hold-expiry cron log + lock) — ikut pindah ke apps/web
 apps/web/storage/
