@@ -39,7 +39,7 @@ const schema = z.object({
 
   // Aplikasi ticketing terpisah (`ticket-tnf`). Dipakai proxy untuk mengalihkan /tickets* ke sana.
   // Path lengkap dipertahankan (lihat src/proxy.ts), jadi link lama tetap hidup.
-  TICKETING_URL: z.string().url().default("http://localhost:3010"),
+  TICKETING_URL: z.string().url().default("https://tiket.pimpom.id"),
 
   STORAGE_DRIVER: z.enum(["local", "s3"]).default("local"),
   UPLOAD_MAX_IMAGE_MB: z.coerce.number().positive().max(50).default(8),

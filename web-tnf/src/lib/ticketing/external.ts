@@ -8,7 +8,7 @@
  * `NEXT_PUBLIC_` dipakai karena file ini juga diimpor komponen client (Navbar/Hero/Footer).
  * Tidak ada rahasia di sini — hanya URL publik.
  */
-const RAW = process.env.NEXT_PUBLIC_TICKETING_URL ?? "http://localhost:3010";
+const RAW = process.env.NEXT_PUBLIC_TICKETING_URL ?? "https://tiket.pimpom.id";
 
 /** Base URL tanpa trailing slash, mis. `https://tiket.tfn.id`. */
 export const TICKETING_BASE = RAW.replace(/\/+$/, "");

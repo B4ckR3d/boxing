@@ -17,7 +17,7 @@ export function proxy(request: NextRequest) {
   //
   // Hanya path yang sudah dipetakan yang dialihkan; `/tickets/*` lain jatuh ke beranda ticketing.
   // ---------------------------------------------------------------------------------------------
-  const TICKETING = (process.env.TICKETING_URL ?? "http://localhost:3010").replace(/\/+$/, "");
+  const TICKETING = (process.env.TICKETING_URL ?? "https://tiket.pimpom.id").replace(/\/+$/, "");
   const ticketRedirect = ticketDestination(pathname);
   if (ticketRedirect) {
     return NextResponse.redirect(`${TICKETING}${ticketRedirect}`, 308);

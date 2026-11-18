@@ -60,7 +60,7 @@ export function HeroSlider({ slides, autoplayIntervalMs = 7000 }: HeroSliderProp
           <p className="mt-6 max-w-lg text-sm leading-7 text-neutral-300 sm:text-base">{slide.description}</p>
           {slide.eventDate && !slide.isDemo && <p className="mt-4 font-mono-data text-sm text-[#f5c542]">{new Date(slide.eventDate).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jakarta" })}</p>}
           <div className="mt-8 flex flex-col gap-3 min-[400px]:flex-row">
-            <Link href={ticketingUrl("/")} className="inline-flex min-h-13 items-center justify-center gap-3 bg-fight-red px-7 text-sm font-bold uppercase tracking-wider text-white hover:bg-fight-red-hover"><Ticket className="h-4 w-4" aria-hidden="true" />{lang === "id" ? "Jelajahi tiket" : "Explore tickets"}<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
+            <Link href={ticketingUrl("/")} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-13 items-center justify-center gap-3 bg-fight-red px-7 text-sm font-bold uppercase tracking-wider text-white hover:bg-fight-red-hover"><Ticket className="h-4 w-4" aria-hidden="true" />{lang === "id" ? "Jelajahi tiket" : "Explore tickets"}<ArrowUpRight className="h-4 w-4" aria-hidden="true" /></Link>
             <Link href={slide.ctaSecondaryHref || "/events"} className="inline-flex min-h-13 items-center justify-center border border-white/40 bg-black/30 px-6 text-sm font-bold uppercase tracking-wider text-white hover:bg-white/10">{slide.ctaSecondaryLabel || (lang === "id" ? "Lihat agenda" : "View events")}</Link>
           </div>
         </div>
