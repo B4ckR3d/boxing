@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { ticketingUrl } from "@/lib/ticketing/external";
-import { ArrowUpRight, CheckCircle2, MessageSquare, Sparkles } from "lucide-react";
+import { ArrowUpRight, MessageSquare } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 interface WeightDivision {
@@ -73,9 +73,6 @@ export function MatchupShowcase() {
               <span className="bg-fight-red text-white font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
                 VOL. 6 EXHIBITION
               </span>
-              <span className="font-mono-data text-[11px] text-gold font-bold uppercase tracking-wider flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-gold" /> RULES: BOXING & KICKBOXING (LOW CONTACT)
-              </span>
             </div>
             <h2 className="font-display text-4xl sm:text-5xl font-black uppercase text-ink leading-tight tracking-tight">
               {lang === "id" ? "SETIAP RONDE PUNYA CERITA." : "EVERY ROUND HAS A STORY."}
@@ -141,17 +138,13 @@ export function MatchupShowcase() {
             <p className="font-mono-data text-[10px] uppercase tracking-widest text-ink-muted font-bold">
               STATUS KETERSEDIAAN 11 DIVISI KELAS BERAT:
             </p>
-            <span className="font-mono-data text-[10px] text-green-400 font-bold uppercase flex items-center gap-1.5 bg-green-950/40 border border-green-800/40 px-2.5 py-1">
-              <span className="inline-block w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              SEMUA SLOT DIBUKA
-            </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {DIVISIONS.map((div) => (
               <div
                 key={div.number}
-                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 p-3.5 bg-charcoal/80 border border-subtle hover:border-fight-red/50 transition-colors"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3.5 bg-charcoal/80 border border-subtle hover:border-fight-red/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center font-mono-data text-xs font-bold bg-canvas text-ink-muted border border-subtle">
@@ -172,9 +165,9 @@ export function MatchupShowcase() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
-                  <span className="inline-flex items-center gap-1 font-mono-data text-[10px] font-bold text-green-400 bg-green-950/40 border border-green-800/40 px-2 py-0.5">
-                    <CheckCircle2 className="w-3 h-3 text-green-400" />
+                <div className="flex items-center justify-between sm:justify-end gap-2.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5 shrink-0">
+                  <span className="inline-flex items-center gap-1.5 font-mono-data text-[10px] font-bold text-green-400 bg-green-950/40 border border-green-800/40 px-2.5 py-1">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                     TERSEDIA
                   </span>
 
@@ -182,9 +175,10 @@ export function MatchupShowcase() {
                     href={getWaLink(div.name, div.range)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-mono-data text-[11px] font-bold text-ink hover:text-fight-red underline uppercase"
+                    className="inline-flex items-center gap-1 bg-fight-red hover:bg-fight-red-hover text-white px-3 py-1 font-mono-data text-[11px] font-bold uppercase tracking-wider transition-all shadow-sm hover:scale-105 active:scale-95"
                   >
-                    Daftar →
+                    <span>DAFTAR</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
                   </a>
                 </div>
               </div>
