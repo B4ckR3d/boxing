@@ -43,7 +43,7 @@ export function Navbar() {
       <div className="border-b border-subtle bg-canvas">
         <div className="mx-auto flex min-h-11 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <p className="font-mono-data text-[10px] uppercase tracking-[0.12em] text-ink-muted sm:text-xs">
-            <span className="text-fight-red">TEMANGGUNG</span><span className="hidden sm:inline"> · CENTRAL JAVA</span> / FIGHT NIGHT
+            <span className="text-fight-red">TEMANGGUNG</span> FIGHT NIGHT<span className="hidden sm:inline"> / CENTRAL JAVA</span>
           </p>
           <div className="flex shrink-0 items-center gap-3"><LanguageSwitcher /><ThemeToggle /></div>
         </div>
@@ -51,7 +51,7 @@ export function Navbar() {
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <Link href="/" aria-label="TFN — Temanggung Fight Night" onClick={() => setIsMobileOpen(false)} className="flex shrink-0 items-center gap-3">
           <span className="font-display text-4xl font-black italic tracking-tighter">TFN<span className="text-fight-red">.</span></span>
-          <span className="hidden border-l border-subtle pl-3 font-display text-[10px] leading-relaxed tracking-[0.12em] 2xl:block">TEMANGGUNG<br />FIGHT NIGHT</span>
+          <span className="hidden border-l border-subtle pl-3 font-display text-[10px] font-bold italic leading-relaxed tracking-[0.12em] sm:block">TEMANGGUNG<br />FIGHT NIGHT</span>
         </Link>
         <nav aria-label={lang === "id" ? "Navigasi utama" : "Main navigation"} className="hidden items-center gap-4 xl:flex">
           {navLinks.map((link) => <Link key={link.href} href={link.href} aria-current={isActive(link.href) ? "page" : undefined} className={`inline-flex min-h-11 items-center border-b-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${isActive(link.href) ? "border-fight-red text-fight-red" : "border-transparent hover:text-fight-red"}`}>{link.label}</Link>)}
