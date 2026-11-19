@@ -17,6 +17,12 @@ export interface EventPromoConfig {
 
 export function EventPromoModal({ config }: { config?: EventPromoConfig }) {
   const [isOpen, setIsOpen] = useState(false);
+  const initialImg = config?.imageUrl || "/images/hero/boxing-ring-arena.jpg";
+  const [imgSrc, setImgSrc] = useState(initialImg);
+
+  useEffect(() => {
+    setImgSrc(config?.imageUrl || "/images/hero/boxing-ring-arena.jpg");
+  }, [config?.imageUrl]);
 
   useEffect(() => {
     // Jika dimatikan dari CMS, jangan tampilkan
@@ -65,15 +71,8 @@ export function EventPromoModal({ config }: { config?: EventPromoConfig }) {
   const descText =
     config?.description ||
     "Perebutan sabuk emas kelas berat & welter. Dapatkan tiket Anda sebelum kehabisan!";
-  const imgUrl = config?.imageUrl || "/images/hero/boxing-ring-arena.jpg";
   const btnLabel = config?.buttonLabel || "BELI TIKET SEKARANG";
   const targetUrl = config?.buttonUrl || "https://tiket.pimpom.id";
-
-  const [imgSrc, setImgSrc] = useState(imgUrl);
-
-  useEffect(() => {
-    setImgSrc(config?.imageUrl || "/images/hero/boxing-ring-arena.jpg");
-  }, [config?.imageUrl]);
 
   return (
     <div
