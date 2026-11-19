@@ -13,7 +13,7 @@ VALUES
 ),
 (
   'exhibition.vol6',
-  '{"isEnabled":true,"badge":"VOL. 6 EXHIBITION","title":"SETIAP RONDE PUNYA CERITA.","rulesText":"Rules: Boxing & Kickboxing (Low Contact) · Terbuka untuk 11 Kelas Timbangan","whatsappNumber":"6281390823332","whatsappNumber2":"6285848000639","ctaLabel":"DAFTAR PARTAI VIA WA","closedDivisions":""}',
+  '{"isEnabled":true,"badge":"VOL. 6 EXHIBITION","title":"SETIAP RONDE PUNYA CERITA.","rulesText":"Rules: Boxing & Kickboxing (Low Contact) · Terbuka untuk 11 Kelas Timbangan","whatsappNumber":"6285848000639","ctaLabel":"DAFTAR PARTAI VIA WA","closedDivisions":""}',
   NULL,
   NOW(3)
 )

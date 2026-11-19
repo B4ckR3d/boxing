@@ -54,7 +54,6 @@ export interface ExhibitionConfig {
   title?: string;
   rulesText?: string;
   whatsappNumber?: string;
-  whatsappNumber2?: string;
   ctaLabel?: string;
   closedDivisions?: string;
 }
@@ -69,13 +68,10 @@ export function MatchupShowcase({ config }: { config?: ExhibitionConfig } = {}) 
   const title = config?.title || (lang === "id" ? "SETIAP RONDE PUNYA CERITA." : "EVERY ROUND HAS A STORY.");
   const rulesText = config?.rulesText || "Rules: Boxing & Kickboxing (Low Contact) · Terbuka untuk 11 Kelas Timbangan";
 
-  // Kontak 1 (+62 813-9082-3332)
-  const rawWa1 = config?.whatsappNumber?.replace(/\D/g, "") || "6281390823332";
-  const waNumber1 = rawWa1.startsWith("0") ? `62${rawWa1.slice(1)}` : rawWa1;
-
-  // Kontak 2 (+62 858-4800-0639)
-  const rawWa2 = config?.whatsappNumber2?.replace(/\D/g, "") || "6285848000639";
-  const waNumber2 = rawWa2.startsWith("0") ? `62${rawWa2.slice(1)}` : rawWa2;
+  // Kontak Resmi (+62 858-4800-0639)
+  const rawWa = config?.whatsappNumber?.replace(/\D/g, "") || "6285848000639";
+  const waNumber = rawWa.startsWith("0") ? `62${rawWa.slice(1)}` : rawWa;
+  const ctaLabel = config?.ctaLabel || "DAFTAR PARTAI VIA WA";
 
   const closedSet = new Set(
     (config?.closedDivisions || "")
@@ -84,27 +80,47 @@ export function MatchupShowcase({ config }: { config?: ExhibitionConfig } = {}) 
       .filter((n) => !isNaN(n))
   );
 
-  const getWaLink = (divName: string, range: string, waNum: string, contactIdx: number) => {
-    const skillName =
-      selectedSkill === "all"
-        ? "(Pilih Skill)"
-        : SKILL_TIERS.find((s) => s.id === selectedSkill)?.name || "";
-    const msg = encodeURIComponent(
-      `Halo Admin TFN (Kontak ${contactIdx}), saya ingin mendaftar Temanggung Fight Night Vol.6 Exhibition di divisi ${divName} (${range}) kategori skill: ${skillName}. Apakah slotnya masih tersedia?`
-    );
-    return `https://wa.me/${waNum}?text=${msg}`;
+  const getSkillLabel = () => {
+    if (selectedSkill === "atlet") return "Atlet";
+    if (selectedSkill === "pemula") return "Pemula";
+    if (selectedSkill === "non-atlet") return "Non Atlet";
+    return "[ Atlet / Pemula / Non Atlet ]";
   };
 
-  const getHeaderWaLink = (waNum: string, contactIdx: number) => {
-    return `https://wa.me/${waNum}?text=${encodeURIComponent(
-      `Halo Admin TFN (Kontak ${contactIdx}), saya ingin tanya seputar pendaftaran dan ketersediaan slot TFN Vol.6 Exhibition.`
-    )}`;
+  const getWaLink = (divName: string, range: string) => {
+    const skillLabel = getSkillLabel();
+    const text = [
+      "Halo, Admin TFN !",
+      "",
+      `Saya ingin mendaftar Temanggung Fight Night Vol.6 Exhibition di Divisi ${divName} (${range})`,
+      "",
+      "Kategori Rules: [ Boxing / Kickboxing ]",
+      `Kelas : ${skillLabel}`,
+      "",
+      "Apakah masih ada slot ?",
+    ].join("\n");
+    return `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+  };
+
+  const getHeaderWaLink = () => {
+    const skillLabel = getSkillLabel();
+    const text = [
+      "Halo, Admin TFN !",
+      "",
+      "Saya ingin mendaftar Temanggung Fight Night Vol.6 Exhibition",
+      "",
+      "Kategori Rules: [ Boxing / Kickboxing ]",
+      `Kelas : ${skillLabel}`,
+      "",
+      "Apakah masih ada slot ?",
+    ].join("\n");
+    return `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
   };
 
   return (
     <section className="border-b border-subtle bg-canvas py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-8">
-        {/* 1. Header Judul & Tombol WA Pendaftaran (Kontak 1 & Kontak 2) */}
+        {/* 1. Header Judul & Tombol WA Pendaftaran */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pb-4 border-b border-subtle">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -120,29 +136,15 @@ export function MatchupShowcase({ config }: { config?: ExhibitionConfig } = {}) 
             </h2>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <a
-              href={getHeaderWaLink(waNumber1, 1)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-fight-red hover:bg-fight-red-hover text-white px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all shadow-lg active:scale-95"
-              title="Hubungi Kontak 1 (+62 813-9082-3332)"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>DAFTAR (KONTAK 1)</span>
-            </a>
-
-            <a
-              href={getHeaderWaLink(waNumber2, 2)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-[#FFCF1F] hover:bg-[#ffd84d] text-black px-4 py-2.5 text-xs font-display font-black uppercase tracking-wider border-2 border-black/20 transition-all shadow-lg active:scale-95"
-              title="Hubungi Kontak 2 (+62 858-4800-0639)"
-            >
-              <MessageSquare className="w-4 h-4 text-black" />
-              <span>DAFTAR (KONTAK 2)</span>
-            </a>
-          </div>
+          <a
+            href={getHeaderWaLink()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 bg-fight-red hover:bg-fight-red-hover text-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors shrink-0 shadow-lg"
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>{ctaLabel}</span>
+          </a>
         </div>
 
         {/* 2. Pilihan 3 Kategori Pengalaman / Skill (Dipindah ke atas) */}
@@ -226,28 +228,15 @@ export function MatchupShowcase({ config }: { config?: ExhibitionConfig } = {}) 
                       Slot Penuh
                     </span>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={getWaLink(div.name, div.range, waNumber1, 1)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-full bg-[#FFCF1F] hover:bg-[#ffd84d] text-black font-display font-black text-[11px] uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000] hover:scale-105 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
-                        title="Daftar via Kontak 1 (+62 813-9082-3332)"
-                      >
-                        <span>Kontak 1</span>
-                        <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
-                      </a>
-                      <a
-                        href={getWaLink(div.name, div.range, waNumber2, 2)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-full bg-white hover:bg-neutral-200 text-black font-display font-black text-[11px] uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000] hover:scale-105 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
-                        title="Daftar via Kontak 2 (+62 858-4800-0639)"
-                      >
-                        <span>Kontak 2</span>
-                        <ArrowUpRight className="w-3 h-3 stroke-[2.5]" />
-                      </a>
-                    </div>
+                    <a
+                      href={getWaLink(div.name, div.range)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-full bg-fight-red hover:bg-fight-red-hover text-white font-display font-black text-xs uppercase tracking-wider border-2 border-black shadow-[2px_2px_0px_#000] hover:scale-105 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                    >
+                      <span>Daftar</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </a>
                   )}
                 </div>
               </div>
