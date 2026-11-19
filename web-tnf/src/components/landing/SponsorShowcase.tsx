@@ -18,6 +18,29 @@ export interface SponsorShowcaseItem {
   logoUrl: string | null;
 }
 
+function ShowcasePlate({ sponsor }: { sponsor: SponsorShowcaseItem }) {
+  const [imgError, setImgError] = React.useState(false);
+
+  return (
+    <span className="flex h-20 w-40 items-center justify-center border border-subtle bg-charcoal px-4 py-3 transition-colors duration-300 group-hover:border-fight-red sm:h-24 sm:w-48 overflow-hidden">
+      {sponsor.logoUrl && !imgError ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={sponsor.logoUrl}
+          alt={`Logo ${sponsor.name}`}
+          loading="lazy"
+          onError={() => setImgError(true)}
+          className="max-h-12 max-w-full object-contain opacity-85 grayscale contrast-125 transition duration-300 group-hover:opacity-100 group-hover:grayscale-0"
+        />
+      ) : (
+        <span className="text-center font-display text-xs font-black uppercase leading-tight tracking-wider text-ink group-hover:text-fight-red transition-colors px-1 truncate">
+          {sponsor.name}
+        </span>
+      )}
+    </span>
+  );
+}
+
 /**
  * Blok sponsor di beranda. Dirender HANYA kalau ada sponsor aktif di database —
  * tidak ada placeholder atau klaim sponsor fiktif saat daftar kosong.
@@ -60,43 +83,25 @@ export function SponsorShowcase({ sponsors }: { sponsors: SponsorShowcaseItem[] 
                   {sponsorTierLabel(tier.key, isEn ? "en" : "id")}
                 </p>
                 <ul className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-                  {items.map((sponsor) => {
-                    const plate = (
-                      <span className="flex h-20 w-40 items-center justify-center border border-subtle bg-white px-4 py-3 transition-colors duration-300 group-hover:border-gold/60 sm:h-24 sm:w-48">
-                        {sponsor.logoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={sponsor.logoUrl}
-                            alt={`Logo ${sponsor.name}`}
-                            loading="lazy"
-                            className="max-h-full max-w-full object-contain opacity-80 grayscale transition duration-300 group-hover:opacity-100 group-hover:grayscale-0"
-                          />
-                        ) : (
-                          <span className="text-center font-display text-xs font-black uppercase leading-tight tracking-wide text-neutral-700">
-                            {sponsor.name}
-                          </span>
-                        )}
-                      </span>
-                    );
-
-                    return (
-                      <li key={sponsor.id}>
-                        {sponsor.url ? (
-                          <a
-                            href={sponsor.url}
-                            target="_blank"
-                            rel="noopener noreferrer nofollow sponsored"
-                            className="group block"
-                            aria-label={`${sponsor.name} — ${isEn ? "opens in a new tab" : "buka di tab baru"}`}
-                          >
-                            {plate}
-                          </a>
-                        ) : (
-                          <span className="group block">{plate}</span>
-                        )}
-                      </li>
-                    );
-                  })}
+                  {items.map((sponsor) => (
+                    <li key={sponsor.id}>
+                      {sponsor.url ? (
+                        <a
+                          href={sponsor.url}
+                          target="_blank"
+                          rel="noopener noreferrer nofollow sponsored"
+                          className="group block"
+                          aria-label={`${sponsor.name} — ${isEn ? "opens in a new tab" : "buka di tab baru"}`}
+                        >
+                          <ShowcasePlate sponsor={sponsor} />
+                        </a>
+                      ) : (
+                        <span className="group block">
+                          <ShowcasePlate sponsor={sponsor} />
+                        </span>
+                      )}
+                    </li>
+                  ))}
                 </ul>
               </div>
             );

@@ -18,25 +18,25 @@ import type { PublicSponsor } from "@/server/services/sponsor.service";
  * Otomatis berhenti saat `prefers-reduced-motion: reduce`.
  */
 
-// ── Placeholder visual (hanya tampil saat DB kosong) ─────────────────────────
-// Ganti / hapus begitu logo asli tersedia di admin CMS.
+// ── Placeholder visual (hanya fallback saat DB kosong) ───────────────────────
 interface PlaceholderItem {
   id: string;
   name: string;
   tier: SponsorTierKey;
-  logoUrl: string;
+  logoUrl: string | null;
   url: string | null;
 }
 
 const PLACEHOLDER_SPONSORS: PlaceholderItem[] = [
-  { id: "ph-nike",      name: "Nike",           tier: "PLATINUM",     logoUrl: "https://logo.clearbit.com/nike.com",        url: null },
-  { id: "ph-adidas",    name: "Adidas",         tier: "GOLD",         logoUrl: "https://logo.clearbit.com/adidas.com",      url: null },
-  { id: "ph-bri",       name: "Bank BRI",       tier: "GOLD",         logoUrl: "https://logo.clearbit.com/bri.co.id",       url: null },
-  { id: "ph-telkom",    name: "Telkom",         tier: "SILVER",       logoUrl: "https://logo.clearbit.com/telkom.co.id",    url: null },
-  { id: "ph-gojek",     name: "Gojek",          tier: "PARTNER",      logoUrl: "https://logo.clearbit.com/gojek.com",       url: null },
-  { id: "ph-grab",      name: "Grab",           tier: "MEDIA_PARTNER",logoUrl: "https://logo.clearbit.com/grab.com",        url: null },
-  { id: "ph-tokopedia", name: "Tokopedia",      tier: "PARTNER",      logoUrl: "https://logo.clearbit.com/tokopedia.com",   url: null },
-  { id: "ph-shopee",    name: "Shopee",         tier: "MEDIA_PARTNER",logoUrl: "https://logo.clearbit.com/shopee.co.id",    url: null },
+  { id: "ph-pemkab",      name: "Pemkab Temanggung",      tier: "PLATINUM",     logoUrl: "/images/partners/pemkab-temanggung.png",        url: "https://temanggungkab.go.id" },
+  { id: "ph-kickboxing",  name: "Kickboxing Temanggung",  tier: "GOLD",         logoUrl: "/images/partners/kickboxing-temanggung.png",    url: null },
+  { id: "ph-perbati",     name: "PERBATI Temanggung",     tier: "GOLD",         logoUrl: "/images/partners/perbati-temanggung.png",       url: null },
+  { id: "ph-bri",         name: "Bank BRI",               tier: "GOLD",         logoUrl: null,                                            url: "https://bri.co.id" },
+  { id: "ph-telkom",      name: "Telkom Indonesia",       tier: "SILVER",       logoUrl: null,                                            url: "https://telkom.co.id" },
+  { id: "ph-tbc",         name: "Temanggung Boxing Camp", tier: "PARTNER",      logoUrl: null,                                            url: null },
+  { id: "ph-gor",         name: "GOR Bambu Runcing",      tier: "PARTNER",      logoUrl: null,                                            url: null },
+  { id: "ph-suara",       name: "Suara Temanggung",       tier: "MEDIA_PARTNER",logoUrl: null,                                            url: null },
+  { id: "ph-megaswara",   name: "Radio Megaswara FM",     tier: "MEDIA_PARTNER",logoUrl: null,                                            url: null },
 ];
 
 // ── Tile component ────────────────────────────────────────────────────────────
@@ -51,22 +51,23 @@ interface TileData {
 
 function SponsorTile({ sponsor, lang }: { sponsor: TileData; lang: "id" | "en" }) {
   const tierLabel = sponsorTierLabel(sponsor.tier, lang);
+  const [imgError, setImgError] = React.useState(false);
+
   const inner = (
-    <div className="group flex h-20 w-44 flex-col items-center justify-center gap-2 border border-subtle bg-charcoal px-4 py-3 transition-all duration-300 hover:border-fight-red hover:bg-charcoal/80">
-      {/* Logo atau monogram */}
-      <div className="relative flex h-9 w-full items-center justify-center">
-        {sponsor.logoUrl ? (
-          <Image
+    <div className="group flex h-20 w-48 flex-col items-center justify-center gap-1.5 border border-subtle bg-charcoal px-3 py-2.5 transition-all duration-300 hover:border-fight-red hover:bg-charcoal/80">
+      {/* Logo atau typographic wordmark */}
+      <div className="relative flex h-9 w-full items-center justify-center overflow-hidden">
+        {sponsor.logoUrl && !imgError ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={sponsor.logoUrl}
-            alt={`Logo ${sponsor.name}`}
-            width={80}
-            height={36}
-            className="max-h-9 w-auto max-w-[80px] object-contain grayscale transition-all duration-300 group-hover:grayscale-0"
-            unoptimized
+            alt={sponsor.name}
+            onError={() => setImgError(true)}
+            className="max-h-8 w-auto max-w-[110px] object-contain opacity-85 grayscale contrast-125 transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0"
           />
         ) : (
-          <span className="flex h-9 w-9 items-center justify-center border border-subtle bg-canvas font-mono-data text-[11px] font-bold uppercase tracking-wider text-ink-muted">
-            {sponsor.name.slice(0, 3)}
+          <span className="font-display font-black text-xs uppercase tracking-wider text-ink/90 group-hover:text-fight-red transition-colors text-center px-1 truncate max-w-full">
+            {sponsor.name}
           </span>
         )}
       </div>
