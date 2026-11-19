@@ -29,28 +29,112 @@ export default async function PublicFightersPage({
     whereClause.weightClass = { slug: division };
   }
 
-  const [fighters, weightClasses] = await Promise.all([
-    prisma.fighter.findMany({
-      where: whereClause,
-      include: {
-        weightClass: true,
-        currentRankings: true,
-        portrait: true,
-      },
-      orderBy: [{ wins: "desc" }, { lastName: "asc" }],
-    }),
-    prisma.weightClass.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
-    }),
-  ]);
+  let fighters: Array<{
+    id: string;
+    slug: string;
+    firstName: string;
+    lastName: string;
+    ringName: string | null;
+    nationality: string;
+    wins: number;
+    losses: number;
+    draws: number;
+    koWins: number;
+    weightClass: { name: string; slug?: string };
+    currentRankings: Array<{ isChampion: boolean }>;
+    portrait?: { url: string } | null;
+  }> = [];
 
-  const fighterImages: Record<string, string> = {
-    "marcus-iron-vale": "/images/fighters/marcus-vale.jpg",
-    "dario-storm": "/images/fighters/dario-storm.jpg",
-    "kenji-arata": "/images/fighters/kenji-arata.jpg",
-    "tomas-reyes": "/images/fighters/tomas-reyes.jpg",
-  };
+  let weightClasses: Array<{ id: string; name: string; slug: string }> = [];
+
+  try {
+    const [dbFighters, dbWeightClasses] = await Promise.all([
+      prisma.fighter.findMany({
+        where: whereClause,
+        include: {
+          weightClass: true,
+          currentRankings: true,
+          portrait: true,
+        },
+        orderBy: [{ wins: "desc" }, { lastName: "asc" }],
+        take: 4, // Tampilkan 4 saja sesuai permintaan
+      }),
+      prisma.weightClass.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: "asc" },
+      }),
+    ]);
+    fighters = dbFighters;
+    weightClasses = dbWeightClasses;
+  } catch (err) {
+    console.error("PublicFightersPage query error:", err);
+  }
+
+  // Jika database belum ada fighter baru, sediakan 4 slot default COMING SOON
+  if (fighters.length === 0) {
+    fighters = [
+      {
+        id: "cs-1",
+        slug: "coming-soon-1",
+        firstName: "COMING",
+        lastName: "SOON",
+        ringName: "ROSTER TFN",
+        nationality: "ID",
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        koWins: 0,
+        weightClass: { name: "Bantamweight" },
+        currentRankings: [],
+        portrait: { url: "/images/fighters/coming-soon-card.jpg" },
+      },
+      {
+        id: "cs-2",
+        slug: "coming-soon-2",
+        firstName: "COMING",
+        lastName: "SOON",
+        ringName: "ROSTER TFN",
+        nationality: "ID",
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        koWins: 0,
+        weightClass: { name: "Featherweight" },
+        currentRankings: [],
+        portrait: { url: "/images/fighters/coming-soon-card.jpg" },
+      },
+      {
+        id: "cs-3",
+        slug: "coming-soon-3",
+        firstName: "COMING",
+        lastName: "SOON",
+        ringName: "ROSTER TFN",
+        nationality: "ID",
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        koWins: 0,
+        weightClass: { name: "Welterweight" },
+        currentRankings: [],
+        portrait: { url: "/images/fighters/coming-soon-card.jpg" },
+      },
+      {
+        id: "cs-4",
+        slug: "coming-soon-4",
+        firstName: "COMING",
+        lastName: "SOON",
+        ringName: "ROSTER TFN",
+        nationality: "ID",
+        wins: 0,
+        losses: 0,
+        draws: 0,
+        koWins: 0,
+        weightClass: { name: "Heavyweight" },
+        currentRankings: [],
+        portrait: { url: "/images/fighters/coming-soon-card.jpg" },
+      },
+    ];
+  }
 
   return (
     <div className="bg-canvas min-h-screen text-ink">
@@ -58,7 +142,8 @@ export default async function PublicFightersPage({
       <div
         className="relative bg-cover bg-center py-20 border-b border-border text-center"
         style={{
-          backgroundImage: "linear-gradient(to bottom, var(--overlay-scrim), color-mix(in srgb, var(--overlay-scrim) 95%, var(--canvas))), url('/images/hero/boxing-ring-arena.jpg')",
+          backgroundImage:
+            "linear-gradient(to bottom, var(--overlay-scrim), color-mix(in srgb, var(--overlay-scrim) 95%, var(--canvas))), url('/images/hero/boxing-ring-arena.jpg')",
         }}
       >
         <div className="max-w-7xl mx-auto px-4">
@@ -66,7 +151,9 @@ export default async function PublicFightersPage({
             DIREKTORI PETARUNG TFN
           </h1>
           <div className="flex items-center justify-center gap-2 font-mono-data text-xs text-ink-muted mt-2 uppercase tracking-widest">
-            <Link href="/" className="hover:text-ink transition-colors">BERANDA / HOME</Link>
+            <Link href="/" className="hover:text-ink transition-colors">
+              BERANDA / HOME
+            </Link>
             <ChevronRight className="w-3.5 h-3.5 text-ink-subtle" />
             <span className="text-fight-red font-bold">DIREKTORI ATLET & PETARUNG</span>
           </div>
@@ -76,7 +163,10 @@ export default async function PublicFightersPage({
       {/* 2. Filter & Division Toolbar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         <div className="bg-card border border-border p-4 flex flex-wrap items-center justify-between gap-4">
-          <form action="/fighters" className="flex min-h-12 min-w-0 flex-1 items-center gap-2 border border-border bg-canvas px-3 py-2 font-mono-data text-xs text-foreground">
+          <form
+            action="/fighters"
+            className="flex min-h-12 min-w-0 flex-1 items-center gap-2 border border-border bg-canvas px-3 py-2 font-mono-data text-xs text-foreground"
+          >
             <Search className="w-4 h-4 text-muted-foreground" />
             <input
               type="text"
@@ -87,7 +177,9 @@ export default async function PublicFightersPage({
               className="w-full bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
             />
             {division && <input type="hidden" name="division" value={division} />}
-            <button type="submit" className="min-h-11 shrink-0 px-3 font-bold text-fight-red">CARI</button>
+            <button type="submit" className="min-h-11 shrink-0 px-3 font-bold text-fight-red">
+              CARI
+            </button>
           </form>
 
           <div className="flex flex-wrap gap-2 font-mono-data text-xs">
@@ -117,11 +209,16 @@ export default async function PublicFightersPage({
           </div>
         </div>
 
-        {/* 3. 4-Column Fighter Card Grid (From Reference Image 1) */}
+        {/* 3. 4-Column Fighter Card Grid (Hanya 4 Kartu Sesuai Permintaan) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {fighters.map((f) => {
-            const isChamp = f.currentRankings.some((r) => r.isChampion);
-            const photoUrl = f.portrait?.url || fighterImages[f.slug] || "/images/fighters/marcus-vale.jpg";
+          {fighters.slice(0, 4).map((f) => {
+            const isChamp = f.currentRankings?.some((r) => r.isChampion);
+            const isComingSoon =
+              f.firstName.toUpperCase() === "COMING" ||
+              (f.wins === 0 && f.losses === 0 && f.draws === 0 && f.koWins === 0);
+
+            // Ganti foto petarung menjadi foto siluet/teaser baru
+            const photoUrl = f.portrait?.url || "/images/fighters/coming-soon-card.jpg";
 
             return (
               <div
@@ -133,7 +230,7 @@ export default async function PublicFightersPage({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photoUrl}
-                    alt={`${f.firstName} ${f.lastName}`}
+                    alt={isComingSoon ? "Coming Soon" : `${f.firstName} ${f.lastName}`}
                     className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                   />
 
@@ -144,23 +241,23 @@ export default async function PublicFightersPage({
                   )}
 
                   <div className="absolute top-3 right-3 bg-canvas/80 border border-subtle text-ink font-mono-data text-[10px] font-bold uppercase px-2 py-0.5">
-                    {f.nationality}
+                    {f.nationality || "ID"}
                   </div>
                 </div>
 
                 {/* Bottom Bar: Name, Division, Social Icons (Image 1 style) */}
                 <div className="p-5 bg-card text-center border-t border-border space-y-3">
                   <div>
-                    {f.ringName && (
-                      <p className="font-mono-data text-[10px] text-fight-red font-bold tracking-widest uppercase">
-                        &quot;{f.ringName}&quot;
-                      </p>
-                    )}
+                    <p className="font-mono-data text-[10px] text-fight-red font-bold tracking-widest uppercase">
+                      &quot;{f.ringName || (isComingSoon ? "TBA" : "FIGHTER")}&quot;
+                    </p>
                     <h3 className="font-display text-xl font-bold uppercase tracking-wider text-card-foreground group-hover:text-fight-red transition-colors">
-                      {f.firstName} {f.lastName}
+                      {isComingSoon ? "COMING SOON" : `${f.firstName} ${f.lastName}`}
                     </h3>
                     <p className="font-mono-data text-[11px] text-muted-foreground mt-0.5 uppercase tracking-wide">
-                      {f.weightClass.name} · {f.wins}W-{f.losses}L-{f.draws}D ({f.koWins} KOs)
+                      {isComingSoon
+                        ? `${f.weightClass.name} · SEGERA DIUMUMKAN`
+                        : `${f.weightClass.name} · ${f.wins}W-${f.losses}L-${f.draws}D (${f.koWins} KOs)`}
                     </p>
                   </div>
 
@@ -181,13 +278,25 @@ export default async function PublicFightersPage({
                   </div>
 
                   <div className="pt-2 border-t border-border">
-                    <Link
-                      href={`/fighters/${f.slug}`}
-                      className="inline-flex items-center gap-1 font-mono-data text-xs font-bold text-fight-red hover:underline"
-                    >
-                      <span>LIHAT PROFIL LENGKAP</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
+                    {isComingSoon ? (
+                      <a
+                        href="https://wa.me/6285714883551?text=Halo%20Admin%20TFN,%20saya%20ingin%20mendaftar%20sebagai%20petarung%20di%20Temanggung%20Fight%20Night%20Vol.6%20Exhibition."
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 font-mono-data text-xs font-bold text-fight-red hover:underline"
+                      >
+                        <span>COMING SOON / DAFTAR</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </a>
+                    ) : (
+                      <Link
+                        href={`/fighters/${f.slug}`}
+                        className="inline-flex items-center gap-1 font-mono-data text-xs font-bold text-fight-red hover:underline"
+                      >
+                        <span>LIHAT PROFIL LENGKAP</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
