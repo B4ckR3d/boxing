@@ -21,30 +21,31 @@ const DIVISIONS: WeightDivision[] = [
   { number: 5, range: "64 kg – 66 Kg", name: "Welterweight", indonesianName: "Kelas Welter" },
   { number: 6, range: "67 kg – 69 Kg", name: "Light Middleweight", indonesianName: "Kelas Menengah Ringan" },
   { number: 7, range: "70 kg – 74 Kg", name: "Middleweight", indonesianName: "Kelas Menengah" },
-  { number: 8, range: "75 kg – 79 Kg", name: "Light Heavyweight", indonesianName: "Kelas Berat" },
+  { number: 8, range: "75 kg – 79 Kg", name: "Light Heavyweight", indonesianName: "Kelas Berat Ringan" },
   { number: 9, range: "80 kg – 84 Kg", name: "Cruiserweight", indonesianName: "Kelas Penjelajah" },
   { number: 10, range: "85+ Kg", name: "Heavyweight", indonesianName: "Kelas Berat" },
   { number: 11, range: "91+ Kg", name: "Super Heavyweight", indonesianName: "Kelas Berat Super" },
 ];
 
-const SKILL_TIERS = [
+interface RuleCategory {
+  id: "boxing" | "kickboxing";
+  name: string;
+  badge: string;
+  desc: string;
+}
+
+const RULE_CATEGORIES: RuleCategory[] = [
   {
-    id: "non-atlet",
-    name: "Non Atlet",
-    desc: "Belum terlatih dan bertanding",
-    badge: "UMUM & KOMUNITAS",
+    id: "boxing",
+    name: "Boxing",
+    badge: "QUEENSBERRY RULES",
+    desc: "Pukulan tinju murni, footwork, dan pertahanan standar tinju.",
   },
   {
-    id: "pemula",
-    name: "Pemula",
-    desc: "Terlatih tapi belum bertanding",
-    badge: "MEMBER SASANA",
-  },
-  {
-    id: "atlet",
-    name: "Atlet",
-    desc: "Terlatih dan berpengalaman bertanding",
-    badge: "EXPERIENCED",
+    id: "kickboxing",
+    name: "Kickboxing",
+    badge: "LOW CONTACT",
+    desc: "Kombinasi pukulan dan tendangan (low contact) terstandar.",
   },
 ];
 
@@ -62,13 +63,13 @@ export function MatchupShowcase({ config }: { config?: ExhibitionConfig } = {}) 
   if (config?.isEnabled === false) return null;
 
   const { lang } = useLanguage();
-  const [selectedSkill, setSelectedSkill] = useState<string>("all");
+  const [selectedRule, setSelectedRule] = useState<"all" | "boxing" | "kickboxing">("all");
 
   const badge = config?.badge || "VOL. 6 EXHIBITION";
   const title = config?.title || (lang === "id" ? "SETIAP RONDE PUNYA CERITA." : "EVERY ROUND HAS A STORY.");
   const rulesText = config?.rulesText || "Rules: Boxing & Kickboxing (Low Contact) · Terbuka untuk 11 Kelas Timbangan";
 
-  // Kontak Resmi (+62 858-4800-0639)
+  // Kontak Resmi (Kontak 2: +62 858-4800-0639)
   const rawWa = config?.whatsappNumber?.replace(/\D/g, "") || "6285848000639";
   const waNumber = rawWa.startsWith("0") ? `62${rawWa.slice(1)}` : rawWa;
   const ctaLabel = config?.ctaLabel || "DAFTAR PARTAI VIA WA";
@@ -80,22 +81,21 @@ export function MatchupShowcase({ config }: { config?: ExhibitionConfig } = {}) 
       .filter((n) => !isNaN(n))
   );
 
-  const getSkillLabel = () => {
-    if (selectedSkill === "atlet") return "Atlet";
-    if (selectedSkill === "pemula") return "Pemula";
-    if (selectedSkill === "non-atlet") return "Non Atlet";
-    return "[ Atlet / Pemula / Non Atlet ]";
+  const getRuleLabel = () => {
+    if (selectedRule === "boxing") return "Boxing";
+    if (selectedRule === "kickboxing") return "Kickboxing";
+    return "[ Boxing / Kickboxing ]";
   };
 
   const getWaLink = (divName: string, range: string) => {
-    const skillLabel = getSkillLabel();
+    const ruleLabel = getRuleLabel();
     const text = [
       "Halo, Admin TFN !",
       "",
       `Saya ingin mendaftar Temanggung Fight Night Vol.6 Exhibition di Divisi ${divName} (${range})`,
       "",
-      "Kategori Rules: [ Boxing / Kickboxing ]",
-      `Kelas : ${skillLabel}`,
+      `Kategori Rules: ${ruleLabel}`,
+      "Kelas : [ Atlet / Pemula / Non Atlet ]",
       "",
       "Apakah masih ada slot ?",
     ].join("\n");
@@ -103,14 +103,14 @@ export function MatchupShowcase({ config }: { config?: ExhibitionConfig } = {}) 
   };
 
   const getHeaderWaLink = () => {
-    const skillLabel = getSkillLabel();
+    const ruleLabel = getRuleLabel();
     const text = [
       "Halo, Admin TFN !",
       "",
-      "Saya ingin mendaftar Temanggung Fight Night Vol.6 Exhibition",
+      "Saya ingin mendaftar Temanggung Fight Night Vol.6 Exhibition di Divisi ...",
       "",
-      "Kategori Rules: [ Boxing / Kickboxing ]",
-      `Kelas : ${skillLabel}`,
+      `Kategori Rules: ${ruleLabel}`,
+      "Kelas : [ Atlet / Pemula / Non Atlet ]",
       "",
       "Apakah masih ada slot ?",
     ].join("\n");
@@ -147,42 +147,56 @@ export function MatchupShowcase({ config }: { config?: ExhibitionConfig } = {}) 
           </a>
         </div>
 
-        {/* 2. Pilihan 3 Kategori Pengalaman / Skill (Dipindah ke atas) */}
+        {/* 2. Pilihan 2 Kategori Rules: BOXING dan KICKBOXING */}
         <div>
-          <p className="font-mono-data text-[10px] uppercase tracking-widest text-ink-muted font-bold mb-3">
-            PILIH KATEGORI PENGALAMAN / SKILL:
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {SKILL_TIERS.map((tier) => {
-              const isSelected = selectedSkill === tier.id;
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-mono-data text-[10px] sm:text-[11px] uppercase tracking-widest text-ink-muted font-bold">
+              PILIH KATEGORI RULES:
+            </p>
+            {selectedRule !== "all" && (
+              <button
+                type="button"
+                onClick={() => setSelectedRule("all")}
+                className="font-mono-data text-[10px] text-fight-red hover:underline uppercase tracking-wider font-bold cursor-pointer"
+              >
+                Tampilkan Semua Rules
+              </button>
+            )}
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            {RULE_CATEGORIES.map((rule) => {
+              const isSelected = selectedRule === rule.id;
               return (
                 <button
-                  key={tier.id}
+                  key={rule.id}
                   type="button"
-                  onClick={() => setSelectedSkill(isSelected ? "all" : tier.id)}
-                  className={`p-3.5 text-left border transition-all ${
+                  onClick={() => setSelectedRule(isSelected ? "all" : rule.id)}
+                  className={`group relative p-4 text-left border transition-all duration-200 cursor-pointer ${
                     isSelected
-                      ? "border-fight-red bg-fight-red/10 text-white shadow-md ring-1 ring-fight-red"
-                      : "border-subtle bg-canvas/60 hover:bg-canvas text-ink"
+                      ? "border-fight-red bg-fight-red/10 text-white shadow-lg ring-1 ring-fight-red"
+                      : "border-subtle bg-charcoal/60 hover:bg-charcoal hover:border-fight-red/50 text-ink"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-display text-base font-black uppercase tracking-wide">
-                      {tier.name}
+                    <span className="font-display text-xl sm:text-2xl font-black uppercase tracking-wider text-ink group-hover:text-fight-red transition-colors">
+                      {rule.name}
                     </span>
                     <span
-                      className={`font-mono-data text-[9px] font-bold uppercase px-2 py-0.5 ${
+                      className={`font-mono-data text-[10px] font-bold uppercase px-2.5 py-0.5 tracking-wider transition-colors ${
                         isSelected
                           ? "bg-fight-red text-white"
-                          : "bg-charcoal text-ink-muted border border-white/10"
+                          : "bg-surface text-ink-muted border border-subtle group-hover:border-fight-red/40"
                       }`}
                     >
-                      {tier.badge}
+                      {rule.badge}
                     </span>
                   </div>
-                  <p className="mt-1 text-xs leading-snug text-ink-muted font-mono-data">
-                    {tier.desc}
+                  <p className="mt-1.5 text-xs sm:text-sm leading-snug text-ink-muted font-mono-data">
+                    {rule.desc}
                   </p>
+                  {isSelected && (
+                    <div className="absolute top-0 right-0 -mt-1.5 -mr-1.5 w-3 h-3 bg-fight-red rounded-full ring-2 ring-canvas" />
+                  )}
                 </button>
               );
             })}
