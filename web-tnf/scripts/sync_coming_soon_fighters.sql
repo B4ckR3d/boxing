@@ -34,16 +34,16 @@ DELETE FROM rankingentry WHERE versionId = 'cmwd0cumy001my03kobqa7zuc';
 DELETE FROM fighterranking WHERE scopeKey = 'DIV:cmwd0cui60012y03k6x5muty3';
 
 -- 5. Masukkan 4 entri peringkat COMING SOON (Juara + 3 Contender)
-INSERT INTO rankingentry (id, versionId, fighterId, rank, isChampion, points, movement, isNew, createdAt, updatedAt)
+INSERT INTO `rankingentry` (`id`, `versionId`, `fighterId`, `rank`, `isChampion`, `points`, `movement`, `isNew`, `createdAt`, `updatedAt`)
 VALUES 
-  ('re_champ', 'cmwd0cumy001my03kobqa7zuc', (SELECT id FROM fighter WHERE slug = 'marcus-iron-vale' LIMIT 1), NULL, 1, 1500.00, 0, 0, NOW(), NOW()),
-  ('re_rank1', 'cmwd0cumy001my03kobqa7zuc', (SELECT id FROM fighter WHERE slug = 'dario-storm' LIMIT 1), 1, 0, 1320.00, 0, 0, NOW(), NOW()),
-  ('re_rank2', 'cmwd0cumy001my03kobqa7zuc', (SELECT id FROM fighter WHERE slug = 'tomas-reyes' LIMIT 1), 2, 0, 1200.00, 0, 0, NOW(), NOW()),
-  ('re_rank3', 'cmwd0cumy001my03kobqa7zuc', (SELECT id FROM fighter WHERE slug = 'carlos-mendoza' LIMIT 1), 3, 0, 1100.00, 0, 0, NOW(), NOW());
+  ('re_champ', 'cmwd0cumy001my03kobqa7zuc', (SELECT `id` FROM `fighter` WHERE `slug` = 'marcus-iron-vale' LIMIT 1), NULL, 1, 1500.00, 0, 0, NOW(), NOW()),
+  ('re_rank1', 'cmwd0cumy001my03kobqa7zuc', (SELECT `id` FROM `fighter` WHERE `slug` = 'dario-storm' LIMIT 1), 1, 0, 1320.00, 0, 0, NOW(), NOW()),
+  ('re_rank2', 'cmwd0cumy001my03kobqa7zuc', (SELECT `id` FROM `fighter` WHERE `slug` = 'tomas-reyes' LIMIT 1), 2, 0, 1200.00, 0, 0, NOW(), NOW()),
+  ('re_rank3', 'cmwd0cumy001my03kobqa7zuc', (SELECT `id` FROM `fighter` WHERE `slug` = 'carlos-mendoza' LIMIT 1), 3, 0, 1100.00, 0, 0, NOW(), NOW());
 
-INSERT INTO fighterranking (id, fighterId, scopeKey, versionId, rank, isChampion, updatedAt)
+INSERT INTO `fighterranking` (`id`, `fighterId`, `scopeKey`, `versionId`, `rank`, `isChampion`, `updatedAt`)
 VALUES
-  ('fr_champ', (SELECT id FROM fighter WHERE slug = 'marcus-iron-vale' LIMIT 1), 'DIV:cmwd0cui60012y03k6x5muty3', 'cmwd0cumy001my03kobqa7zuc', NULL, 1, NOW()),
-  ('fr_rank1', (SELECT id FROM fighter WHERE slug = 'dario-storm' LIMIT 1), 'DIV:cmwd0cui60012y03k6x5muty3', 'cmwd0cumy001my03kobqa7zuc', 1, 0, NOW()),
-  ('fr_rank2', (SELECT id FROM fighter WHERE slug = 'tomas-reyes' LIMIT 1), 'DIV:cmwd0cui60012y03k6x5muty3', 'cmwd0cumy001my03kobqa7zuc', 2, 0, NOW()),
-  ('fr_rank3', (SELECT id FROM fighter WHERE slug = 'carlos-mendoza' LIMIT 1), 'DIV:cmwd0cui60012y03k6x5muty3', 'cmwd0cumy001my03kobqa7zuc', 3, 0, NOW());
+  ('fr_champ', (SELECT `id` FROM `fighter` WHERE `slug` = 'marcus-iron-vale' LIMIT 1), 'DIV:cmwd0cui60012y03k6x5muty3', 'cmwd0cumy001my03kobqa7zuc', NULL, 1, NOW()),
+  ('fr_rank1', (SELECT `id` FROM `fighter` WHERE `slug` = 'dario-storm' LIMIT 1), 'DIV:cmwd0cui60012y03k6x5muty3', 'cmwd0cumy001my03kobqa7zuc', 1, 0, NOW()),
+  ('fr_rank2', (SELECT `id` FROM `fighter` WHERE `slug` = 'tomas-reyes' LIMIT 1), 'DIV:cmwd0cui60012y03k6x5muty3', 'cmwd0cumy001my03kobqa7zuc', 2, 0, NOW()),
+  ('fr_rank3', (SELECT `id` FROM `fighter` WHERE `slug` = 'carlos-mendoza' LIMIT 1), 'DIV:cmwd0cui60012y03k6x5muty3', 'cmwd0cumy001my03kobqa7zuc', 3, 0, NOW());
