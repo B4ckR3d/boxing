@@ -11,6 +11,8 @@ export interface TournamentBoutPreview {
   position: number;
   fighterAName: string;
   fighterBName: string;
+  fighterASeed?: number;
+  fighterBSeed?: number;
   winnerName?: string;
   status: string;
 }
@@ -32,12 +34,37 @@ export interface GrandPrixPreviewProps {
 export function GrandPrixPreview({ tournament }: GrandPrixPreviewProps) {
   const { t, lang } = useLanguage();
 
+  const bout1 = tournament.bouts[0];
+  const bout2 = tournament.bouts[1];
+
+  const b1FighterA = bout1?.fighterAName?.trim() || "COMING SOON";
+  const b1FighterB = bout1?.fighterBName?.trim() || "COMING SOON";
+  const b2FighterA = bout2?.fighterAName?.trim() || "COMING SOON";
+  const b2FighterB = bout2?.fighterBName?.trim() || "COMING SOON";
+
+  const isB1ACS = b1FighterA.toUpperCase().includes("COMING") || b1FighterA === "TBD";
+  const isB1BCS = b1FighterB.toUpperCase().includes("COMING") || b1FighterB === "TBD";
+  const isB2ACS = b2FighterA.toUpperCase().includes("COMING") || b2FighterA === "TBD";
+  const isB2BCS = b2FighterB.toUpperCase().includes("COMING") || b2FighterB === "TBD";
+
+  const isAllCS = isB1ACS && isB1BCS && isB2ACS && isB2BCS;
+
   return (
     <section className="py-16 bg-canvas border-b border-subtle text-ink select-none transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-subtle pb-6">
           <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="bg-fight-red text-ink font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
+                OFFICIAL TOURNAMENT
+              </span>
+              {isAllCS && (
+                <span className="border border-fight-red text-fight-red font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5">
+                  COMING SOON
+                </span>
+              )}
+            </div>
             <h2 className="font-display text-4xl sm:text-6xl text-ink uppercase tracking-tight font-black">
               {lang === "id" ? "TFN WORLD GRAND PRIX TOURNAMENT" : tournament.name}
             </h2>
@@ -61,9 +88,11 @@ export function GrandPrixPreview({ tournament }: GrandPrixPreviewProps) {
               </span>
               <div className="bg-canvas border border-subtle p-4 space-y-2">
                 <div className="flex items-center justify-between font-display text-lg text-ink">
-                  <span>Dario Storm</span>
-                  <span className="text-[10px] font-mono-data bg-fight-red text-ink font-bold px-1.5 py-0.5">
-                    #1 SEED
+                  <span className={isB1ACS ? "text-ink font-black tracking-wide" : "font-extrabold"}>
+                    {b1FighterA}
+                  </span>
+                  <span className={`text-[10px] font-mono-data font-bold px-1.5 py-0.5 ${isB1ACS ? "bg-surface-elevated text-ink-muted border border-subtle" : "bg-fight-red text-ink"}`}>
+                    {isB1ACS ? "TBA" : `#${bout1?.fighterASeed ?? 1} SEED`}
                   </span>
                 </div>
                 <div className="border-t border-subtle flex items-center justify-center my-1">
@@ -72,9 +101,11 @@ export function GrandPrixPreview({ tournament }: GrandPrixPreviewProps) {
                   </span>
                 </div>
                 <div className="flex items-center justify-between font-display text-lg text-ink-muted">
-                  <span>Aleksandr Volkov</span>
+                  <span className={isB1BCS ? "text-ink-muted font-black tracking-wide" : "font-extrabold"}>
+                    {b1FighterB}
+                  </span>
                   <span className="text-[10px] font-mono-data border border-subtle text-ink-muted px-1.5 py-0.5">
-                    #4 SEED
+                    {isB1BCS ? "TBA" : `#${bout1?.fighterBSeed ?? 4} SEED`}
                   </span>
                 </div>
               </div>
@@ -86,11 +117,11 @@ export function GrandPrixPreview({ tournament }: GrandPrixPreviewProps) {
               <p className="font-mono-data text-[10px] text-ink-muted font-bold uppercase tracking-widest">
                 {t("gpFinalTitle")}
               </p>
-              <p className="font-display text-2xl sm:text-3xl text-ink font-black">
-                {t("gpTrophy")}
+              <p className="font-display text-2xl sm:text-3xl text-ink font-black uppercase">
+                {tournament.titleAwarded || t("gpTrophy") || "PIALA KEJUARAAN TFN"}
               </p>
-              <p className="font-mono-data text-[10px] text-ink-muted">
-                24 DESEMBER 2026 · {t("gpLivePpv")}
+              <p className="font-mono-data text-[10px] text-fight-red font-bold uppercase">
+                {isAllCS ? "COMING SOON · MUSIM BARU SEGERA DIMULAI" : (tournament.prize || "24 DESEMBER 2026 · LIVE STREAMING PPV")}
               </p>
             </div>
 
@@ -101,9 +132,11 @@ export function GrandPrixPreview({ tournament }: GrandPrixPreviewProps) {
               </span>
               <div className="bg-canvas border border-subtle p-4 space-y-2">
                 <div className="flex items-center justify-between font-display text-lg text-ink">
-                  <span>Kenji Arata</span>
-                  <span className="text-[10px] font-mono-data bg-fight-red text-ink font-bold px-1.5 py-0.5">
-                    #2 SEED
+                  <span className={isB2ACS ? "text-ink font-black tracking-wide" : "font-extrabold"}>
+                    {b2FighterA}
+                  </span>
+                  <span className={`text-[10px] font-mono-data font-bold px-1.5 py-0.5 ${isB2ACS ? "bg-surface-elevated text-ink-muted border border-subtle" : "bg-fight-red text-ink"}`}>
+                    {isB2ACS ? "TBA" : `#${bout2?.fighterASeed ?? 2} SEED`}
                   </span>
                 </div>
                 <div className="border-t border-subtle flex items-center justify-center my-1">
@@ -112,9 +145,11 @@ export function GrandPrixPreview({ tournament }: GrandPrixPreviewProps) {
                   </span>
                 </div>
                 <div className="flex items-center justify-between font-display text-lg text-ink-muted">
-                  <span>Jean-Pierre Dubois</span>
+                  <span className={isB2BCS ? "text-ink-muted font-black tracking-wide" : "font-extrabold"}>
+                    {b2FighterB}
+                  </span>
                   <span className="text-[10px] font-mono-data border border-subtle text-ink-muted px-1.5 py-0.5">
-                    #3 SEED
+                    {isB2BCS ? "TBA" : `#${bout2?.fighterBSeed ?? 3} SEED`}
                   </span>
                 </div>
               </div>

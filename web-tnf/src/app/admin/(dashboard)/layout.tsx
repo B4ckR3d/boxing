@@ -52,21 +52,28 @@ export default async function AdminDashboardLayout({
   const settings = await getSettings();
   const brand = settings["branding.general"];
 
-  // Navigation Items — gated by the session's effective permissions (Indonesian Primary)
+  // Navigation Items — Urutkan dari atas sesuai alur section Landing Page TFN
   const navItems = [
-    { label: "Ringkasan", href: "/admin", icon: LayoutDashboard },
-    { label: "Daftar Petarung", href: "/admin/fighters", icon: Users },
-    { label: "Peringkat Resmi", href: "/admin/rankings", icon: Trophy },
-    { label: "Turnamen Grand Prix", href: "/admin/grand-prix", icon: Swords },
-    { label: "Sabuk Kejuaraan", href: "/admin/belts", icon: Award },
-    { label: "Jadwal Event", href: "/admin/events", icon: CalendarDays },
     { label: "Hero Banner", href: "/admin/hero-slides", icon: Sliders },
-    { label: "Berita & Galeri", href: "/admin/gallery", icon: Newspaper },
     ...(can("content.manage")
       ? [{ label: "Sponsor & Mitra", href: "/admin/sponsors", icon: Handshake }]
       : []),
-    // Penjualan tiket TIDAK lagi ada di panel ini — alur tiket hidup di aplikasi terpisah
-    // (`ticket-tnf`, /admin/orders). Menu lama /admin/ticketing dialihkan oleh src/proxy.ts.
+    { label: "Peringkat Resmi", href: "/admin/rankings", icon: Trophy },
+    { label: "Sabuk Kejuaraan", href: "/admin/belts", icon: Award },
+    { label: "Turnamen Grand Prix", href: "/admin/grand-prix", icon: Swords },
+    { label: "Daftar Petarung", href: "/admin/fighters", icon: Users },
+    { label: "Jadwal Event", href: "/admin/events", icon: CalendarDays },
+    { label: "Berita & Galeri", href: "/admin/gallery", icon: Newspaper },
+    { label: "Ringkasan CMS", href: "/admin", icon: LayoutDashboard },
+    ...(can("settings.manage")
+      ? [
+        {
+          label: "Pengaturan Sistem",
+          href: "/admin/settings",
+          icon: Settings,
+        },
+      ]
+      : []),
     ...(can("users.manage") || can("roles.manage")
       ? [
         { label: "Pengguna & Hak Akses", href: "/admin/users", icon: UserCog },
@@ -79,15 +86,6 @@ export default async function AdminDashboardLayout({
       : []),
     ...(can("audit.read")
       ? [{ label: "Log Audit Sistem", href: "/admin/audit-logs", icon: ClipboardList }]
-      : []),
-    ...(can("settings.manage")
-      ? [
-        {
-          label: "Pengaturan Sistem",
-          href: "/admin/settings",
-          icon: Settings,
-        },
-      ]
       : []),
     // Selalu ada: setiap user yang login berhak mengganti password-nya sendiri.
     { label: "Akun Saya", href: "/admin/account", icon: KeyRound },

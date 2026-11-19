@@ -180,13 +180,15 @@ export default async function PublicHomePage() {
         round: b.round,
         position: b.position,
         fighterAName: b.participantA?.fighter
-          ? `${b.participantA.fighter.firstName} ${b.participantA.fighter.lastName}`
-          : "TBD",
+          ? `${b.participantA.fighter.firstName} ${b.participantA.fighter.lastName}`.trim()
+          : "COMING SOON",
         fighterBName: b.participantB?.fighter
-          ? `${b.participantB.fighter.firstName} ${b.participantB.fighter.lastName}`
-          : "TBD",
+          ? `${b.participantB.fighter.firstName} ${b.participantB.fighter.lastName}`.trim()
+          : "COMING SOON",
+        fighterASeed: b.participantA?.seed ?? (b.position === 1 ? 1 : 2),
+        fighterBSeed: b.participantB?.seed ?? (b.position === 1 ? 4 : 3),
         winnerName: b.winner?.fighter
-          ? `${b.winner.fighter.firstName} ${b.winner.fighter.lastName}`
+          ? `${b.winner.fighter.firstName} ${b.winner.fighter.lastName}`.trim()
           : undefined,
         status: b.status,
       })),

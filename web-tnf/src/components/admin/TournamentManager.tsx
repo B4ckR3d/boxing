@@ -4,12 +4,14 @@ import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Pencil, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import {
   createTournamentAction,
+  updateTournamentAction,
+  toggleTournamentPublishAction,
   updateTournamentStatusAction,
   deleteTournamentAction,
 } from "@/app/admin/(dashboard)/grand-prix/actions";
@@ -18,14 +20,18 @@ export interface TournamentItem {
   id: string;
   name: string;
   slug: string;
+  weightClassId?: string;
   weightClassName: string;
   format: string;
   status: "DRAFT" | "REGISTRATION" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
   size: number;
   prize: string | null;
+  titleAwarded?: string | null;
+  description?: string | null;
+  startDate?: string | null;
   posterUrl: string | null;
   isPublished: boolean;
-  participants: Array<{ id: string; seed: number; fighterName: string }>;
+  participants: Array<{ id: string; fighterId?: string; seed: number; fighterName: string }>;
 }
 
 export interface SimpleWeightClass {
@@ -53,6 +59,7 @@ export function TournamentManager({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [name, setName] = useState("");
   const [weightClassId, setWeightClassId] = useState(weightClasses[0]?.id ?? "");
@@ -70,6 +77,54 @@ export function TournamentManager({
 
   const pool = fighters.filter((f) => !weightClassId || f.weightClassId === weightClassId);
   const fighterOptions = pool.length > 0 ? pool : fighters;
+
+  const openCreateModal = () => {
+    setEditingId(null);
+    setName("");
+    setWeightClassId(weightClasses[0]?.id ?? "");
+    setFormat("SINGLE_ELIMINATION");
+    setStatus("REGISTRATION");
+    setSize(8);
+    setPrize("");
+    setTitleAwarded("");
+    setDescription("");
+    setStartDate(new Date().toISOString().slice(0, 10));
+    setPosterUrl("");
+    setPosterId(undefined);
+    setIsPublished(true);
+    setSelectedFighters([]);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (t: TournamentItem) => {
+    setEditingId(t.id);
+    setName(t.name);
+    setWeightClassId(t.weightClassId || weightClasses[0]?.id || "");
+    setFormat((t.format as "SINGLE_ELIMINATION" | "DOUBLE_ELIMINATION") || "SINGLE_ELIMINATION");
+    setStatus((t.status as "DRAFT" | "REGISTRATION" | "IN_PROGRESS" | "COMPLETED") || "REGISTRATION");
+    setSize(t.size || 8);
+    setPrize(t.prize || "");
+    setTitleAwarded(t.titleAwarded || "");
+    setDescription(t.description || "");
+    setStartDate(t.startDate || new Date().toISOString().slice(0, 10));
+    setPosterUrl(t.posterUrl || "");
+    setPosterId(undefined);
+    setIsPublished(t.isPublished);
+    setSelectedFighters(t.participants.map((p) => p.fighterId || "").filter(Boolean));
+    setIsModalOpen(true);
+  };
+
+  const handleTogglePublish = (id: string, current: boolean) => {
+    startTransition(async () => {
+      const res = await toggleTournamentPublishAction(id, !current);
+      if (res.ok) {
+        toast.success(!current ? "Turnamen dipublikasikan (LIVE)!" : "Turnamen diubah ke DRAFT (Disembunyikan)!");
+        router.refresh();
+      } else {
+        toast.error(res.error || "Gagal mengubah status publikasi");
+      }
+    });
+  };
 
   const toggleFighter = (id: string) => {
     setSelectedFighters((prev) => {
@@ -90,24 +145,41 @@ export function TournamentManager({
     }
 
     startTransition(async () => {
-      const res = await createTournamentAction({
-        name,
-        weightClassId,
-        format,
-        status,
-        size,
-        prize: prize.trim() || undefined,
-        titleAwarded: titleAwarded.trim() || undefined,
-        description: description.trim() || undefined,
-        posterId: posterId ?? null,
-        startDate: startDate || undefined,
-        isPublished,
-        participantFighterIds: selectedFighters,
-      });
+      const res = editingId
+        ? await updateTournamentAction({
+            id: editingId,
+            name,
+            weightClassId,
+            format,
+            status,
+            size,
+            prize: prize.trim() || undefined,
+            titleAwarded: titleAwarded.trim() || undefined,
+            description: description.trim() || undefined,
+            posterId: posterId ?? (posterUrl ? undefined : null),
+            startDate: startDate || undefined,
+            isPublished,
+            participantFighterIds: selectedFighters,
+          })
+        : await createTournamentAction({
+            name,
+            weightClassId,
+            format,
+            status,
+            size,
+            prize: prize.trim() || undefined,
+            titleAwarded: titleAwarded.trim() || undefined,
+            description: description.trim() || undefined,
+            posterId: posterId ?? null,
+            startDate: startDate || undefined,
+            isPublished,
+            participantFighterIds: selectedFighters,
+          });
 
       if (res.ok) {
-        toast.success("Turnamen Grand Prix berhasil dibuat!");
+        toast.success(editingId ? "Turnamen Grand Prix berhasil diperbarui!" : "Turnamen Grand Prix berhasil dibuat!");
         setIsModalOpen(false);
+        setEditingId(null);
         setName("");
         setPrize("");
         setTitleAwarded("");
@@ -117,7 +189,7 @@ export function TournamentManager({
         setSelectedFighters([]);
         router.refresh();
       } else {
-        toast.error(res.error || "Gagal membuat turnamen");
+        toast.error(res.error || "Gagal menyimpan turnamen");
       }
     });
   };
@@ -167,7 +239,7 @@ export function TournamentManager({
         </div>
 
         <div>
-          <Button variant="crimson" size="md" onClick={() => setIsModalOpen(true)}>
+          <Button variant="crimson" size="md" onClick={openCreateModal}>
             <Plus className="w-4 h-4 mr-1.5" /> CREATE TOURNAMENT
           </Button>
         </div>
@@ -188,10 +260,26 @@ export function TournamentManager({
             <div className="p-6 flex-1 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-3 gap-2">
-                  <span className="font-display text-2xl text-ink uppercase">{t.name}</span>
-                  <Badge variant={t.status === "IN_PROGRESS" ? "white" : "outline"}>
-                    {t.status}
-                  </Badge>
+                  <span className="font-display text-2xl text-ink uppercase truncate">{t.name}</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      onClick={() => handleTogglePublish(t.id, t.isPublished)}
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-mono-data font-bold border cursor-pointer transition-colors ${
+                        t.isPublished
+                          ? "bg-emerald-950/60 border-emerald-500/60 text-emerald-400 hover:bg-emerald-900/60"
+                          : "bg-canvas border-subtle text-ink-muted hover:text-ink"
+                      }`}
+                      title={t.isPublished ? "Status: LIVE. Klik untuk ubah ke DRAFT" : "Status: DRAFT. Klik untuk PUBLIKASIKAN (LIVE)"}
+                    >
+                      {t.isPublished ? <Eye className="w-3 h-3 text-emerald-400" /> : <EyeOff className="w-3 h-3 text-ink-muted" />}
+                      {t.isPublished ? "LIVE" : "DRAFT"}
+                    </button>
+                    <Badge variant={t.status === "IN_PROGRESS" ? "white" : "outline"}>
+                      {t.status}
+                    </Badge>
+                  </div>
                 </div>
 
                 <p className="font-mono-data text-xs text-ink-muted mb-4">
@@ -252,8 +340,17 @@ export function TournamentManager({
                   <button
                     type="button"
                     disabled={isPending}
+                    onClick={() => openEditModal(t)}
+                    className="p-1.5 text-ink-muted hover:text-ink border border-subtle hover:border-fight-red transition-colors cursor-pointer"
+                    title="Ubah Data Turnamen"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isPending}
                     onClick={() => handleDelete(t.id, t.name)}
-                    className="p-1.5 text-ink-muted hover:text-fight-red cursor-pointer"
+                    className="p-1.5 text-ink-muted hover:text-fight-red border border-subtle hover:border-fight-red transition-colors cursor-pointer"
                     title="Hapus Turnamen"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -283,7 +380,7 @@ export function TournamentManager({
                   GRAND PRIX ENGINE
                 </span>
                 <h2 className="font-display text-2xl uppercase font-black text-ink">
-                  Buat Turnamen Grand Prix Baru
+                  {editingId ? "Ubah Data Turnamen Grand Prix" : "Buat Turnamen Grand Prix Baru"}
                 </h2>
               </div>
               <button
@@ -480,7 +577,7 @@ export function TournamentManager({
                   Batal
                 </button>
                 <Button type="submit" variant="crimson" disabled={isPending} className="font-bold tracking-wider">
-                  {isPending ? "Menyimpan..." : "Buat Turnamen"}
+                  {isPending ? "Menyimpan..." : editingId ? "Perbarui Turnamen" : "Buat Turnamen"}
                 </Button>
               </div>
             </form>

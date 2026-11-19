@@ -103,10 +103,10 @@ export default async function PublicGrandPrixPage() {
 
                       <div className="space-y-2">
                         <div className="flex items-center justify-between font-display text-lg text-ink">
-                          <span>
+                          <span className={!bout.participantA?.fighter ? "text-ink font-black tracking-wide" : "font-extrabold"}>
                             {bout.participantA?.fighter
-                              ? `${bout.participantA.fighter.firstName} ${bout.participantA.fighter.lastName}`
-                              : "TBD"}
+                              ? `${bout.participantA.fighter.firstName} ${bout.participantA.fighter.lastName}`.trim()
+                              : "COMING SOON"}
                           </span>
                         </div>
 
@@ -117,10 +117,10 @@ export default async function PublicGrandPrixPage() {
                         </div>
 
                         <div className="flex items-center justify-between font-display text-lg text-ink-muted">
-                          <span>
+                          <span className={!bout.participantB?.fighter ? "text-ink-muted font-black tracking-wide" : "font-extrabold"}>
                             {bout.participantB?.fighter
-                              ? `${bout.participantB.fighter.firstName} ${bout.participantB.fighter.lastName}`
-                              : "TBD"}
+                              ? `${bout.participantB.fighter.firstName} ${bout.participantB.fighter.lastName}`.trim()
+                              : "COMING SOON"}
                           </span>
                         </div>
                       </div>
