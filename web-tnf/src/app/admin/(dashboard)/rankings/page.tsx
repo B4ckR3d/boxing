@@ -13,6 +13,7 @@ export default async function AdminRankingsPage() {
       include: {
         weightClass: true,
         entries: {
+          where: { fighter: { deletedAt: null } },
           include: { fighter: true },
           orderBy: [{ isChampion: "desc" }, { rank: "asc" }],
         },
@@ -44,6 +45,7 @@ export default async function AdminRankingsPage() {
         gender: v.gender,
         entries: v.entries.map((e) => ({
           id: e.id,
+          fighterId: e.fighterId,
           rank: e.rank,
           isChampion: e.isChampion,
           points: Number(e.points || 0),

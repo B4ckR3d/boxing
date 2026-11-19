@@ -11,6 +11,7 @@ export default async function PublicRankingsPage() {
     include: {
       weightClass: true,
       entries: {
+        where: { fighter: { deletedAt: null } },
         include: { fighter: true },
         orderBy: [{ isChampion: "desc" }, { rank: "asc" }],
       },

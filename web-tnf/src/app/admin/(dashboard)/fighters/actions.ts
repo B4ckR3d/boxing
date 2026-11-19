@@ -176,13 +176,20 @@ export async function deleteFighterAction(id: string): Promise<ActionResult> {
     }
     await requirePermission("fighters.delete");
 
-    await prisma.fighter.update({
-      where: { id },
-      data: { deletedAt: new Date() },
+    await prisma.$transaction(async (tx) => {
+      await tx.fighter.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
+      await tx.fighterRanking.deleteMany({
+        where: { fighterId: id },
+      });
     });
 
     revalidatePath("/admin/fighters");
+    revalidatePath("/admin/rankings");
     revalidatePath("/fighters");
+    revalidatePath("/rankings");
     revalidatePath("/");
     return { ok: true };
   } catch (err) {

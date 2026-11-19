@@ -47,6 +47,7 @@ export default async function PublicHomePage() {
       include: {
         weightClass: true,
         entries: {
+          where: { fighter: { deletedAt: null } },
           include: {
             fighter: {
               include: { weightClass: true },
@@ -68,6 +69,7 @@ export default async function PublicHomePage() {
       include: {
         weightClass: true,
         entries: {
+          where: { fighter: { deletedAt: null } },
           include: {
             fighter: {
               include: { weightClass: true },

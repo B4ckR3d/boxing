@@ -4,10 +4,11 @@ import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CheckCircle2, Plus, Trash2, Trophy, X } from "lucide-react";
+import { CheckCircle2, Pencil, Plus, Trash2, Trophy, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   createRankingVersionAction,
+  updateRankingVersionAction,
   publishRankingVersionAction,
   deleteRankingVersionAction,
 } from "@/app/admin/(dashboard)/rankings/actions";
@@ -23,6 +24,7 @@ export interface RankingVersionItem {
   gender: string | null;
   entries: Array<{
     id: string;
+    fighterId?: string;
     rank: number | null;
     isChampion: boolean;
     points: number;
@@ -61,6 +63,7 @@ export function RankingManager({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
 
   const [type, setType] = useState<"DIVISION" | "POUND_FOR_POUND">("DIVISION");
   const [weightClassId, setWeightClassId] = useState(weightClasses[0]?.id ?? "");
@@ -72,6 +75,39 @@ export function RankingManager({
     { fighterId: "", points: "95" },
   ]);
   const [publishNow, setPublishNow] = useState(canPublish);
+
+  const openCreateModal = () => {
+    setEditingVersionId(null);
+    setType("DIVISION");
+    setWeightClassId(weightClasses[0]?.id ?? "");
+    setGender("MALE");
+    setEffectiveDate(new Date().toISOString().slice(0, 10));
+    setNotes("");
+    setChampionFighterId("");
+    setContenders([{ fighterId: "", points: "95" }]);
+    setPublishNow(canPublish);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (v: RankingVersionItem) => {
+    setEditingVersionId(v.id);
+    setType(v.type === "POUND_FOR_POUND" ? "POUND_FOR_POUND" : "DIVISION");
+    setNotes(v.notes || "");
+    setEffectiveDate(v.effectiveDate.slice(0, 10));
+    const champ = v.entries.find((e) => e.isChampion);
+    setChampionFighterId(champ?.fighterId || "");
+    const conts = v.entries.filter((e) => !e.isChampion);
+    setContenders(
+      conts.length > 0
+        ? conts.map((c) => ({
+            fighterId: c.fighterId || "",
+            points: String(c.points || 0),
+          }))
+        : [{ fighterId: "", points: "95" }],
+    );
+    setPublishNow(v.status === "PUBLISHED");
+    setIsModalOpen(true);
+  };
 
   const availableFighters =
     type === "DIVISION" && weightClassId
@@ -99,30 +135,45 @@ export function RankingManager({
     }
 
     startTransition(async () => {
-      const res = await createRankingVersionAction({
-        type,
-        weightClassId: type === "DIVISION" ? weightClassId : undefined,
-        gender: type === "POUND_FOR_POUND" ? gender : undefined,
-        effectiveDate,
-        notes: notes.trim() || undefined,
-        championFighterId: championFighterId || undefined,
-        contenders: validContenders,
-        publishNow: canPublish ? publishNow : false,
-      });
+      let res;
+      if (editingVersionId) {
+        res = await updateRankingVersionAction({
+          versionId: editingVersionId,
+          effectiveDate,
+          notes: notes.trim() || undefined,
+          championFighterId: championFighterId || undefined,
+          contenders: validContenders,
+          publishNow: canPublish ? publishNow : false,
+        });
+      } else {
+        res = await createRankingVersionAction({
+          type,
+          weightClassId: type === "DIVISION" ? weightClassId : undefined,
+          gender: type === "POUND_FOR_POUND" ? gender : undefined,
+          effectiveDate,
+          notes: notes.trim() || undefined,
+          championFighterId: championFighterId || undefined,
+          contenders: validContenders,
+          publishNow: canPublish ? publishNow : false,
+        });
+      }
 
       if (res.ok) {
         toast.success(
-          canPublish && publishNow
+          editingVersionId
+            ? "Versi peringkat berhasil diperbarui!"
+            : canPublish && publishNow
             ? "Peringkat baru berhasil dibuat dan dipublikasikan!"
             : "Draft peringkat baru berhasil disimpan!",
         );
         setIsModalOpen(false);
+        setEditingVersionId(null);
         setNotes("");
         setChampionFighterId("");
         setContenders([{ fighterId: "", points: "95" }]);
         router.refresh();
       } else {
-        toast.error(res.error || "Gagal membuat peringkat");
+        toast.error(res.error || "Gagal menyimpan peringkat");
       }
     });
   };
@@ -177,7 +228,7 @@ export function RankingManager({
             <Button
               variant="crimson"
               size="sm"
-              onClick={() => setIsModalOpen(true)}
+              onClick={openCreateModal}
               className="font-bold tracking-wider"
             >
               <Plus className="w-4 h-4 mr-1.5" /> TAMBAH PERINGKAT BARU
@@ -274,15 +325,26 @@ export function RankingManager({
                     </button>
                   )}
                   {canManage && (
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      onClick={() => handleDelete(v.id, `${title} v${v.versionNumber}`)}
-                      className="p-1.5 text-ink-muted hover:text-fight-red cursor-pointer"
-                      title="Hapus Versi"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => openEditModal(v)}
+                        className="p-1.5 text-ink-muted hover:text-ink cursor-pointer"
+                        title="Ubah Versi Peringkat"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => handleDelete(v.id, `${title} v${v.versionNumber}`)}
+                        className="p-1.5 text-ink-muted hover:text-fight-red cursor-pointer"
+                        title="Hapus Versi"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </>
                   )}
                 </div>
                 <Link href="/rankings" className="text-fight-red hover:underline font-bold">
@@ -304,7 +366,7 @@ export function RankingManager({
                   KOMITE PERINGKAT TFN
                 </span>
                 <h2 className="font-display text-2xl uppercase font-black text-ink">
-                  Buat Versi Peringkat Baru
+                  {editingVersionId ? "Ubah Versi Peringkat" : "Buat Versi Peringkat Baru"}
                 </h2>
               </div>
               <button
@@ -481,7 +543,7 @@ export function RankingManager({
                   Batal
                 </button>
                 <Button type="submit" variant="crimson" disabled={isPending} className="font-bold tracking-wider">
-                  {isPending ? "Menyimpan..." : "Simpan Peringkat"}
+                  {isPending ? "Menyimpan..." : editingVersionId ? "Perbarui Peringkat" : "Simpan Peringkat"}
                 </Button>
               </div>
             </form>
