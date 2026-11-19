@@ -45,13 +45,13 @@ export function FeaturedFighters({ fighters }: { fighters: FeaturedFighterData[]
               <div className="w-full h-80 relative bg-canvas overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={f.imageUrl || "/images/fighters/marcus-vale.jpg"}
+                  src={f.imageUrl || "/images/fighters/coming-soon-card.jpg"}
                   alt={f.fullName}
                   className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                 />
 
                 {/* Champion Pill */}
-                {f.isChampion && (
+                {f.isChampion && f.fullName !== "COMING SOON" && (
                   <div className="absolute top-3 left-3 bg-fight-red text-ink font-mono-data text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 shadow-md">
                     PEMEGANG GELAR
                   </div>
@@ -70,7 +70,7 @@ export function FeaturedFighters({ fighters }: { fighters: FeaturedFighterData[]
                     {f.fullName}
                   </h3>
                   <p className="font-mono-data text-[11px] text-ink-muted mt-0.5 uppercase tracking-wide">
-                    {f.division} · {f.record}
+                    {f.fullName === "COMING SOON" ? `${f.division} · SEGERA DIUMUMKAN` : `${f.division} · ${f.record}`}
                   </p>
                 </div>
 
@@ -91,13 +91,19 @@ export function FeaturedFighters({ fighters }: { fighters: FeaturedFighterData[]
                 </div>
 
                 <div className="pt-2 border-t border-subtle/80">
-                  <Link
-                    href={`/fighters/${f.slug}`}
-                    className="inline-flex items-center gap-1 font-mono-data text-xs font-bold text-fight-red hover:underline"
-                  >
-                    <span>{t("viewProfile")}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                  {f.fullName === "COMING SOON" ? (
+                    <span className="inline-flex items-center gap-1 font-mono-data text-xs font-bold text-fight-red">
+                      <span>COMING SOON</span>
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/fighters/${f.slug}`}
+                      className="inline-flex items-center gap-1 font-mono-data text-xs font-bold text-fight-red hover:underline"
+                    >
+                      <span>{t("viewProfile")}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

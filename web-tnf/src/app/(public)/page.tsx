@@ -191,19 +191,11 @@ export default async function PublicHomePage() {
     }
     : null;
 
-  // Fighter image mapping dictionary
-  const fighterImages: Record<string, string> = {
-    "marcus-iron-vale": "/images/fighters/marcus-vale.jpg",
-    "dario-storm": "/images/fighters/dario-storm.jpg",
-    "kenji-arata": "/images/fighters/kenji-arata.jpg",
-    "tomas-reyes": "/images/fighters/tomas-reyes.jpg",
-  };
-
-  // Transform Fighter Cards
-  const fightersProps = featuredFighters.map((f) => ({
+  // Transform Fighter Cards (hanya ambil 4 teratas, fallback ke Coming Soon card jika foto belum diunggah)
+  const fightersProps = featuredFighters.slice(0, 4).map((f) => ({
     id: f.id,
     slug: f.slug,
-    fullName: `${f.firstName} ${f.lastName}`,
+    fullName: `${f.firstName} ${f.lastName}`.trim(),
     ringName: f.ringName,
     division: f.weightClass.name,
     record: `${f.wins}-${f.losses}-${f.draws}`,
@@ -212,7 +204,7 @@ export default async function PublicHomePage() {
     stance: f.stance,
     nationality: f.nationality,
     isChampion: f.currentRankings.some((r) => r.isChampion),
-    imageUrl: f.portrait?.url || fighterImages[f.slug] || null,
+    imageUrl: f.portrait?.url || "/images/fighters/coming-soon-card.jpg",
   }));
 
   // Local visual assets are illustrative, not verified fight announcements.

@@ -307,16 +307,12 @@ export function FighterManager({
                 <td className="py-3.5 px-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-canvas border border-subtle overflow-hidden shrink-0 flex items-center justify-center">
-                      {f.portraitUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={f.portraitUrl}
-                          alt={`${f.firstName} ${f.lastName}`}
-                          className="w-full h-full object-cover object-top"
-                        />
-                      ) : (
-                        <User className="w-4 h-4 text-ink-subtle" />
-                      )}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={f.portraitUrl || "/images/fighters/coming-soon-card.jpg"}
+                        alt={`${f.firstName} ${f.lastName}`}
+                        className="w-full h-full object-cover object-top"
+                      />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
