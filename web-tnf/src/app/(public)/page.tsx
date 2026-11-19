@@ -5,7 +5,6 @@ import { getSettings } from "@/server/services/settings.service";
 import { HeroSlider } from "@/components/landing/HeroSlider";
 import { OfficialSanctionRibbon } from "@/components/landing/OfficialSanctionRibbon";
 import { SponsorRibbon } from "@/components/landing/SponsorRibbon";
-import { SponsorShowcase } from "@/components/landing/SponsorShowcase";
 import { OfficialSupport } from "@/components/landing/OfficialSupport";
 import { MatchupShowcase } from "@/components/landing/MatchupShowcase";
 import { RankingPreview } from "@/components/rankings/RankingPreview";
@@ -260,9 +259,6 @@ export default async function PublicHomePage() {
 
       {/* 2. Official Sanctioning Bodies & Combat Associations (PERBATI & KBI) */}
       <OfficialSanctionRibbon />
-
-      {/* 2c. Sponsor & mitra komersial — dari database, hanya yang aktif */}
-      <SponsorShowcase sponsors={sponsors} />
 
       {/* 4. Editorial introduction & Vol. 6 Exhibition */}
       <MatchupShowcase config={settings?.["exhibition.vol6"]} />
