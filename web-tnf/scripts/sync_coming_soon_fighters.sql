@@ -1,8 +1,8 @@
 -- Sinkronisasi 4 kartu petarung & tabel peringkat menjadi COMING SOON
 -- Jalankan di MySQL VPS: mysql -u root -p boxing < scripts/sync_coming_soon_fighters.sql
 
-INSERT INTO mediaasset (id, storageKey, url, kind, mimeType, sizeBytes, originalName, createdAt, updatedAt)
-VALUES ('media-cs-card', 'fighters/coming-soon-card.jpg', '/images/fighters/coming-soon-card.jpg', 'IMAGE', 'image/jpeg', 817767, 'coming-soon-card.jpg', NOW(), NOW())
+INSERT INTO mediaasset (id, storageKey, url, kind, mimeType, sizeBytes, originalName, checksum, createdAt, updatedAt)
+VALUES ('media-cs-card', 'fighters/coming-soon-card.jpg', '/images/fighters/coming-soon-card.jpg', 'IMAGE', 'image/jpeg', 817767, 'coming-soon-card.jpg', 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', NOW(), NOW())
 ON DUPLICATE KEY UPDATE url = '/images/fighters/coming-soon-card.jpg';
 
 -- 1. Perbarui SEMUA petarung lama / dummy menjadi COMING SOON
