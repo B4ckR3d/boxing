@@ -67,7 +67,7 @@ export function MatchupShowcase({ config }: { config?: ExhibitionConfig } = {}) 
   const badge = config?.badge || "VOL. 6 EXHIBITION";
   const title = config?.title || (lang === "id" ? "SETIAP RONDE PUNYA CERITA." : "EVERY ROUND HAS A STORY.");
   const rulesText = config?.rulesText || "Rules: Boxing & Kickboxing (Low Contact) · Terbuka untuk 11 Kelas Timbangan";
-  const rawWa = config?.whatsappNumber?.replace(/\D/g, "") || "6285714883551";
+  const rawWa = config?.whatsappNumber?.replace(/\D/g, "") || "6281390823332";
   const waNumber = rawWa.startsWith("0") ? `62${rawWa.slice(1)}` : rawWa;
   const ctaLabel = config?.ctaLabel || "DAFTAR PARTAI VIA WA";
 

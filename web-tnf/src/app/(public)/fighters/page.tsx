@@ -280,7 +280,7 @@ export default async function PublicFightersPage({
                   <div className="pt-2 border-t border-border">
                     {isComingSoon ? (
                       <a
-                        href="https://wa.me/6285714883551?text=Halo%20Admin%20TFN,%20saya%20ingin%20mendaftar%20sebagai%20petarung%20di%20Temanggung%20Fight%20Night%20Vol.6%20Exhibition."
+                        href="https://wa.me/6281390823332?text=Halo%20Admin%20TFN,%20saya%20ingin%20mendaftar%20sebagai%20petarung%20di%20Temanggung%20Fight%20Night%20Vol.6%20Exhibition."
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 font-mono-data text-xs font-bold text-fight-red hover:underline"
