@@ -279,15 +279,29 @@ export default async function PublicFightersPage({
 
                   <div className="pt-2 border-t border-border">
                     {isComingSoon ? (
-                      <a
-                        href="https://wa.me/6281390823332?text=Halo%20Admin%20TFN,%20saya%20ingin%20mendaftar%20sebagai%20petarung%20di%20Temanggung%20Fight%20Night%20Vol.6%20Exhibition."
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 font-mono-data text-xs font-bold text-fight-red hover:underline"
-                      >
-                        <span>COMING SOON / DAFTAR</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </a>
+                      <div className="flex items-center gap-2 font-mono-data text-xs font-bold text-fight-red">
+                        <a
+                          href="https://wa.me/6281390823332?text=Halo%20Admin%20TFN%20(Kontak%201),%20saya%20ingin%20mendaftar%20sebagai%20petarung%20di%20Temanggung%20Fight%20Night%20Vol.6%20Exhibition."
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline flex items-center gap-0.5"
+                          title="Hubungi Kontak 1 (+62 813-9082-3332)"
+                        >
+                          <span>DAFTAR WA 1</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </a>
+                        <span className="text-muted-foreground/40">·</span>
+                        <a
+                          href="https://wa.me/6285848000639?text=Halo%20Admin%20TFN%20(Kontak%202),%20saya%20ingin%20mendaftar%20sebagai%20petarung%20di%20Temanggung%20Fight%20Night%20Vol.6%20Exhibition."
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline flex items-center gap-0.5"
+                          title="Hubungi Kontak 2 (+62 858-4800-0639)"
+                        >
+                          <span>WA 2</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </a>
+                      </div>
                     ) : (
                       <Link
                         href={`/fighters/${f.slug}`}

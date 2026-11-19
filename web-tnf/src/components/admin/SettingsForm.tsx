@@ -80,15 +80,15 @@ const FIELD_SPECS: Record<SettingKey, FieldSpec[]> = {
     },
     {
       name: "whatsappNumber",
-      label: "Nomor WhatsApp Pendaftaran (Format: 628xxx)",
+      label: "Nomor WhatsApp Kontak 1 (Format: 628xxx)",
       type: "text",
       placeholder: "6281390823332",
     },
     {
-      name: "ctaLabel",
-      label: "Label Tombol WhatsApp Header",
+      name: "whatsappNumber2",
+      label: "Nomor WhatsApp Kontak 2 (Format: 628xxx)",
       type: "text",
-      placeholder: "DAFTAR PARTAI VIA WA",
+      placeholder: "6285848000639",
     },
     {
       name: "closedDivisions",
