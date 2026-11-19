@@ -16,6 +16,7 @@ import { requirePermission } from "@/lib/permissions/guard";
 import { verifyRequestOrigin } from "@/lib/security/csrf";
 import { actionError, type ActionResult } from "@/lib/actions/result";
 import { apiFetch } from "@/lib/api/client";
+import { updateSettings } from "@/server/services/settings.service";
 
 /** Header yang membuat `apps/api` melihat permintaan ini sebagai permintaan pengguna yang sama. */
 async function forwardedHeaders(): Promise<Record<string, string>> {
@@ -33,15 +34,21 @@ export async function updateSettingsAction(values: Record<string, unknown>): Pro
     if (!(await verifyRequestOrigin())) {
       return { ok: false, error: "Invalid request origin" };
     }
-    await requirePermission("settings.manage");
+    const user = await requirePermission("settings.manage");
 
-    await apiFetch("/api/settings", {
-      method: "PUT",
-      body: { values },
-      headers: await forwardedHeaders(),
-    });
+    try {
+      await apiFetch("/api/settings", {
+        method: "PUT",
+        body: { values },
+        headers: await forwardedHeaders(),
+      });
+    } catch {
+      // Fallback jika apps/api tidak berjalan (mode standalone / single server)
+      await updateSettings(user.id, values);
+    }
 
     revalidatePath("/admin/settings");
+    revalidatePath("/");
     return { ok: true };
   } catch (err) {
     return { ok: false, error: actionError(err) };

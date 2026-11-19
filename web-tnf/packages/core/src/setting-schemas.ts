@@ -40,8 +40,8 @@ export const SETTING_SCHEMAS = {
   "popup.event": z.object({
     isEnabled: z.boolean().default(true),
     badge: z.string().max(60).default("LAGA MENDATANG · TIKET RESMI"),
-    title: z.string().max(120).default("TEMANGGUNG FIGHT NIGHT VOL. 1"),
-    subtitle: z.string().max(160).default("SABTU, 24 DESEMBER 2026 · GOR BAMBU RUNCING"),
+    title: z.string().max(120).default("TEMANGGUNG FIGHT NIGHT VOL. 6"),
+    subtitle: z.string().max(160).default("SABTU, 9 JANUARI 2027 · GOR BAMBU RUNCING"),
     description: z
       .string()
       .max(350)
@@ -59,6 +59,7 @@ export const SETTING_SCHEMAS = {
       .max(250)
       .default("Rules: Boxing & Kickboxing (Low Contact) · Terbuka untuk 11 Kelas Timbangan"),
     whatsappNumber: z.string().max(30).default("6281390823332"),
+    whatsappNumber2: z.string().max(30).default("6285848000639"),
     ctaLabel: z.string().max(60).default("DAFTAR PARTAI VIA WA"),
     closedDivisions: z
       .string()

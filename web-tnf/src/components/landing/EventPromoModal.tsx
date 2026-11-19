@@ -60,14 +60,20 @@ export function EventPromoModal({ config }: { config?: EventPromoConfig }) {
   if (!isOpen || config?.isEnabled === false) return null;
 
   const badgeText = config?.badge || "LAGA MENDATANG · TIKET RESMI";
-  const titleText = config?.title || "TEMANGGUNG FIGHT NIGHT VOL. 1";
-  const subtitleText = config?.subtitle || "SABTU, 24 DESEMBER 2026 · GOR BAMBU RUNCING";
+  const titleText = config?.title || "TEMANGGUNG FIGHT NIGHT VOL. 6";
+  const subtitleText = config?.subtitle || "SABTU, 9 JANUARI 2027 · GOR BAMBU RUNCING";
   const descText =
     config?.description ||
     "Perebutan sabuk emas kelas berat & welter. Dapatkan tiket Anda sebelum kehabisan!";
   const imgUrl = config?.imageUrl || "/images/hero/boxing-ring-arena.jpg";
   const btnLabel = config?.buttonLabel || "BELI TIKET SEKARANG";
   const targetUrl = config?.buttonUrl || "https://tiket.pimpom.id";
+
+  const [imgSrc, setImgSrc] = useState(imgUrl);
+
+  useEffect(() => {
+    setImgSrc(config?.imageUrl || "/images/hero/boxing-ring-arena.jpg");
+  }, [config?.imageUrl]);
 
   return (
     <div
@@ -91,14 +97,15 @@ export function EventPromoModal({ config }: { config?: EventPromoConfig }) {
         </button>
 
         {/* Gambar Flyer / Poster Acara */}
-        <div className="relative h-56 sm:h-64 w-full bg-surface overflow-hidden">
+        <div className="relative h-56 sm:h-64 w-full bg-[#121216] overflow-hidden flex items-center justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={imgUrl}
+            src={imgSrc}
             alt={titleText}
+            onError={() => setImgSrc("/images/hero/hero_fighter_5_champion.jpg")}
             className="w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-charcoal via-transparent to-black/30 pointer-events-none" />
 
           {/* Badge Laga */}
           <div className="absolute top-3.5 left-3.5 bg-fight-red text-white font-mono-data text-[10px] font-bold tracking-widest uppercase px-3 py-1 shadow-md flex items-center gap-1.5">
