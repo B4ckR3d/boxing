@@ -218,8 +218,14 @@ header button { min-height: 44px; min-width: 44px; }
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
+/* Arah berlawanan (tier silver): paruh kembar tetap sama, keyframes dibalik. */
+@keyframes tfn-ticker-reverse {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+.tfn-ticker-reverse { animation-name: tfn-ticker-reverse; }
 @media (prefers-reduced-motion: reduce) {
-  .tfn-ticker { animation: none; }
+  .tfn-ticker, .tfn-ticker-reverse { animation: none; }
 }
 /* Sponsor marquee (home, di atas footer): berhenti saat kursor di atasnya supaya logo bisa dibaca. */
 .tfn-sponsor-marquee:hover .tfn-ticker,

@@ -33,6 +33,7 @@ backups/
 !prisma/migrations/**/*.sql
 !web-tnf/prisma/migrations/**/*.sql
 !web-tnf/scripts/*.sql
+!web-tnf/prisma/seed-*.sql
 
 # raw camera media dump
 web-tnf/galery/

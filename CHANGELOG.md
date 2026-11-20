@@ -1,3 +1,21 @@
+## 2026-11-20 — Section partner/sponsor beranda: hierarki tier + data dari DB
+
+**Cakupan:** `web-tnf/src/components/landing/SponsorMarquee.tsx`,
+`web-tnf/src/styles/globals.css`, `web-tnf/prisma/seed-sponsors.sql` (baru).
+
+- **Hierarki visual per tier:** PLATINUM statis (kartu terbesar, grid center 1–3 kolom),
+  GOLD marquee berjalan ke kiri (kartu sedang), SILVER marquee berjalan ke kanan (kartu terkecil),
+  PARTNER/MEDIA_PARTNER grid statis kompak. Satu sumber gaya: `SIZE_STYLES`.
+- **Marquee dua arah** lewat keyframes `tfn-ticker` / `tfn-ticker-reverse`; duplikasi trek
+  (`×3`) dijaga agar loop mulus di layar ultrawide. `prefers-reduced-motion` mematikan keduanya.
+- **Akar masalah data:** tabel `Sponsor` kosong sehingga section selalu memakai
+  `PLACEHOLDER_SPONSORS`. Ditambahkan `prisma/seed-sponsors.sql` (idempotent, `WHERE NOT EXISTS`)
+  berisi 9 partner + 3 `MediaAsset` logo, jadi beranda kini benar-benar membaca DB.
+- **Verifikasi:** ubah `tier`/`isActive` di DB → beranda ikut berubah tanpa ubah kode;
+  CMS `/admin/sponsors` (login via BFF `apps/api`) menampilkan 9 baris tersebut.
+- Catatan operasional: login CMS gagal bila `apps/api` tidak hidup — `POST /api/auth/login`
+  membalas `apps/api gagal (HTTP 404)`. Jalankan API (`cd web-tnf/api && tsx src/index.ts`).
+
 ## 2026-11-18 — Aplikasi tiket dikeluarkan dari repo ini → repo mandiri `ticket-pimpom`
 
 `TFN/ticket-tnf` sudah dipindah ke `~/Projects/My-Projects/ticket-pimpom` dan punya repo git
