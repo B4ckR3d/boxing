@@ -68,45 +68,45 @@ interface SizeStyle {
 }
 
 const SIZE_STYLES: Record<TileSize, SizeStyle> = {
-  // PLATINUM — panggung utama, kartu besar & lega.
+  // PLATINUM — panggung utama, tetap paling besar tapi ramping (bukan papan billboard).
   platinum: {
-    card: "h-44 px-6 py-5 sm:h-40 sm:px-8 lg:h-48",
+    card: "h-28 px-4 py-3 sm:h-32 sm:px-6 lg:h-36",
     label: "text-[10px] sm:text-[11px] tracking-[0.22em]",
-    logoBox: "h-24 sm:h-32",
-    logo: "max-h-24 sm:max-h-32",
-    name: "text-lg sm:text-xl lg:text-2xl",
-    accent: "w-10 sm:w-14",
-    gap: "gap-4 sm:gap-6",
+    logoBox: "h-16 sm:h-20",
+    logo: "max-h-16 sm:max-h-20",
+    name: "text-base sm:text-lg lg:text-xl",
+    accent: "w-8 sm:w-10",
+    gap: "gap-3 sm:gap-4",
   },
   // GOLD — marquee, satu tingkat di bawah platinum.
   gold: {
-    card: "h-24 w-52 px-4 py-3 sm:h-28 sm:w-60 md:w-64",
+    card: "h-16 w-36 px-3 py-2 sm:h-20 sm:w-44 md:w-48",
     label: "text-[9px] sm:text-[10px] tracking-[0.18em]",
-    logoBox: "h-12 sm:h-14",
-    logo: "max-h-11 sm:max-h-[3.25rem] max-w-[140px] sm:max-w-[180px]",
-    name: "text-sm sm:text-base",
-    accent: "w-7 sm:w-8",
-    gap: "gap-4 sm:gap-5",
+    logoBox: "h-8 sm:h-10",
+    logo: "max-h-7 sm:max-h-9 max-w-[90px] sm:max-w-[120px]",
+    name: "text-xs sm:text-sm",
+    accent: "w-6 sm:w-7",
+    gap: "gap-2.5 sm:gap-3",
   },
   // SILVER — marquee arah berlawanan, kartu paling kecil.
   silver: {
-    card: "h-20 w-44 px-3 py-2.5 sm:h-24 sm:w-48 md:w-52",
+    card: "h-14 w-32 px-2.5 py-1.5 sm:h-16 sm:w-36 md:w-40",
     label: "text-[8px] sm:text-[9px] tracking-[0.16em]",
-    logoBox: "h-10 sm:h-12",
-    logo: "max-h-9 sm:max-h-11 max-w-[110px] sm:max-w-[140px]",
-    name: "text-xs sm:text-sm",
-    accent: "w-6 sm:w-7",
-    gap: "gap-3 sm:gap-4",
+    logoBox: "h-7 sm:h-8",
+    logo: "max-h-6 sm:max-h-7 max-w-[70px] sm:max-w-[90px]",
+    name: "text-[11px] sm:text-xs",
+    accent: "w-5 sm:w-6",
+    gap: "gap-2 sm:gap-2.5",
   },
   // PARTNER / MEDIA — grid statis kompak.
   compact: {
-    card: "h-20 w-full px-4 py-2.5 sm:h-24",
+    card: "h-14 w-full px-3 py-1.5 sm:h-16",
     label: "text-[9px] sm:text-[10px] tracking-[0.18em]",
-    logoBox: "h-12 sm:h-14",
-    logo: "max-h-11 sm:max-h-[3.25rem] max-w-[150px] sm:max-w-[180px]",
-    name: "text-sm sm:text-base",
-    accent: "w-7 sm:w-8",
-    gap: "gap-4 sm:gap-5",
+    logoBox: "h-8 sm:h-9",
+    logo: "max-h-7 sm:max-h-8 max-w-[100px] sm:max-w-[120px]",
+    name: "text-[11px] sm:text-xs",
+    accent: "w-5 sm:w-6",
+    gap: "gap-2.5 sm:gap-3",
   },
 };
 
@@ -217,7 +217,7 @@ function MarqueeStrip({
   const duration = Math.max(minSeconds, Math.round(displayTiles.length * secondsPerTile));
 
   return (
-    <div className="relative mt-4 overflow-hidden select-none sm:mt-5">
+    <div className="relative mt-3 overflow-hidden select-none sm:mt-4">
       {/* Edge gradient fades */}
       <div
         aria-hidden="true"
@@ -280,7 +280,7 @@ export function SponsorMarquee({ sponsors = [] }: SponsorMarqueeProps) {
   return (
     <section
       aria-labelledby="sponsor-marquee-title"
-      className="tfn-sponsor-marquee group relative border-y border-subtle bg-canvas-deep py-14 transition-colors sm:py-20"
+      className="tfn-sponsor-marquee group relative border-y border-subtle bg-canvas-deep py-12 transition-colors sm:py-16"
     >
       {/* Header section */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -311,13 +311,13 @@ export function SponsorMarquee({ sponsors = [] }: SponsorMarqueeProps) {
 
       {/* 1. PLATINUM — statis, kartu paling besar */}
       {platinum.length > 0 && (
-        <div className="mx-auto mt-8 max-w-7xl px-4 sm:mt-12 sm:px-6 lg:px-8">
+        <div className="mx-auto mt-6 max-w-7xl px-4 sm:mt-8 sm:px-6 lg:px-8">
           <ul
             className={`grid grid-cols-1 ${SIZE_STYLES.platinum.gap} ${platinum.length >= 3
               ? "sm:grid-cols-2 lg:grid-cols-3"
               : platinum.length === 2
                 ? "sm:grid-cols-2"
-                : "mx-auto max-w-xl"
+                : "mx-auto max-w-lg"
               }`}
           >
             {platinum.map((sponsor) => (
@@ -343,8 +343,8 @@ export function SponsorMarquee({ sponsors = [] }: SponsorMarqueeProps) {
 
       {/* 4. PARTNER & MEDIA PARTNER — grid statis kompak */}
       {supporting.length > 0 && (
-        <div className="mx-auto mt-6 max-w-7xl px-4 sm:mt-8 sm:px-6 lg:px-8">
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
+        <div className="mx-auto mt-5 max-w-7xl px-4 sm:mt-6 sm:px-6 lg:px-8">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {supporting.map((sponsor) => (
               <SponsorTile key={`supporting-${sponsor.id}`} sponsor={sponsor} lang={lang} size="compact" />
             ))}

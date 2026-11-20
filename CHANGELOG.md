@@ -1,3 +1,16 @@
+## 2026-11-20 — Kartu sponsor dirampingkan (sekali lagi, versi lebih kecil)
+
+**Cakupan:** `web-tnf/src/components/landing/SponsorMarquee.tsx`.
+
+- `SIZE_STYLES` diperkecil agar tidak terasa seperti papan billboard:
+  PLATINUM **512×144** (dari 576×192), GOLD **192×80** (dari 256×112),
+  SILVER **160×64** (dari 208×96), PARTNER/MEDIA **×64** (dari ×96).
+- Padding section `py-12/sm:py-16` (dari `py-14/sm:py-20`), jarak antar strip
+  `mt-3/sm:mt-4`, grid partner `gap-3/sm:gap-4`; platinum tunggal dibatasi `max-w-lg`.
+- **Verifikasi:** tinggi section turun 846 → **638 px**; 0 elemen ter-clipping
+  (`scrollHeight > clientHeight`); tidak ada overflow horizontal di 1280 px maupun 390 px;
+  marquee tetap berjalan (`tfn-ticker` 47s, `tfn-ticker-reverse` 58s).
+
 ## 2026-11-20 — Section partner/sponsor beranda: hierarki tier + data dari DB
 
 **Cakupan:** `web-tnf/src/components/landing/SponsorMarquee.tsx`,
