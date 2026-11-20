@@ -61,6 +61,9 @@ export default async function AdminDashboardLayout({
     { label: "Peringkat Resmi", href: "/admin/rankings", icon: Trophy },
     { label: "Sabuk Kejuaraan", href: "/admin/belts", icon: Award },
     { label: "Turnamen Grand Prix", href: "/admin/grand-prix", icon: Swords },
+    ...(can("registrations.read")
+      ? [{ label: "Pendaftaran Fighter", href: "/admin/registrations", icon: ClipboardList }]
+      : []),
     { label: "Daftar Petarung", href: "/admin/fighters", icon: Users },
     { label: "Jadwal Event", href: "/admin/events", icon: CalendarDays },
     { label: "Berita & Galeri", href: "/admin/gallery", icon: Newspaper },

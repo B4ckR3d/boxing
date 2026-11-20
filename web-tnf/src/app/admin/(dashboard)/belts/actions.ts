@@ -85,6 +85,65 @@ export async function createBeltAction(input: CreateBeltInput): Promise<ActionRe
   }
 }
 
+export interface UpdateBeltInput {
+  id: string;
+  name: string;
+  weightClassId: string;
+  description?: string;
+  status?: "ACTIVE" | "VACANT" | "SUSPENDED" | "RETIRED";
+  imageId?: string | null;
+  nextDefenseNote?: string;
+  sortOrder?: number;
+}
+
+/**
+ * Mengubah metadata sabuk (nama, divisi, deskripsi, gambar, catatan laga wajib, urutan).
+ * Slug sengaja TIDAK diubah supaya URL publik `/belts/...` tidak patah.
+ * Pemegang sabuk tidak diubah di sini — itu tanggung jawab `updateBeltHolderAction`
+ * karena menyentuh riwayat reign.
+ */
+export async function updateBeltAction(input: UpdateBeltInput): Promise<ActionResult> {
+  try {
+    if (!(await verifyRequestOrigin())) {
+      return { ok: false, error: "Invalid request origin" };
+    }
+    await requirePermission("belts.manage");
+
+    const id = input.id?.trim();
+    if (!id) throw new DomainValidationError("ID sabuk tidak valid");
+
+    const name = input.name?.trim() ?? "";
+    if (!name) throw new DomainValidationError("Nama sabuk wajib diisi");
+    if (!input.weightClassId) throw new DomainValidationError("Divisi kelas berat wajib dipilih");
+
+    const existing = await prisma.championshipBelt.findUnique({ where: { id } });
+    if (!existing) return { ok: false, error: "Sabuk tidak ditemukan" };
+
+    await prisma.championshipBelt.update({
+      where: { id },
+      data: {
+        name: name.slice(0, 120),
+        weightClassId: input.weightClassId,
+        description: input.description?.trim() || null,
+        status: input.status ?? existing.status,
+        // undefined = jangan sentuh gambar lama; null = lepas gambar
+        imageId: input.imageId === undefined ? undefined : input.imageId || null,
+        nextDefenseNote: input.nextDefenseNote?.trim().slice(0, 255) || null,
+        sortOrder: Number.isFinite(Number(input.sortOrder))
+          ? Math.trunc(Number(input.sortOrder))
+          : existing.sortOrder,
+      },
+    });
+
+    revalidatePath("/admin/belts");
+    revalidatePath("/belts");
+    revalidatePath("/");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: actionError(err) };
+  }
+}
+
 export async function updateBeltHolderAction(
   beltId: string,
   fighterId: string | null,

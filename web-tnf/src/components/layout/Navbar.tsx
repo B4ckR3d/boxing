@@ -22,6 +22,7 @@ export function Navbar() {
     { label: t("navGrandPrix"), href: "/grand-prix" },
     { label: t("navBelts"), href: "/belts" },
     { label: t("navFightHistory"), href: "/fights" },
+    { label: t("navRegister"), href: "/daftar-fighter" },
   ];
   const isActive = (href: string) => href === "/" ? pathname === "/" : pathname.startsWith(href);
 

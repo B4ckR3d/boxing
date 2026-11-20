@@ -29,6 +29,8 @@ export const PERMISSIONS = {
   "ticketing.read": "View ticket orders and payment confirmation queue",
   "ticketing.manage": "Create ticket types and manage ticket orders",
   "ticketing.confirm": "Confirm or reject ticket payments",
+  "registrations.read": "View fighter registration submissions from the public form",
+  "registrations.confirm": "Confirm (mark as eligible) or reject fighter registrations",
 } as const;
 
 export type PermissionKey = keyof typeof PERMISSIONS;
@@ -94,6 +96,8 @@ export const DEFAULT_ROLES: readonly RoleDefinition[] = [
       "ticketing.read",
       "ticketing.manage",
       "ticketing.confirm",
+      "registrations.read",
+      "registrations.confirm",
     ],
   },
   {
@@ -112,7 +116,14 @@ export const DEFAULT_ROLES: readonly RoleDefinition[] = [
     isSystem: true,
     requiresMfa: false,
     isSensitive: false,
-    permissions: ["admin.access", "fighters.read", "tournaments.manage", "fights.manage", "ticketing.read"],
+    permissions: [
+      "admin.access",
+      "fighters.read",
+      "tournaments.manage",
+      "fights.manage",
+      "ticketing.read",
+      "registrations.read",
+    ],
   },
   {
     key: "editor",
@@ -150,6 +161,7 @@ export const DEFAULT_ROLES: readonly RoleDefinition[] = [
       "content.publish",
       "ticketing.read",
       "ticketing.confirm",
+      "registrations.read",
     ],
   },
   {

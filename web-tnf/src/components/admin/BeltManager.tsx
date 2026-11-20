@@ -4,11 +4,12 @@ import React, { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Award, Plus, Trash2 } from "lucide-react";
+import { Award, Plus, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import {
   createBeltAction,
+  updateBeltAction,
   updateBeltHolderAction,
   deleteBeltAction,
 } from "@/app/admin/(dashboard)/belts/actions";
@@ -19,7 +20,11 @@ export interface BeltItem {
   slug: string;
   status: string;
   weightClassName: string;
+  weightClassId: string;
   weightLimitLbs: string;
+  description: string | null;
+  sortOrder: number;
+  imageAssetId: string | null;
   imageUrl: string | null;
   nextDefenseNote: string | null;
   activeReign: {
@@ -63,6 +68,8 @@ export function BeltManager({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // null = mode buat baru, string = id sabuk yang sedang diedit
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [name, setName] = useState("");
   const [weightClassId, setWeightClassId] = useState(weightClasses[0]?.id ?? "");
@@ -83,21 +90,32 @@ export function BeltManager({
     }
 
     startTransition(async () => {
-      const res = await createBeltAction({
-        name,
-        weightClassId,
-        status: holderFighterId ? "ACTIVE" : status,
-        holderFighterId: holderFighterId || undefined,
-        wonAt: holderFighterId ? wonAt : undefined,
-        nextDefenseNote: nextDefenseNote.trim() || undefined,
-        description: description.trim() || undefined,
-        imageId: imageId ?? null,
-        sortOrder: Number(sortOrder) || 0,
-      });
+      const res = editingId
+        ? await updateBeltAction({
+            id: editingId,
+            name,
+            weightClassId,
+            description: description.trim() || undefined,
+            imageId: imageId ?? null,
+            nextDefenseNote: nextDefenseNote.trim() || undefined,
+            sortOrder: Number(sortOrder) || 0,
+          })
+        : await createBeltAction({
+            name,
+            weightClassId,
+            status: holderFighterId ? "ACTIVE" : status,
+            holderFighterId: holderFighterId || undefined,
+            wonAt: holderFighterId ? wonAt : undefined,
+            nextDefenseNote: nextDefenseNote.trim() || undefined,
+            description: description.trim() || undefined,
+            imageId: imageId ?? null,
+            sortOrder: Number(sortOrder) || 0,
+          });
 
       if (res.ok) {
-        toast.success("Sabuk kejuaraan baru berhasil dibuat!");
+        toast.success(editingId ? "Sabuk kejuaraan berhasil diperbarui!" : "Sabuk kejuaraan baru berhasil dibuat!");
         setIsModalOpen(false);
+        setEditingId(null);
         setName("");
         setHolderFighterId("");
         setNextDefenseNote("");
@@ -106,9 +124,35 @@ export function BeltManager({
         setImageId(undefined);
         router.refresh();
       } else {
-        toast.error(res.error || "Gagal membuat sabuk");
+        toast.error(res.error || (editingId ? "Gagal memperbarui sabuk" : "Gagal membuat sabuk"));
       }
     });
+  };
+
+  const openCreateModal = () => {
+    setEditingId(null);
+    setName("");
+    setHolderFighterId("");
+    setNextDefenseNote("");
+    setDescription("");
+    setImageUrl("");
+    setImageId(undefined);
+    setSortOrder(belts.length);
+    setWeightClassId(weightClasses[0]?.id ?? "");
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (belt: BeltItem) => {
+    setEditingId(belt.id);
+    setName(belt.name);
+    setWeightClassId(belt.weightClassId);
+    setNextDefenseNote(belt.nextDefenseNote ?? "");
+    setDescription(belt.description ?? "");
+    setImageUrl(belt.imageUrl ?? "");
+    setImageId(belt.imageAssetId ?? undefined);
+    setSortOrder(belt.sortOrder);
+    setHolderFighterId("");
+    setIsModalOpen(true);
   };
 
   const handleHolderChange = (beltId: string, newFighterId: string) => {
@@ -160,10 +204,7 @@ export function BeltManager({
           <Button
             variant="crimson"
             size="sm"
-            onClick={() => {
-              setSortOrder(belts.length);
-              setIsModalOpen(true);
-            }}
+            onClick={openCreateModal}
             className="font-bold tracking-wider"
           >
             <Plus className="w-4 h-4 mr-1.5" /> CREATE NEW DIVISION BELT
@@ -277,6 +318,15 @@ export function BeltManager({
                   <button
                     type="button"
                     disabled={isPending}
+                    onClick={() => openEditModal(belt)}
+                    className="p-1.5 text-ink-muted hover:text-ink cursor-pointer"
+                    title="Edit Sabuk"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isPending}
                     onClick={() => handleDelete(belt.id, belt.name)}
                     className="p-1.5 text-ink-muted hover:text-fight-red cursor-pointer"
                     title="Hapus Sabuk"
@@ -306,7 +356,7 @@ export function BeltManager({
                   SANCTIONED TITLES CMS
                 </span>
                 <h2 className="font-display text-2xl uppercase font-black text-ink">
-                  Buat Sabuk Kejuaraan Baru
+                  {editingId ? "Edit Sabuk Kejuaraan" : "Buat Sabuk Kejuaraan Baru"}
                 </h2>
               </div>
               <button
@@ -368,6 +418,7 @@ export function BeltManager({
                 </div>
               </div>
 
+              {!editingId && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-ink font-bold uppercase mb-1">
@@ -412,6 +463,7 @@ export function BeltManager({
                   )}
                 </div>
               </div>
+              )}
 
               <div>
                 <label className="block text-ink font-bold uppercase mb-1">
@@ -446,7 +498,7 @@ export function BeltManager({
                   Batal
                 </button>
                 <Button type="submit" variant="crimson" disabled={isPending} className="font-bold tracking-wider">
-                  {isPending ? "Menyimpan..." : "Buat Sabuk Kejuaraan"}
+                  {isPending ? "Menyimpan..." : editingId ? "SIMPAN PERUBAHAN" : "Buat Sabuk Kejuaraan"}
                 </Button>
               </div>
             </form>

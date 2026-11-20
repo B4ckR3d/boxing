@@ -52,6 +52,17 @@ const schema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   S3_PUBLIC_URL: z.string().optional(),
   S3_FORCE_PATH_STYLE: bool.default(true),
+
+  // Pendaftaran fighter (form publik) — cermin ke Google Sheets.
+  // Kredensial service account: isi GOOGLE_SA_JSON (disarankan untuk produksi, satu baris JSON)
+  // atau biarkan kosong dan taruh file di GOOGLE_SA_KEY_FILE.
+  GOOGLE_SA_JSON: z.string().optional(),
+  GOOGLE_SA_KEY_FILE: z.string().default(".secrets/google-service-account.json"),
+  REGISTRATION_SHEET_ID: z.string().default("1zDUu8QG11KF0D__5hx39yjCkxCOqTN1EkEb_skqpFuc"),
+  REGISTRATION_SHEET_TAB: z.string().default("Form Responses 1"),
+  REGISTRATION_FEE_IDR: z.coerce.number().int().positive().default(200000),
+  REGISTRATION_MIN_AGE: z.coerce.number().int().min(1).default(15),
+  REGISTRATION_MAX_FILE_MB: z.coerce.number().positive().max(50).default(10),
 });
 
 export type ServerEnv = z.infer<typeof schema>;

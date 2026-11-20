@@ -300,3 +300,37 @@ export const TicketPaymentStatus = {
 } as const
 
 export type TicketPaymentStatus = (typeof TicketPaymentStatus)[keyof typeof TicketPaymentStatus]
+
+
+export const RegistrationStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type RegistrationStatus = (typeof RegistrationStatus)[keyof typeof RegistrationStatus]
+
+
+export const RegistrationRules = {
+  BOXING: 'BOXING',
+  KICKBOXING: 'KICKBOXING'
+} as const
+
+export type RegistrationRules = (typeof RegistrationRules)[keyof typeof RegistrationRules]
+
+
+export const RegistrationClass = {
+  ATLET: 'ATLET',
+  PEMULA: 'PEMULA',
+  NON_ATLET: 'NON_ATLET'
+} as const
+
+export type RegistrationClass = (typeof RegistrationClass)[keyof typeof RegistrationClass]
+
+
+export const BpjsStatus = {
+  AKTIF: 'AKTIF',
+  TIDAK_AKTIF: 'TIDAK_AKTIF'
+} as const
+
+export type BpjsStatus = (typeof BpjsStatus)[keyof typeof BpjsStatus]

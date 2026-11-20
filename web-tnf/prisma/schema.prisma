@@ -252,18 +252,19 @@ model User {
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
-  roles         UserRole[]       @relation("UserRoles")
-  rolesAssigned UserRole[]       @relation("UserRoleAssigner")
-  sessions      Session[]
-  auditLogs     AuditLog[]
-  notifications Notification[]
-  media         MediaAsset[]
-  roleRequests  RoleRequest[]    @relation("RoleRequestTarget")
-  roleRequested RoleRequest[]    @relation("RoleRequestRequester")
-  roleReviewed  RoleRequest[]    @relation("RoleRequestReviewer")
-  ticketOrdersConfirmed TicketOrder[] @relation("TicketOrderConfirmer")
-  ticketOrdersScanned   TicketOrder[] @relation("TicketOrderScanner")
-  ticketPaymentsReviewed TicketPayment[] @relation("TicketPaymentReviewer")
+  roles                  UserRole[]            @relation("UserRoles")
+  rolesAssigned          UserRole[]            @relation("UserRoleAssigner")
+  sessions               Session[]
+  auditLogs              AuditLog[]
+  notifications          Notification[]
+  media                  MediaAsset[]
+  roleRequests           RoleRequest[]         @relation("RoleRequestTarget")
+  roleRequested          RoleRequest[]         @relation("RoleRequestRequester")
+  roleReviewed           RoleRequest[]         @relation("RoleRequestReviewer")
+  ticketOrdersConfirmed  TicketOrder[]         @relation("TicketOrderConfirmer")
+  ticketOrdersScanned    TicketOrder[]         @relation("TicketOrderScanner")
+  ticketPaymentsReviewed TicketPayment[]       @relation("TicketPaymentReviewer")
+  confirmedRegistrations FighterRegistration[] @relation("RegistrationConfirmedBy")
 
   @@index([isActive])
 }
@@ -401,34 +402,35 @@ model WeightClass {
   rankingVersions RankingVersion[]
   belts           ChampionshipBelt[]
   tournaments     Tournament[]
+  registrations   FighterRegistration[]
 
   @@unique([gender, name])
   @@index([gender, isActive, sortOrder])
 }
 
 model Fighter {
-  id            String        @id @default(cuid())
-  slug          String        @unique @db.VarChar(120)
-  firstName     String        @db.VarChar(80)
-  lastName      String        @db.VarChar(80)
-  ringName      String?       @db.VarChar(80)
-  gender        Gender
+  id              String        @id @default(cuid())
+  slug            String        @unique @db.VarChar(120)
+  firstName       String        @db.VarChar(80)
+  lastName        String        @db.VarChar(80)
+  ringName        String?       @db.VarChar(80)
+  gender          Gender
   /// ISO 3166-1 alpha-2
-  nationality   String        @db.Char(2)
-  hometown      String?       @db.VarChar(120)
-  dateOfBirth   DateTime?     @db.Date
+  nationality     String        @db.Char(2)
+  hometown        String?       @db.VarChar(120)
+  dateOfBirth     DateTime?     @db.Date
   /// Date of birth is only shown publicly when explicitly allowed
-  showDateOfBirth Boolean     @default(false)
-  heightCm      Int?
-  reachCm       Int?
-  stance        Stance        @default(ORTHODOX)
-  weightClassId String
-  status        FighterStatus @default(ACTIVE)
-  bio           String?       @db.Text
+  showDateOfBirth Boolean       @default(false)
+  heightCm        Int?
+  reachCm         Int?
+  stance          Stance        @default(ORTHODOX)
+  weightClassId   String
+  status          FighterStatus @default(ACTIVE)
+  bio             String?       @db.Text
   /// JSON string[] — validated by Zod
-  achievements  Json?
-  portraitId    String?
-  debutDate     DateTime?     @db.Date
+  achievements    Json?
+  portraitId      String?
+  debutDate       DateTime?     @db.Date
 
   /// Record accrued BEFORE platform tracking (documented manual baseline)
   baseWins       Int @default(0)
@@ -445,9 +447,9 @@ model Fighter {
   koWins     Int @default(0)
 
   /// PRIVATE — never exposed by public DTOs
-  contactEmail String?  @db.VarChar(191)
-  contactPhone String?  @db.VarChar(40)
-  privateNotes String?  @db.Text
+  contactEmail String? @db.VarChar(191)
+  contactPhone String? @db.VarChar(40)
+  privateNotes String? @db.Text
 
   isDemo    Boolean   @default(false)
   deletedAt DateTime?
@@ -575,21 +577,21 @@ model RankingChangeLog {
 // -----------------------------------------------------------------------------
 
 model ChampionshipBelt {
-  id            String     @id @default(cuid())
-  name          String     @db.VarChar(120)
-  slug          String     @unique @db.VarChar(120)
-  weightClassId String
-  description   String?    @db.Text
-  status        BeltStatus @default(VACANT)
-  imageId       String?
+  id              String     @id @default(cuid())
+  name            String     @db.VarChar(120)
+  slug            String     @unique @db.VarChar(120)
+  weightClassId   String
+  description     String?    @db.Text
+  status          BeltStatus @default(VACANT)
+  imageId         String?
   /// Optional GLB model uploaded via media library
-  modelId       String?
-  nextDefenseAt DateTime?
-  nextDefenseNote String?  @db.VarChar(255)
-  sortOrder     Int        @default(0)
-  isDemo        Boolean    @default(false)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  modelId         String?
+  nextDefenseAt   DateTime?
+  nextDefenseNote String?    @db.VarChar(255)
+  sortOrder       Int        @default(0)
+  isDemo          Boolean    @default(false)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
   weightClass WeightClass @relation(fields: [weightClassId], references: [id])
   image       MediaAsset? @relation("BeltImage", fields: [imageId], references: [id], onDelete: SetNull)
@@ -602,24 +604,24 @@ model ChampionshipBelt {
 }
 
 model BeltReign {
-  id           String              @id @default(cuid())
-  beltId       String
-  fighterId    String
-  status       BeltReignStatus     @default(PENDING_APPROVAL)
+  id              String              @id @default(cuid())
+  beltId          String
+  fighterId       String
+  status          BeltReignStatus     @default(PENDING_APPROVAL)
   /// Equals beltId while ACTIVE, null otherwise → DB-level guarantee of ONE active reign per belt
-  activeKey    String?             @unique @db.VarChar(191)
-  wonAt        DateTime            @db.Date
-  wonFightId   String?
-  endedAt      DateTime?           @db.Date
-  endReason    BeltReignEndReason?
-  notes        String?             @db.VarChar(500)
-  proposedById String?
-  approvedById String?
-  approvedAt   DateTime?
-  rejectedById String?
-  rejectionReason String?          @db.VarChar(500)
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
+  activeKey       String?             @unique @db.VarChar(191)
+  wonAt           DateTime            @db.Date
+  wonFightId      String?
+  endedAt         DateTime?           @db.Date
+  endReason       BeltReignEndReason?
+  notes           String?             @db.VarChar(500)
+  proposedById    String?
+  approvedById    String?
+  approvedAt      DateTime?
+  rejectedById    String?
+  rejectionReason String?             @db.VarChar(500)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
 
   belt     ChampionshipBelt @relation(fields: [beltId], references: [id], onDelete: Cascade)
   fighter  Fighter          @relation(fields: [fighterId], references: [id])
@@ -669,9 +671,9 @@ model Event {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  poster MediaAsset? @relation("EventPoster", fields: [posterId], references: [id], onDelete: SetNull)
-  fights Fight[]
-  ticketTypes TicketType[]
+  poster       MediaAsset?   @relation("EventPoster", fields: [posterId], references: [id], onDelete: SetNull)
+  fights       Fight[]
+  ticketTypes  TicketType[]
   ticketOrders TicketOrder[]
 
   @@index([isPublished, startsAt])
@@ -680,15 +682,15 @@ model Event {
 
 /// Configurable result methods (KO, TKO, UD, SD, ...)
 model FightMethod {
-  id          String   @id @default(cuid())
-  code        String   @unique @db.VarChar(16)
-  name        String   @db.VarChar(80)
+  id         String   @id @default(cuid())
+  code       String   @unique @db.VarChar(16)
+  name       String   @db.VarChar(80)
   /// counts as KO win for statistics
-  isStoppage  Boolean  @default(false)
-  sortOrder   Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isStoppage Boolean  @default(false)
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   results FightResult[]
 }
@@ -764,9 +766,9 @@ model FightResult {
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 
-  fight     Fight             @relation(fields: [fightId], references: [id], onDelete: Cascade)
-  winner    FightParticipant? @relation("ResultWinner", fields: [winnerParticipantId], references: [id], onDelete: SetNull)
-  method    FightMethod       @relation(fields: [methodId], references: [id])
+  fight     Fight                 @relation(fields: [fightId], references: [id], onDelete: Cascade)
+  winner    FightParticipant?     @relation("ResultWinner", fields: [winnerParticipantId], references: [id], onDelete: SetNull)
+  method    FightMethod           @relation(fields: [methodId], references: [id])
   approvals FightResultApproval[]
 
   @@index([status])
@@ -802,7 +804,7 @@ model TicketType {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
   items TicketOrderItem[]
 
   @@unique([eventId, code])
@@ -810,27 +812,27 @@ model TicketType {
 }
 
 model TicketOrder {
-  id            String              @id @default(cuid())
-  orderNumber   String              @unique @db.VarChar(32)
-  eventId       String
-  customerName  String              @db.VarChar(120)
-  customerEmail String              @db.VarChar(191)
-  customerPhone String              @db.VarChar(40)
-  totalAmount   Decimal             @db.Decimal(12, 2)
-  status        TicketOrderStatus   @default(PENDING_CONFIRMATION)
-  paymentMethod TicketPaymentMethod @default(BANK_TRANSFER)
-  paymentStatus TicketPaymentStatus @default(UNPAID)
-  customerNote  String?             @db.VarChar(500)
-  adminNote     String?             @db.VarChar(500)
-  rejectionReason String?           @db.VarChar(500)
-  guestTokenHash String?            @unique @db.Char(64)
-  confirmedById String?
-  confirmedAt   DateTime?
-  rejectedAt    DateTime?
-  checkedInAt   DateTime?
-  checkedInById String?
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
+  id              String              @id @default(cuid())
+  orderNumber     String              @unique @db.VarChar(32)
+  eventId         String
+  customerName    String              @db.VarChar(120)
+  customerEmail   String              @db.VarChar(191)
+  customerPhone   String              @db.VarChar(40)
+  totalAmount     Decimal             @db.Decimal(12, 2)
+  status          TicketOrderStatus   @default(PENDING_CONFIRMATION)
+  paymentMethod   TicketPaymentMethod @default(BANK_TRANSFER)
+  paymentStatus   TicketPaymentStatus @default(UNPAID)
+  customerNote    String?             @db.VarChar(500)
+  adminNote       String?             @db.VarChar(500)
+  rejectionReason String?             @db.VarChar(500)
+  guestTokenHash  String?             @unique @db.Char(64)
+  confirmedById   String?
+  confirmedAt     DateTime?
+  rejectedAt      DateTime?
+  checkedInAt     DateTime?
+  checkedInById   String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
 
   event       Event             @relation(fields: [eventId], references: [id], onDelete: Restrict)
   items       TicketOrderItem[]
@@ -863,10 +865,10 @@ model TicketPayment {
   orderId      String              @unique
   amount       Decimal             @db.Decimal(12, 2)
   method       TicketPaymentMethod
-  status       TicketPaymentStatus  @default(PROOF_SUBMITTED)
+  status       TicketPaymentStatus @default(PROOF_SUBMITTED)
   proofUrl     String?             @db.VarChar(500)
-  reference    String?              @db.VarChar(120)
-  note         String?              @db.VarChar(500)
+  reference    String?             @db.VarChar(120)
+  note         String?             @db.VarChar(500)
   reviewedById String?
   reviewedAt   DateTime?
   createdAt    DateTime            @default(now())
@@ -976,27 +978,27 @@ model TournamentBout {
 // -----------------------------------------------------------------------------
 
 model HeroSlide {
-  id                 String      @id @default(cuid())
-  eventTitle         String      @db.VarChar(160)
-  category           String?     @db.VarChar(80)
-  headline           String      @db.VarChar(200)
-  description        String?     @db.VarChar(600)
-  eventDate          DateTime?
-  backgroundId       String?
-  backgroundVideoId  String?
-  fighterImageId     String?
-  ctaPrimaryLabel    String?     @db.VarChar(40)
-  ctaPrimaryHref     String?     @db.VarChar(500)
-  ctaSecondaryLabel  String?     @db.VarChar(40)
-  ctaSecondaryHref   String?     @db.VarChar(500)
-  show3dBelt         Boolean     @default(false)
-  overlay            HeroOverlay @default(DARK)
-  sortOrder          Int         @default(0)
-  isActive           Boolean     @default(true)
-  publishAt          DateTime?
-  unpublishAt        DateTime?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  id                String      @id @default(cuid())
+  eventTitle        String      @db.VarChar(160)
+  category          String?     @db.VarChar(80)
+  headline          String      @db.VarChar(200)
+  description       String?     @db.VarChar(600)
+  eventDate         DateTime?
+  backgroundId      String?
+  backgroundVideoId String?
+  fighterImageId    String?
+  ctaPrimaryLabel   String?     @db.VarChar(40)
+  ctaPrimaryHref    String?     @db.VarChar(500)
+  ctaSecondaryLabel String?     @db.VarChar(40)
+  ctaSecondaryHref  String?     @db.VarChar(500)
+  show3dBelt        Boolean     @default(false)
+  overlay           HeroOverlay @default(DARK)
+  sortOrder         Int         @default(0)
+  isActive          Boolean     @default(true)
+  publishAt         DateTime?
+  unpublishAt       DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   background      MediaAsset? @relation("HeroBackground", fields: [backgroundId], references: [id], onDelete: SetNull)
   backgroundVideo MediaAsset? @relation("HeroVideo", fields: [backgroundVideoId], references: [id], onDelete: SetNull)
@@ -1157,51 +1159,153 @@ model OrganizationSetting {
 // -----------------------------------------------------------------------------
 
 model GalleryCategory {
-  id          String        @id @default(cuid())
-  name        String        @db.VarChar(120)
-  slug        String        @unique @db.VarChar(120)
-  description String?       @db.VarChar(255)
-  sortOrder   Int           @default(0)
-  isActive    Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(120)
+  slug        String   @unique @db.VarChar(120)
+  description String?  @db.VarChar(255)
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  items       GalleryItem[]
+  items GalleryItem[]
 
   @@index([isActive, sortOrder])
 }
 
 model GalleryItem {
-  id          String          @id @default(cuid())
-  title       String          @db.VarChar(180)
-  description String?         @db.VarChar(500)
-  imageUrl    String          @db.VarChar(500)
+  id          String    @id @default(cuid())
+  title       String    @db.VarChar(180)
+  description String?   @db.VarChar(500)
+  imageUrl    String    @db.VarChar(500)
   categoryId  String
-  sortOrder   Int             @default(0)
-  isActive    Boolean         @default(true)
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
   takenAt     DateTime?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  category    GalleryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category GalleryCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@index([categoryId, isActive, sortOrder])
 }
 
 model Article {
-  id          String    @id @default(cuid())
-  title       String    @db.VarChar(200)
-  slug        String    @unique @db.VarChar(200)
-  excerpt     String    @db.VarChar(500)
-  content     String    @db.Text
-  coverUrl    String?   @db.VarChar(500)
-  category    String    @default("Berita") @db.VarChar(80)
-  isPublished Boolean   @default(true)
-  publishedAt DateTime  @default(now())
-  authorName  String    @default("Redaksi TFN") @db.VarChar(120)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id          String   @id @default(cuid())
+  title       String   @db.VarChar(200)
+  slug        String   @unique @db.VarChar(200)
+  excerpt     String   @db.VarChar(500)
+  content     String   @db.Text
+  coverUrl    String?  @db.VarChar(500)
+  category    String   @default("Berita") @db.VarChar(80)
+  isPublished Boolean  @default(true)
+  publishedAt DateTime @default(now())
+  authorName  String   @default("Redaksi TFN") @db.VarChar(120)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([isPublished, publishedAt])
 }
 
+// -----------------------------------------------------------------------------
+// FIGHTER REGISTRATION (pendaftaran atlet via form publik)
+// Sumber kebenaran: DB. Google Sheets hanya cermin (append + warna status).
+// -----------------------------------------------------------------------------
+
+/// Status konfirmasi oleh admin/sistem.
+enum RegistrationStatus {
+  /// Baru masuk dari form publik, belum diperiksa admin
+  PENDING
+  /// Dikonfirmasi admin — pertandingan diikuti
+  CONFIRMED
+  /// Ditolak admin (lihat rejectionReason)
+  REJECTED
+}
+
+enum RegistrationRules {
+  BOXING
+  KICKBOXING
+}
+
+/// Kolom "Kelas" pada form Google
+enum RegistrationClass {
+  ATLET
+  PEMULA
+  NON_ATLET
+}
+
+/// Kolom "BPJS Ketenagakerjaan"
+enum BpjsStatus {
+  AKTIF
+  TIDAK_AKTIF
+}
+
+model FighterRegistration {
+  id   String @id @default(cuid())
+  /// Kode referensi pendaftaran, mis. "TFN-R-7K2M9X" (dibagikan ke sheet & peserta)
+  code String @unique @db.VarChar(24)
+
+  fullName String @db.VarChar(120)
+  ringName String @db.VarChar(120)
+  address  String @db.Text
+  /// Usia dalam tahun; wajib >= 15 (aturan panitia)
+  age      Int
+
+  /// Label divisi persis seperti di form (mis. "85+ Kg Heavyweight")
+  divisionLabel    String            @db.VarChar(120)
+  /// Relasi opsional ke WeightClass bila namanya bisa dipetakan otomatis
+  weightClassId    String?
+  rules            RegistrationRules
+  competitionClass RegistrationClass
+  bpjsStatus       BpjsStatus
+
+  socialUrl    String? @db.VarChar(500)
+  instagramUrl String? @db.VarChar(500)
+  tiktokUrl    String? @db.VarChar(500)
+  facebookUrl  String? @db.VarChar(500)
+  xUrl         String? @db.VarChar(500)
+
+  /// Nominal yang dideklarasikan peserta (form: transfer Rp200.000)
+  paymentAmount     Decimal @default(200000) @db.Decimal(10, 2)
+  paymentMethod     String  @default("TRANSFER") @db.VarChar(16)
+  /// Bukti screenshot transfer — PRIVATE. Disimpan di storage/registrations (tidak pernah publik)
+  paymentProofPath  String? @db.VarChar(255)
+  paymentProofName  String? @db.VarChar(255)
+  paymentProofMime  String? @db.VarChar(80)
+  paymentProofBytes Int?
+  /// KTP/KK, wajib bila bpjsStatus = TIDAK_AKTIF — PRIVATE
+  idDocumentPath    String? @db.VarChar(255)
+  idDocumentName    String? @db.VarChar(255)
+  idDocumentMime    String? @db.VarChar(80)
+  idDocumentBytes   Int?
+
+  consentAccepted   Boolean   @default(false)
+  consentAcceptedAt DateTime?
+
+  status          RegistrationStatus @default(PENDING)
+  confirmedById   String?
+  confirmedAt     DateTime?
+  rejectionReason String?            @db.VarChar(500)
+  reviewNotes     String?            @db.Text
+
+  /// Baris (1-based, termasuk header) tempat data ini ditulis di Google Sheets
+  sheetRowNumber Int?
+  sheetSyncedAt  DateTime?
+  /// Pesan terakhir bila sinkronisasi Google gagal; UI admin menampilkan tombol "Sync ulang"
+  sheetSyncError String?   @db.Text
+
+  /// Jejak anti-spam / audit
+  ipAddress String? @db.VarChar(45)
+  userAgent String? @db.VarChar(255)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  weightClass WeightClass? @relation(fields: [weightClassId], references: [id], onDelete: SetNull)
+  confirmedBy User?        @relation("RegistrationConfirmedBy", fields: [confirmedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@index([sheetSyncedAt])
+  @@index([ringName])
+}

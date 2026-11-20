@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.8.0
- * Query Engine version: 3c6e192761c0362d496ed980de936e2f3cebcd3a
+ * Prisma Client JS version: 7.10.1
+ * Query Engine version: d1b3f377ca835d73fd50954a5e22128b9ebdd6b8
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.8.0",
-  engine: "3c6e192761c0362d496ed980de936e2f3cebcd3a"
+  client: "7.10.1",
+  engine: "d1b3f377ca835d73fd50954a5e22128b9ebdd6b8"
 }
 
 /**
@@ -156,6 +156,19 @@ export type Subset<T, U> = {
 };
 
 /**
+ * Resolved type of the argument passed to the `PrismaClient` constructor.
+ *
+ * When called without a narrower options type (the common case), this resolves
+ * to `PrismaClientOptions` directly, which produces a clear TypeScript error
+ * message (`not assignable to parameter of type 'PrismaClientOptions'`) when
+ * the argument is missing or incomplete. When the user supplies a narrower
+ * options type (e.g. via a literal), it falls back to `Subset` to keep
+ * filtering out unknown properties.
+ */
+export type PrismaClientConstructorArgs<Options extends PrismaClientOptions> =
+  [PrismaClientOptions] extends [Options] ? PrismaClientOptions : Subset<Options, PrismaClientOptions>;
+
+/**
  * SelectSubset
  * @desc From `T` pick properties that exist in `U`. Simple version of Intersection.
  * Additionally, it validates, if both select and include are present. If the case, it errors.
@@ -187,7 +200,7 @@ type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
 export type XOR<T, U> =
   T extends object ?
   U extends object ?
-    (Without<T, U> & U) | (Without<U, T> & T)
+    ((Without<T, U> & U) | (Without<U, T> & T)) & object
   : U : T
 
 
@@ -426,7 +439,8 @@ export const ModelName = {
   OrganizationSetting: 'OrganizationSetting',
   GalleryCategory: 'GalleryCategory',
   GalleryItem: 'GalleryItem',
-  Article: 'Article'
+  Article: 'Article',
+  FighterRegistration: 'FighterRegistration'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -442,7 +456,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "role" | "permission" | "userRole" | "rolePermission" | "roleRequest" | "session" | "loginAttempt" | "weightClass" | "fighter" | "rankingVersion" | "rankingEntry" | "fighterRanking" | "rankingChangeLog" | "championshipBelt" | "beltReign" | "beltDefense" | "event" | "fightMethod" | "fight" | "fightParticipant" | "fightResult" | "fightResultApproval" | "ticketType" | "ticketOrder" | "ticketOrderItem" | "ticketPayment" | "tournament" | "tournamentParticipant" | "tournamentBracket" | "tournamentBout" | "heroSlide" | "page" | "pageSection" | "pageRevision" | "mediaAsset" | "sponsor" | "auditLog" | "notification" | "organizationSetting" | "galleryCategory" | "galleryItem" | "article"
+    modelProps: "user" | "role" | "permission" | "userRole" | "rolePermission" | "roleRequest" | "session" | "loginAttempt" | "weightClass" | "fighter" | "rankingVersion" | "rankingEntry" | "fighterRanking" | "rankingChangeLog" | "championshipBelt" | "beltReign" | "beltDefense" | "event" | "fightMethod" | "fight" | "fightParticipant" | "fightResult" | "fightResultApproval" | "ticketType" | "ticketOrder" | "ticketOrderItem" | "ticketPayment" | "tournament" | "tournamentParticipant" | "tournamentBracket" | "tournamentBout" | "heroSlide" | "page" | "pageSection" | "pageRevision" | "mediaAsset" | "sponsor" | "auditLog" | "notification" | "organizationSetting" | "galleryCategory" | "galleryItem" | "article" | "fighterRegistration"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3284,6 +3298,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FighterRegistration: {
+      payload: Prisma.$FighterRegistrationPayload<ExtArgs>
+      fields: Prisma.FighterRegistrationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FighterRegistrationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FighterRegistrationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FighterRegistrationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FighterRegistrationPayload>
+        }
+        findFirst: {
+          args: Prisma.FighterRegistrationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FighterRegistrationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FighterRegistrationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FighterRegistrationPayload>
+        }
+        findMany: {
+          args: Prisma.FighterRegistrationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FighterRegistrationPayload>[]
+        }
+        create: {
+          args: Prisma.FighterRegistrationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FighterRegistrationPayload>
+        }
+        createMany: {
+          args: Prisma.FighterRegistrationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.FighterRegistrationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FighterRegistrationPayload>
+        }
+        update: {
+          args: Prisma.FighterRegistrationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FighterRegistrationPayload>
+        }
+        deleteMany: {
+          args: Prisma.FighterRegistrationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FighterRegistrationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.FighterRegistrationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FighterRegistrationPayload>
+        }
+        aggregate: {
+          args: Prisma.FighterRegistrationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFighterRegistration>
+        }
+        groupBy: {
+          args: Prisma.FighterRegistrationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FighterRegistrationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FighterRegistrationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FighterRegistrationCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -4058,6 +4138,52 @@ export const ArticleScalarFieldEnum = {
 export type ArticleScalarFieldEnum = (typeof ArticleScalarFieldEnum)[keyof typeof ArticleScalarFieldEnum]
 
 
+export const FighterRegistrationScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  fullName: 'fullName',
+  ringName: 'ringName',
+  address: 'address',
+  age: 'age',
+  divisionLabel: 'divisionLabel',
+  weightClassId: 'weightClassId',
+  rules: 'rules',
+  competitionClass: 'competitionClass',
+  bpjsStatus: 'bpjsStatus',
+  socialUrl: 'socialUrl',
+  instagramUrl: 'instagramUrl',
+  tiktokUrl: 'tiktokUrl',
+  facebookUrl: 'facebookUrl',
+  xUrl: 'xUrl',
+  paymentAmount: 'paymentAmount',
+  paymentMethod: 'paymentMethod',
+  paymentProofPath: 'paymentProofPath',
+  paymentProofName: 'paymentProofName',
+  paymentProofMime: 'paymentProofMime',
+  paymentProofBytes: 'paymentProofBytes',
+  idDocumentPath: 'idDocumentPath',
+  idDocumentName: 'idDocumentName',
+  idDocumentMime: 'idDocumentMime',
+  idDocumentBytes: 'idDocumentBytes',
+  consentAccepted: 'consentAccepted',
+  consentAcceptedAt: 'consentAcceptedAt',
+  status: 'status',
+  confirmedById: 'confirmedById',
+  confirmedAt: 'confirmedAt',
+  rejectionReason: 'rejectionReason',
+  reviewNotes: 'reviewNotes',
+  sheetRowNumber: 'sheetRowNumber',
+  sheetSyncedAt: 'sheetSyncedAt',
+  sheetSyncError: 'sheetSyncError',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FighterRegistrationScalarFieldEnum = (typeof FighterRegistrationScalarFieldEnum)[keyof typeof FighterRegistrationScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -4615,6 +4741,37 @@ export const ArticleOrderByRelevanceFieldEnum = {
 export type ArticleOrderByRelevanceFieldEnum = (typeof ArticleOrderByRelevanceFieldEnum)[keyof typeof ArticleOrderByRelevanceFieldEnum]
 
 
+export const FighterRegistrationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  code: 'code',
+  fullName: 'fullName',
+  ringName: 'ringName',
+  address: 'address',
+  divisionLabel: 'divisionLabel',
+  weightClassId: 'weightClassId',
+  socialUrl: 'socialUrl',
+  instagramUrl: 'instagramUrl',
+  tiktokUrl: 'tiktokUrl',
+  facebookUrl: 'facebookUrl',
+  xUrl: 'xUrl',
+  paymentMethod: 'paymentMethod',
+  paymentProofPath: 'paymentProofPath',
+  paymentProofName: 'paymentProofName',
+  paymentProofMime: 'paymentProofMime',
+  idDocumentPath: 'idDocumentPath',
+  idDocumentName: 'idDocumentName',
+  idDocumentMime: 'idDocumentMime',
+  confirmedById: 'confirmedById',
+  rejectionReason: 'rejectionReason',
+  reviewNotes: 'reviewNotes',
+  sheetSyncError: 'sheetSyncError',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent'
+} as const
+
+export type FighterRegistrationOrderByRelevanceFieldEnum = (typeof FighterRegistrationOrderByRelevanceFieldEnum)[keyof typeof FighterRegistrationOrderByRelevanceFieldEnum]
+
+
 
 /**
  * Field references
@@ -4874,6 +5031,34 @@ export type EnumMediaKindFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
 
 
 /**
+ * Reference to a field of type 'RegistrationRules'
+ */
+export type EnumRegistrationRulesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RegistrationRules'>
+    
+
+
+/**
+ * Reference to a field of type 'RegistrationClass'
+ */
+export type EnumRegistrationClassFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RegistrationClass'>
+    
+
+
+/**
+ * Reference to a field of type 'BpjsStatus'
+ */
+export type EnumBpjsStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BpjsStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RegistrationStatus'
+ */
+export type EnumRegistrationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RegistrationStatus'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -4889,19 +5074,10 @@ export type BatchPayload = {
 export const defineExtension = runtime.Extensions.defineExtension as unknown as runtime.Types.Extensions.ExtendsHook<"define", TypeMapCb, runtime.Types.Extensions.DefaultArgs>
 export type DefaultPrismaClient = PrismaClient
 export type ErrorFormat = 'pretty' | 'colorless' | 'minimal'
-export type PrismaClientOptions = ({
-  /**
-   * Instance of a Driver Adapter, e.g., like one provided by `@prisma/adapter-pg`.
-   */
-  adapter: runtime.SqlDriverAdapterFactory
-  accelerateUrl?: never
-} | {
-  /**
-   * Prisma Accelerate URL allowing the client to connect through Accelerate instead of a direct database.
-   */
-  accelerateUrl: string
-  adapter?: never
-}) & {
+/**
+ * Options common to all variants of `PrismaClientOptions`, regardless of whether you connect to your database through a driver adapter or through Prisma Accelerate.
+ */
+export interface PrismaClientBaseOptions {
   /**
    * @default "colorless"
    */
@@ -4988,6 +5164,56 @@ export type PrismaClientOptions = ({
    */
   queryPlanCacheMaxSize?: number
 }
+
+/**
+ * `PrismaClient` options for connecting to your database through Prisma Accelerate instead of a driver adapter.
+ * 
+ * Learn more: https://pris.ly/d/accelerate
+ */
+export interface PrismaClientOptionsWithAccelerateUrl extends PrismaClientBaseOptions {
+  /**
+   * The Prisma Accelerate connection URL. Use this option to connect to your database through Prisma Accelerate instead of using a driver adapter to connect directly.
+   * 
+   * Learn more: https://pris.ly/d/accelerate
+   */
+  accelerateUrl: string
+  adapter?: never
+}
+
+/**
+ * `PrismaClient` options for connecting to your database through a driver adapter. This is the common case in Prisma 7.
+ * 
+ * Learn more: https://pris.ly/d/driver-adapters
+ */
+export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions {
+  /**
+   * A driver adapter that PrismaClient uses to connect to your database, such as the ones provided by `@prisma/adapter-pg`, `@prisma/adapter-libsql`, `@prisma/adapter-planetscale`, etc.
+   * 
+   * A driver adapter is **required** unless you connect to your database through Prisma Accelerate (in which case use `accelerateUrl` instead).
+   * 
+   * Learn more: https://pris.ly/d/driver-adapters
+   * 
+   * @example
+   * ```ts
+   * import { PrismaPg } from '@prisma/adapter-pg'
+   * import { PrismaClient } from './generated/prisma/client'
+   * 
+   * const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+   * const prisma = new PrismaClient({ adapter })
+   * ```
+   */
+  adapter: runtime.SqlDriverAdapterFactory
+  accelerateUrl?: never
+}
+
+/**
+ * Options passed to the `PrismaClient` constructor.
+ * 
+ * A driver adapter (or, alternatively, a Prisma Accelerate URL) is **required**. See {@link PrismaClientOptionsWithAdapter} and {@link PrismaClientOptionsWithAccelerateUrl} for the two variants. All other properties live in {@link PrismaClientBaseOptions} and are optional.
+ * 
+ * Learn more about driver adapters: https://pris.ly/d/driver-adapters
+ */
+export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   role?: Prisma.RoleOmit
@@ -5032,6 +5258,7 @@ export type GlobalOmitConfig = {
   galleryCategory?: Prisma.GalleryCategoryOmit
   galleryItem?: Prisma.GalleryItemOmit
   article?: Prisma.ArticleOmit
+  fighterRegistration?: Prisma.FighterRegistrationOmit
 }
 
 /* Types for Logging */

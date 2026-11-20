@@ -56,6 +56,8 @@ export const RATE_LIMITS = {
   mutation: { windowMs: 60_000, limit: 120 },
   upload: { windowMs: 60_000, limit: 20 },
   publicApi: { windowMs: 60_000, limit: 120 },
+  /** Pendaftaran fighter: maksimal 5 kiriman per IP per jam (form berat + upload file). */
+  registrationSubmit: { windowMs: 60 * 60_000, limit: 5 },
 } as const;
 
 export type RateLimitName = keyof typeof RATE_LIMITS;

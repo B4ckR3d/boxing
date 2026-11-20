@@ -300,6 +300,7 @@ export type UserWhereInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderListRelationFilter
   ticketOrdersScanned?: Prisma.TicketOrderListRelationFilter
   ticketPaymentsReviewed?: Prisma.TicketPaymentListRelationFilter
+  confirmedRegistrations?: Prisma.FighterRegistrationListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -329,6 +330,7 @@ export type UserOrderByWithRelationInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderOrderByRelationAggregateInput
   ticketOrdersScanned?: Prisma.TicketOrderOrderByRelationAggregateInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentOrderByRelationAggregateInput
+  confirmedRegistrations?: Prisma.FighterRegistrationOrderByRelationAggregateInput
   _relevance?: Prisma.UserOrderByRelevanceInput
 }
 
@@ -362,6 +364,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   ticketOrdersConfirmed?: Prisma.TicketOrderListRelationFilter
   ticketOrdersScanned?: Prisma.TicketOrderListRelationFilter
   ticketPaymentsReviewed?: Prisma.TicketPaymentListRelationFilter
+  confirmedRegistrations?: Prisma.FighterRegistrationListRelationFilter
 }, "id" | "username" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -433,6 +436,7 @@ export type UserCreateInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -462,6 +466,7 @@ export type UserUncheckedCreateInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUpdateInput = {
@@ -491,6 +496,7 @@ export type UserUpdateInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -520,6 +526,7 @@ export type UserUncheckedUpdateInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -858,6 +865,22 @@ export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutNotificationsInput, Prisma.UserUpdateWithoutNotificationsInput>, Prisma.UserUncheckedUpdateWithoutNotificationsInput>
 }
 
+export type UserCreateNestedOneWithoutConfirmedRegistrationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutConfirmedRegistrationsInput, Prisma.UserUncheckedCreateWithoutConfirmedRegistrationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutConfirmedRegistrationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutConfirmedRegistrationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutConfirmedRegistrationsInput, Prisma.UserUncheckedCreateWithoutConfirmedRegistrationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutConfirmedRegistrationsInput
+  upsert?: Prisma.UserUpsertWithoutConfirmedRegistrationsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutConfirmedRegistrationsInput, Prisma.UserUpdateWithoutConfirmedRegistrationsInput>, Prisma.UserUncheckedUpdateWithoutConfirmedRegistrationsInput>
+}
+
 export type UserCreateWithoutRolesInput = {
   id?: string
   username: string
@@ -884,6 +907,7 @@ export type UserCreateWithoutRolesInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutRolesInput = {
@@ -912,6 +936,7 @@ export type UserUncheckedCreateWithoutRolesInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutRolesInput = {
@@ -945,6 +970,7 @@ export type UserCreateWithoutRolesAssignedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutRolesAssignedInput = {
@@ -973,6 +999,7 @@ export type UserUncheckedCreateWithoutRolesAssignedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutRolesAssignedInput = {
@@ -1017,6 +1044,7 @@ export type UserUpdateWithoutRolesInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRolesInput = {
@@ -1045,6 +1073,7 @@ export type UserUncheckedUpdateWithoutRolesInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUpsertWithoutRolesAssignedInput = {
@@ -1084,6 +1113,7 @@ export type UserUpdateWithoutRolesAssignedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRolesAssignedInput = {
@@ -1112,6 +1142,7 @@ export type UserUncheckedUpdateWithoutRolesAssignedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserCreateWithoutRoleRequestsInput = {
@@ -1140,6 +1171,7 @@ export type UserCreateWithoutRoleRequestsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutRoleRequestsInput = {
@@ -1168,6 +1200,7 @@ export type UserUncheckedCreateWithoutRoleRequestsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutRoleRequestsInput = {
@@ -1201,6 +1234,7 @@ export type UserCreateWithoutRoleRequestedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutRoleRequestedInput = {
@@ -1229,6 +1263,7 @@ export type UserUncheckedCreateWithoutRoleRequestedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutRoleRequestedInput = {
@@ -1262,6 +1297,7 @@ export type UserCreateWithoutRoleReviewedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutRoleReviewedInput = {
@@ -1290,6 +1326,7 @@ export type UserUncheckedCreateWithoutRoleReviewedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutRoleReviewedInput = {
@@ -1334,6 +1371,7 @@ export type UserUpdateWithoutRoleRequestsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRoleRequestsInput = {
@@ -1362,6 +1400,7 @@ export type UserUncheckedUpdateWithoutRoleRequestsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUpsertWithoutRoleRequestedInput = {
@@ -1401,6 +1440,7 @@ export type UserUpdateWithoutRoleRequestedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRoleRequestedInput = {
@@ -1429,6 +1469,7 @@ export type UserUncheckedUpdateWithoutRoleRequestedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUpsertWithoutRoleReviewedInput = {
@@ -1468,6 +1509,7 @@ export type UserUpdateWithoutRoleReviewedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRoleReviewedInput = {
@@ -1496,6 +1538,7 @@ export type UserUncheckedUpdateWithoutRoleReviewedInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1524,6 +1567,7 @@ export type UserCreateWithoutSessionsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1552,6 +1596,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1596,6 +1641,7 @@ export type UserUpdateWithoutSessionsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1624,6 +1670,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserCreateWithoutTicketOrdersConfirmedInput = {
@@ -1652,6 +1699,7 @@ export type UserCreateWithoutTicketOrdersConfirmedInput = {
   roleReviewed?: Prisma.RoleRequestCreateNestedManyWithoutReviewedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutTicketOrdersConfirmedInput = {
@@ -1680,6 +1728,7 @@ export type UserUncheckedCreateWithoutTicketOrdersConfirmedInput = {
   roleReviewed?: Prisma.RoleRequestUncheckedCreateNestedManyWithoutReviewedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutTicketOrdersConfirmedInput = {
@@ -1713,6 +1762,7 @@ export type UserCreateWithoutTicketOrdersScannedInput = {
   roleReviewed?: Prisma.RoleRequestCreateNestedManyWithoutReviewedByInput
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutTicketOrdersScannedInput = {
@@ -1741,6 +1791,7 @@ export type UserUncheckedCreateWithoutTicketOrdersScannedInput = {
   roleReviewed?: Prisma.RoleRequestUncheckedCreateNestedManyWithoutReviewedByInput
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutTicketOrdersScannedInput = {
@@ -1785,6 +1836,7 @@ export type UserUpdateWithoutTicketOrdersConfirmedInput = {
   roleReviewed?: Prisma.RoleRequestUpdateManyWithoutReviewedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTicketOrdersConfirmedInput = {
@@ -1813,6 +1865,7 @@ export type UserUncheckedUpdateWithoutTicketOrdersConfirmedInput = {
   roleReviewed?: Prisma.RoleRequestUncheckedUpdateManyWithoutReviewedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUpsertWithoutTicketOrdersScannedInput = {
@@ -1852,6 +1905,7 @@ export type UserUpdateWithoutTicketOrdersScannedInput = {
   roleReviewed?: Prisma.RoleRequestUpdateManyWithoutReviewedByNestedInput
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTicketOrdersScannedInput = {
@@ -1880,6 +1934,7 @@ export type UserUncheckedUpdateWithoutTicketOrdersScannedInput = {
   roleReviewed?: Prisma.RoleRequestUncheckedUpdateManyWithoutReviewedByNestedInput
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserCreateWithoutTicketPaymentsReviewedInput = {
@@ -1908,6 +1963,7 @@ export type UserCreateWithoutTicketPaymentsReviewedInput = {
   roleReviewed?: Prisma.RoleRequestCreateNestedManyWithoutReviewedByInput
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutTicketPaymentsReviewedInput = {
@@ -1936,6 +1992,7 @@ export type UserUncheckedCreateWithoutTicketPaymentsReviewedInput = {
   roleReviewed?: Prisma.RoleRequestUncheckedCreateNestedManyWithoutReviewedByInput
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutTicketPaymentsReviewedInput = {
@@ -1980,6 +2037,7 @@ export type UserUpdateWithoutTicketPaymentsReviewedInput = {
   roleReviewed?: Prisma.RoleRequestUpdateManyWithoutReviewedByNestedInput
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTicketPaymentsReviewedInput = {
@@ -2008,6 +2066,7 @@ export type UserUncheckedUpdateWithoutTicketPaymentsReviewedInput = {
   roleReviewed?: Prisma.RoleRequestUncheckedUpdateManyWithoutReviewedByNestedInput
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserCreateWithoutMediaInput = {
@@ -2036,6 +2095,7 @@ export type UserCreateWithoutMediaInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutMediaInput = {
@@ -2064,6 +2124,7 @@ export type UserUncheckedCreateWithoutMediaInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutMediaInput = {
@@ -2108,6 +2169,7 @@ export type UserUpdateWithoutMediaInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMediaInput = {
@@ -2136,6 +2198,7 @@ export type UserUncheckedUpdateWithoutMediaInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -2164,6 +2227,7 @@ export type UserCreateWithoutAuditLogsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -2192,6 +2256,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -2236,6 +2301,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -2264,6 +2330,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -2292,6 +2359,7 @@ export type UserCreateWithoutNotificationsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -2320,6 +2388,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutConfirmedByInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -2364,6 +2433,7 @@ export type UserUpdateWithoutNotificationsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUpdateManyWithoutConfirmedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -2392,6 +2462,139 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
   ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
   ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
+  confirmedRegistrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutConfirmedByNestedInput
+}
+
+export type UserCreateWithoutConfirmedRegistrationsInput = {
+  id?: string
+  username: string
+  email: string
+  name: string
+  passwordHash: string
+  isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecretEnc?: string | null
+  failedLoginCount?: number
+  lockedUntil?: Date | string | null
+  lastLoginAt?: Date | string | null
+  passwordChangedAt?: Date | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
+  rolesAssigned?: Prisma.UserRoleCreateNestedManyWithoutAssignedByInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  media?: Prisma.MediaAssetCreateNestedManyWithoutUploadedByInput
+  roleRequests?: Prisma.RoleRequestCreateNestedManyWithoutUserInput
+  roleRequested?: Prisma.RoleRequestCreateNestedManyWithoutRequestedByInput
+  roleReviewed?: Prisma.RoleRequestCreateNestedManyWithoutReviewedByInput
+  ticketOrdersConfirmed?: Prisma.TicketOrderCreateNestedManyWithoutConfirmedByInput
+  ticketOrdersScanned?: Prisma.TicketOrderCreateNestedManyWithoutCheckedInByInput
+  ticketPaymentsReviewed?: Prisma.TicketPaymentCreateNestedManyWithoutReviewedByInput
+}
+
+export type UserUncheckedCreateWithoutConfirmedRegistrationsInput = {
+  id?: string
+  username: string
+  email: string
+  name: string
+  passwordHash: string
+  isActive?: boolean
+  mfaEnabled?: boolean
+  mfaSecretEnc?: string | null
+  failedLoginCount?: number
+  lockedUntil?: Date | string | null
+  lastLoginAt?: Date | string | null
+  passwordChangedAt?: Date | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
+  rolesAssigned?: Prisma.UserRoleUncheckedCreateNestedManyWithoutAssignedByInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  media?: Prisma.MediaAssetUncheckedCreateNestedManyWithoutUploadedByInput
+  roleRequests?: Prisma.RoleRequestUncheckedCreateNestedManyWithoutUserInput
+  roleRequested?: Prisma.RoleRequestUncheckedCreateNestedManyWithoutRequestedByInput
+  roleReviewed?: Prisma.RoleRequestUncheckedCreateNestedManyWithoutReviewedByInput
+  ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutConfirmedByInput
+  ticketOrdersScanned?: Prisma.TicketOrderUncheckedCreateNestedManyWithoutCheckedInByInput
+  ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedCreateNestedManyWithoutReviewedByInput
+}
+
+export type UserCreateOrConnectWithoutConfirmedRegistrationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutConfirmedRegistrationsInput, Prisma.UserUncheckedCreateWithoutConfirmedRegistrationsInput>
+}
+
+export type UserUpsertWithoutConfirmedRegistrationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutConfirmedRegistrationsInput, Prisma.UserUncheckedUpdateWithoutConfirmedRegistrationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutConfirmedRegistrationsInput, Prisma.UserUncheckedCreateWithoutConfirmedRegistrationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutConfirmedRegistrationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutConfirmedRegistrationsInput, Prisma.UserUncheckedUpdateWithoutConfirmedRegistrationsInput>
+}
+
+export type UserUpdateWithoutConfirmedRegistrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passwordChangedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
+  rolesAssigned?: Prisma.UserRoleUpdateManyWithoutAssignedByNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  media?: Prisma.MediaAssetUpdateManyWithoutUploadedByNestedInput
+  roleRequests?: Prisma.RoleRequestUpdateManyWithoutUserNestedInput
+  roleRequested?: Prisma.RoleRequestUpdateManyWithoutRequestedByNestedInput
+  roleReviewed?: Prisma.RoleRequestUpdateManyWithoutReviewedByNestedInput
+  ticketOrdersConfirmed?: Prisma.TicketOrderUpdateManyWithoutConfirmedByNestedInput
+  ticketOrdersScanned?: Prisma.TicketOrderUpdateManyWithoutCheckedInByNestedInput
+  ticketPaymentsReviewed?: Prisma.TicketPaymentUpdateManyWithoutReviewedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutConfirmedRegistrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  mfaSecretEnc?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  failedLoginCount?: Prisma.IntFieldUpdateOperationsInput | number
+  lockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  passwordChangedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  rolesAssigned?: Prisma.UserRoleUncheckedUpdateManyWithoutAssignedByNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  media?: Prisma.MediaAssetUncheckedUpdateManyWithoutUploadedByNestedInput
+  roleRequests?: Prisma.RoleRequestUncheckedUpdateManyWithoutUserNestedInput
+  roleRequested?: Prisma.RoleRequestUncheckedUpdateManyWithoutRequestedByNestedInput
+  roleReviewed?: Prisma.RoleRequestUncheckedUpdateManyWithoutReviewedByNestedInput
+  ticketOrdersConfirmed?: Prisma.TicketOrderUncheckedUpdateManyWithoutConfirmedByNestedInput
+  ticketOrdersScanned?: Prisma.TicketOrderUncheckedUpdateManyWithoutCheckedInByNestedInput
+  ticketPaymentsReviewed?: Prisma.TicketPaymentUncheckedUpdateManyWithoutReviewedByNestedInput
 }
 
 
@@ -2412,6 +2615,7 @@ export type UserCountOutputType = {
   ticketOrdersConfirmed: number
   ticketOrdersScanned: number
   ticketPaymentsReviewed: number
+  confirmedRegistrations: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2427,6 +2631,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   ticketOrdersConfirmed?: boolean | UserCountOutputTypeCountTicketOrdersConfirmedArgs
   ticketOrdersScanned?: boolean | UserCountOutputTypeCountTicketOrdersScannedArgs
   ticketPaymentsReviewed?: boolean | UserCountOutputTypeCountTicketPaymentsReviewedArgs
+  confirmedRegistrations?: boolean | UserCountOutputTypeCountConfirmedRegistrationsArgs
 }
 
 /**
@@ -2523,6 +2728,13 @@ export type UserCountOutputTypeCountTicketPaymentsReviewedArgs<ExtArgs extends r
   where?: Prisma.TicketPaymentWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountConfirmedRegistrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FighterRegistrationWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -2551,6 +2763,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   ticketOrdersConfirmed?: boolean | Prisma.User$ticketOrdersConfirmedArgs<ExtArgs>
   ticketOrdersScanned?: boolean | Prisma.User$ticketOrdersScannedArgs<ExtArgs>
   ticketPaymentsReviewed?: boolean | Prisma.User$ticketPaymentsReviewedArgs<ExtArgs>
+  confirmedRegistrations?: boolean | Prisma.User$confirmedRegistrationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -2587,6 +2800,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   ticketOrdersConfirmed?: boolean | Prisma.User$ticketOrdersConfirmedArgs<ExtArgs>
   ticketOrdersScanned?: boolean | Prisma.User$ticketOrdersScannedArgs<ExtArgs>
   ticketPaymentsReviewed?: boolean | Prisma.User$ticketPaymentsReviewedArgs<ExtArgs>
+  confirmedRegistrations?: boolean | Prisma.User$confirmedRegistrationsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 
@@ -2605,6 +2819,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     ticketOrdersConfirmed: Prisma.$TicketOrderPayload<ExtArgs>[]
     ticketOrdersScanned: Prisma.$TicketOrderPayload<ExtArgs>[]
     ticketPaymentsReviewed: Prisma.$TicketPaymentPayload<ExtArgs>[]
+    confirmedRegistrations: Prisma.$FighterRegistrationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2979,6 +3194,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   ticketOrdersConfirmed<T extends Prisma.User$ticketOrdersConfirmedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ticketOrdersConfirmedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TicketOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ticketOrdersScanned<T extends Prisma.User$ticketOrdersScannedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ticketOrdersScannedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TicketOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   ticketPaymentsReviewed<T extends Prisma.User$ticketPaymentsReviewedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$ticketPaymentsReviewedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TicketPaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  confirmedRegistrations<T extends Prisma.User$confirmedRegistrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$confirmedRegistrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FighterRegistrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3655,6 +3871,30 @@ export type User$ticketPaymentsReviewedArgs<ExtArgs extends runtime.Types.Extens
   take?: number
   skip?: number
   distinct?: Prisma.TicketPaymentScalarFieldEnum | Prisma.TicketPaymentScalarFieldEnum[]
+}
+
+/**
+ * User.confirmedRegistrations
+ */
+export type User$confirmedRegistrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FighterRegistration
+   */
+  select?: Prisma.FighterRegistrationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FighterRegistration
+   */
+  omit?: Prisma.FighterRegistrationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FighterRegistrationInclude<ExtArgs> | null
+  where?: Prisma.FighterRegistrationWhereInput
+  orderBy?: Prisma.FighterRegistrationOrderByWithRelationInput | Prisma.FighterRegistrationOrderByWithRelationInput[]
+  cursor?: Prisma.FighterRegistrationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FighterRegistrationScalarFieldEnum | Prisma.FighterRegistrationScalarFieldEnum[]
 }
 
 /**

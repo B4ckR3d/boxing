@@ -269,6 +269,7 @@ export type WeightClassWhereInput = {
   rankingVersions?: Prisma.RankingVersionListRelationFilter
   belts?: Prisma.ChampionshipBeltListRelationFilter
   tournaments?: Prisma.TournamentListRelationFilter
+  registrations?: Prisma.FighterRegistrationListRelationFilter
 }
 
 export type WeightClassOrderByWithRelationInput = {
@@ -287,6 +288,7 @@ export type WeightClassOrderByWithRelationInput = {
   rankingVersions?: Prisma.RankingVersionOrderByRelationAggregateInput
   belts?: Prisma.ChampionshipBeltOrderByRelationAggregateInput
   tournaments?: Prisma.TournamentOrderByRelationAggregateInput
+  registrations?: Prisma.FighterRegistrationOrderByRelationAggregateInput
   _relevance?: Prisma.WeightClassOrderByRelevanceInput
 }
 
@@ -310,6 +312,7 @@ export type WeightClassWhereUniqueInput = Prisma.AtLeast<{
   rankingVersions?: Prisma.RankingVersionListRelationFilter
   belts?: Prisma.ChampionshipBeltListRelationFilter
   tournaments?: Prisma.TournamentListRelationFilter
+  registrations?: Prisma.FighterRegistrationListRelationFilter
 }, "id" | "slug" | "gender_name">
 
 export type WeightClassOrderByWithAggregationInput = {
@@ -362,6 +365,7 @@ export type WeightClassCreateInput = {
   rankingVersions?: Prisma.RankingVersionCreateNestedManyWithoutWeightClassInput
   belts?: Prisma.ChampionshipBeltCreateNestedManyWithoutWeightClassInput
   tournaments?: Prisma.TournamentCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassUncheckedCreateInput = {
@@ -380,6 +384,7 @@ export type WeightClassUncheckedCreateInput = {
   rankingVersions?: Prisma.RankingVersionUncheckedCreateNestedManyWithoutWeightClassInput
   belts?: Prisma.ChampionshipBeltUncheckedCreateNestedManyWithoutWeightClassInput
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassUpdateInput = {
@@ -398,6 +403,7 @@ export type WeightClassUpdateInput = {
   rankingVersions?: Prisma.RankingVersionUpdateManyWithoutWeightClassNestedInput
   belts?: Prisma.ChampionshipBeltUpdateManyWithoutWeightClassNestedInput
   tournaments?: Prisma.TournamentUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassUncheckedUpdateInput = {
@@ -416,6 +422,7 @@ export type WeightClassUncheckedUpdateInput = {
   rankingVersions?: Prisma.RankingVersionUncheckedUpdateManyWithoutWeightClassNestedInput
   belts?: Prisma.ChampionshipBeltUncheckedUpdateManyWithoutWeightClassNestedInput
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassCreateManyInput = {
@@ -613,6 +620,22 @@ export type WeightClassUpdateOneRequiredWithoutTournamentsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.WeightClassUpdateToOneWithWhereWithoutTournamentsInput, Prisma.WeightClassUpdateWithoutTournamentsInput>, Prisma.WeightClassUncheckedUpdateWithoutTournamentsInput>
 }
 
+export type WeightClassCreateNestedOneWithoutRegistrationsInput = {
+  create?: Prisma.XOR<Prisma.WeightClassCreateWithoutRegistrationsInput, Prisma.WeightClassUncheckedCreateWithoutRegistrationsInput>
+  connectOrCreate?: Prisma.WeightClassCreateOrConnectWithoutRegistrationsInput
+  connect?: Prisma.WeightClassWhereUniqueInput
+}
+
+export type WeightClassUpdateOneWithoutRegistrationsNestedInput = {
+  create?: Prisma.XOR<Prisma.WeightClassCreateWithoutRegistrationsInput, Prisma.WeightClassUncheckedCreateWithoutRegistrationsInput>
+  connectOrCreate?: Prisma.WeightClassCreateOrConnectWithoutRegistrationsInput
+  upsert?: Prisma.WeightClassUpsertWithoutRegistrationsInput
+  disconnect?: Prisma.WeightClassWhereInput | boolean
+  delete?: Prisma.WeightClassWhereInput | boolean
+  connect?: Prisma.WeightClassWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WeightClassUpdateToOneWithWhereWithoutRegistrationsInput, Prisma.WeightClassUpdateWithoutRegistrationsInput>, Prisma.WeightClassUncheckedUpdateWithoutRegistrationsInput>
+}
+
 export type WeightClassCreateWithoutFightersInput = {
   id?: string
   name: string
@@ -628,6 +651,7 @@ export type WeightClassCreateWithoutFightersInput = {
   rankingVersions?: Prisma.RankingVersionCreateNestedManyWithoutWeightClassInput
   belts?: Prisma.ChampionshipBeltCreateNestedManyWithoutWeightClassInput
   tournaments?: Prisma.TournamentCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassUncheckedCreateWithoutFightersInput = {
@@ -645,6 +669,7 @@ export type WeightClassUncheckedCreateWithoutFightersInput = {
   rankingVersions?: Prisma.RankingVersionUncheckedCreateNestedManyWithoutWeightClassInput
   belts?: Prisma.ChampionshipBeltUncheckedCreateNestedManyWithoutWeightClassInput
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassCreateOrConnectWithoutFightersInput = {
@@ -678,6 +703,7 @@ export type WeightClassUpdateWithoutFightersInput = {
   rankingVersions?: Prisma.RankingVersionUpdateManyWithoutWeightClassNestedInput
   belts?: Prisma.ChampionshipBeltUpdateManyWithoutWeightClassNestedInput
   tournaments?: Prisma.TournamentUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassUncheckedUpdateWithoutFightersInput = {
@@ -695,6 +721,7 @@ export type WeightClassUncheckedUpdateWithoutFightersInput = {
   rankingVersions?: Prisma.RankingVersionUncheckedUpdateManyWithoutWeightClassNestedInput
   belts?: Prisma.ChampionshipBeltUncheckedUpdateManyWithoutWeightClassNestedInput
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassCreateWithoutRankingVersionsInput = {
@@ -712,6 +739,7 @@ export type WeightClassCreateWithoutRankingVersionsInput = {
   fights?: Prisma.FightCreateNestedManyWithoutWeightClassInput
   belts?: Prisma.ChampionshipBeltCreateNestedManyWithoutWeightClassInput
   tournaments?: Prisma.TournamentCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassUncheckedCreateWithoutRankingVersionsInput = {
@@ -729,6 +757,7 @@ export type WeightClassUncheckedCreateWithoutRankingVersionsInput = {
   fights?: Prisma.FightUncheckedCreateNestedManyWithoutWeightClassInput
   belts?: Prisma.ChampionshipBeltUncheckedCreateNestedManyWithoutWeightClassInput
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassCreateOrConnectWithoutRankingVersionsInput = {
@@ -762,6 +791,7 @@ export type WeightClassUpdateWithoutRankingVersionsInput = {
   fights?: Prisma.FightUpdateManyWithoutWeightClassNestedInput
   belts?: Prisma.ChampionshipBeltUpdateManyWithoutWeightClassNestedInput
   tournaments?: Prisma.TournamentUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassUncheckedUpdateWithoutRankingVersionsInput = {
@@ -779,6 +809,7 @@ export type WeightClassUncheckedUpdateWithoutRankingVersionsInput = {
   fights?: Prisma.FightUncheckedUpdateManyWithoutWeightClassNestedInput
   belts?: Prisma.ChampionshipBeltUncheckedUpdateManyWithoutWeightClassNestedInput
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassCreateWithoutBeltsInput = {
@@ -796,6 +827,7 @@ export type WeightClassCreateWithoutBeltsInput = {
   fights?: Prisma.FightCreateNestedManyWithoutWeightClassInput
   rankingVersions?: Prisma.RankingVersionCreateNestedManyWithoutWeightClassInput
   tournaments?: Prisma.TournamentCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassUncheckedCreateWithoutBeltsInput = {
@@ -813,6 +845,7 @@ export type WeightClassUncheckedCreateWithoutBeltsInput = {
   fights?: Prisma.FightUncheckedCreateNestedManyWithoutWeightClassInput
   rankingVersions?: Prisma.RankingVersionUncheckedCreateNestedManyWithoutWeightClassInput
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassCreateOrConnectWithoutBeltsInput = {
@@ -846,6 +879,7 @@ export type WeightClassUpdateWithoutBeltsInput = {
   fights?: Prisma.FightUpdateManyWithoutWeightClassNestedInput
   rankingVersions?: Prisma.RankingVersionUpdateManyWithoutWeightClassNestedInput
   tournaments?: Prisma.TournamentUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassUncheckedUpdateWithoutBeltsInput = {
@@ -863,6 +897,7 @@ export type WeightClassUncheckedUpdateWithoutBeltsInput = {
   fights?: Prisma.FightUncheckedUpdateManyWithoutWeightClassNestedInput
   rankingVersions?: Prisma.RankingVersionUncheckedUpdateManyWithoutWeightClassNestedInput
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassCreateWithoutFightsInput = {
@@ -880,6 +915,7 @@ export type WeightClassCreateWithoutFightsInput = {
   rankingVersions?: Prisma.RankingVersionCreateNestedManyWithoutWeightClassInput
   belts?: Prisma.ChampionshipBeltCreateNestedManyWithoutWeightClassInput
   tournaments?: Prisma.TournamentCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassUncheckedCreateWithoutFightsInput = {
@@ -897,6 +933,7 @@ export type WeightClassUncheckedCreateWithoutFightsInput = {
   rankingVersions?: Prisma.RankingVersionUncheckedCreateNestedManyWithoutWeightClassInput
   belts?: Prisma.ChampionshipBeltUncheckedCreateNestedManyWithoutWeightClassInput
   tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassCreateOrConnectWithoutFightsInput = {
@@ -930,6 +967,7 @@ export type WeightClassUpdateWithoutFightsInput = {
   rankingVersions?: Prisma.RankingVersionUpdateManyWithoutWeightClassNestedInput
   belts?: Prisma.ChampionshipBeltUpdateManyWithoutWeightClassNestedInput
   tournaments?: Prisma.TournamentUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassUncheckedUpdateWithoutFightsInput = {
@@ -947,6 +985,7 @@ export type WeightClassUncheckedUpdateWithoutFightsInput = {
   rankingVersions?: Prisma.RankingVersionUncheckedUpdateManyWithoutWeightClassNestedInput
   belts?: Prisma.ChampionshipBeltUncheckedUpdateManyWithoutWeightClassNestedInput
   tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassCreateWithoutTournamentsInput = {
@@ -964,6 +1003,7 @@ export type WeightClassCreateWithoutTournamentsInput = {
   fights?: Prisma.FightCreateNestedManyWithoutWeightClassInput
   rankingVersions?: Prisma.RankingVersionCreateNestedManyWithoutWeightClassInput
   belts?: Prisma.ChampionshipBeltCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassUncheckedCreateWithoutTournamentsInput = {
@@ -981,6 +1021,7 @@ export type WeightClassUncheckedCreateWithoutTournamentsInput = {
   fights?: Prisma.FightUncheckedCreateNestedManyWithoutWeightClassInput
   rankingVersions?: Prisma.RankingVersionUncheckedCreateNestedManyWithoutWeightClassInput
   belts?: Prisma.ChampionshipBeltUncheckedCreateNestedManyWithoutWeightClassInput
+  registrations?: Prisma.FighterRegistrationUncheckedCreateNestedManyWithoutWeightClassInput
 }
 
 export type WeightClassCreateOrConnectWithoutTournamentsInput = {
@@ -1014,6 +1055,7 @@ export type WeightClassUpdateWithoutTournamentsInput = {
   fights?: Prisma.FightUpdateManyWithoutWeightClassNestedInput
   rankingVersions?: Prisma.RankingVersionUpdateManyWithoutWeightClassNestedInput
   belts?: Prisma.ChampionshipBeltUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUpdateManyWithoutWeightClassNestedInput
 }
 
 export type WeightClassUncheckedUpdateWithoutTournamentsInput = {
@@ -1031,6 +1073,95 @@ export type WeightClassUncheckedUpdateWithoutTournamentsInput = {
   fights?: Prisma.FightUncheckedUpdateManyWithoutWeightClassNestedInput
   rankingVersions?: Prisma.RankingVersionUncheckedUpdateManyWithoutWeightClassNestedInput
   belts?: Prisma.ChampionshipBeltUncheckedUpdateManyWithoutWeightClassNestedInput
+  registrations?: Prisma.FighterRegistrationUncheckedUpdateManyWithoutWeightClassNestedInput
+}
+
+export type WeightClassCreateWithoutRegistrationsInput = {
+  id?: string
+  name: string
+  slug: string
+  gender: $Enums.Gender
+  limitLbs: runtime.Decimal | runtime.DecimalJsLike | number | string
+  limitKg: runtime.Decimal | runtime.DecimalJsLike | number | string
+  sortOrder?: number
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fighters?: Prisma.FighterCreateNestedManyWithoutWeightClassInput
+  fights?: Prisma.FightCreateNestedManyWithoutWeightClassInput
+  rankingVersions?: Prisma.RankingVersionCreateNestedManyWithoutWeightClassInput
+  belts?: Prisma.ChampionshipBeltCreateNestedManyWithoutWeightClassInput
+  tournaments?: Prisma.TournamentCreateNestedManyWithoutWeightClassInput
+}
+
+export type WeightClassUncheckedCreateWithoutRegistrationsInput = {
+  id?: string
+  name: string
+  slug: string
+  gender: $Enums.Gender
+  limitLbs: runtime.Decimal | runtime.DecimalJsLike | number | string
+  limitKg: runtime.Decimal | runtime.DecimalJsLike | number | string
+  sortOrder?: number
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  fighters?: Prisma.FighterUncheckedCreateNestedManyWithoutWeightClassInput
+  fights?: Prisma.FightUncheckedCreateNestedManyWithoutWeightClassInput
+  rankingVersions?: Prisma.RankingVersionUncheckedCreateNestedManyWithoutWeightClassInput
+  belts?: Prisma.ChampionshipBeltUncheckedCreateNestedManyWithoutWeightClassInput
+  tournaments?: Prisma.TournamentUncheckedCreateNestedManyWithoutWeightClassInput
+}
+
+export type WeightClassCreateOrConnectWithoutRegistrationsInput = {
+  where: Prisma.WeightClassWhereUniqueInput
+  create: Prisma.XOR<Prisma.WeightClassCreateWithoutRegistrationsInput, Prisma.WeightClassUncheckedCreateWithoutRegistrationsInput>
+}
+
+export type WeightClassUpsertWithoutRegistrationsInput = {
+  update: Prisma.XOR<Prisma.WeightClassUpdateWithoutRegistrationsInput, Prisma.WeightClassUncheckedUpdateWithoutRegistrationsInput>
+  create: Prisma.XOR<Prisma.WeightClassCreateWithoutRegistrationsInput, Prisma.WeightClassUncheckedCreateWithoutRegistrationsInput>
+  where?: Prisma.WeightClassWhereInput
+}
+
+export type WeightClassUpdateToOneWithWhereWithoutRegistrationsInput = {
+  where?: Prisma.WeightClassWhereInput
+  data: Prisma.XOR<Prisma.WeightClassUpdateWithoutRegistrationsInput, Prisma.WeightClassUncheckedUpdateWithoutRegistrationsInput>
+}
+
+export type WeightClassUpdateWithoutRegistrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+  limitLbs?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  limitKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fighters?: Prisma.FighterUpdateManyWithoutWeightClassNestedInput
+  fights?: Prisma.FightUpdateManyWithoutWeightClassNestedInput
+  rankingVersions?: Prisma.RankingVersionUpdateManyWithoutWeightClassNestedInput
+  belts?: Prisma.ChampionshipBeltUpdateManyWithoutWeightClassNestedInput
+  tournaments?: Prisma.TournamentUpdateManyWithoutWeightClassNestedInput
+}
+
+export type WeightClassUncheckedUpdateWithoutRegistrationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  gender?: Prisma.EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+  limitLbs?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  limitKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fighters?: Prisma.FighterUncheckedUpdateManyWithoutWeightClassNestedInput
+  fights?: Prisma.FightUncheckedUpdateManyWithoutWeightClassNestedInput
+  rankingVersions?: Prisma.RankingVersionUncheckedUpdateManyWithoutWeightClassNestedInput
+  belts?: Prisma.ChampionshipBeltUncheckedUpdateManyWithoutWeightClassNestedInput
+  tournaments?: Prisma.TournamentUncheckedUpdateManyWithoutWeightClassNestedInput
 }
 
 
@@ -1044,6 +1175,7 @@ export type WeightClassCountOutputType = {
   rankingVersions: number
   belts: number
   tournaments: number
+  registrations: number
 }
 
 export type WeightClassCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1052,6 +1184,7 @@ export type WeightClassCountOutputTypeSelect<ExtArgs extends runtime.Types.Exten
   rankingVersions?: boolean | WeightClassCountOutputTypeCountRankingVersionsArgs
   belts?: boolean | WeightClassCountOutputTypeCountBeltsArgs
   tournaments?: boolean | WeightClassCountOutputTypeCountTournamentsArgs
+  registrations?: boolean | WeightClassCountOutputTypeCountRegistrationsArgs
 }
 
 /**
@@ -1099,6 +1232,13 @@ export type WeightClassCountOutputTypeCountTournamentsArgs<ExtArgs extends runti
   where?: Prisma.TournamentWhereInput
 }
 
+/**
+ * WeightClassCountOutputType without action
+ */
+export type WeightClassCountOutputTypeCountRegistrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FighterRegistrationWhereInput
+}
+
 
 export type WeightClassSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1116,6 +1256,7 @@ export type WeightClassSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   rankingVersions?: boolean | Prisma.WeightClass$rankingVersionsArgs<ExtArgs>
   belts?: boolean | Prisma.WeightClass$beltsArgs<ExtArgs>
   tournaments?: boolean | Prisma.WeightClass$tournamentsArgs<ExtArgs>
+  registrations?: boolean | Prisma.WeightClass$registrationsArgs<ExtArgs>
   _count?: boolean | Prisma.WeightClassCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["weightClass"]>
 
@@ -1141,6 +1282,7 @@ export type WeightClassInclude<ExtArgs extends runtime.Types.Extensions.Internal
   rankingVersions?: boolean | Prisma.WeightClass$rankingVersionsArgs<ExtArgs>
   belts?: boolean | Prisma.WeightClass$beltsArgs<ExtArgs>
   tournaments?: boolean | Prisma.WeightClass$tournamentsArgs<ExtArgs>
+  registrations?: boolean | Prisma.WeightClass$registrationsArgs<ExtArgs>
   _count?: boolean | Prisma.WeightClassCountOutputTypeDefaultArgs<ExtArgs>
 }
 
@@ -1152,6 +1294,7 @@ export type $WeightClassPayload<ExtArgs extends runtime.Types.Extensions.Interna
     rankingVersions: Prisma.$RankingVersionPayload<ExtArgs>[]
     belts: Prisma.$ChampionshipBeltPayload<ExtArgs>[]
     tournaments: Prisma.$TournamentPayload<ExtArgs>[]
+    registrations: Prisma.$FighterRegistrationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1509,6 +1652,7 @@ export interface Prisma__WeightClassClient<T, Null = never, ExtArgs extends runt
   rankingVersions<T extends Prisma.WeightClass$rankingVersionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WeightClass$rankingVersionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RankingVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   belts<T extends Prisma.WeightClass$beltsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WeightClass$beltsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChampionshipBeltPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tournaments<T extends Prisma.WeightClass$tournamentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WeightClass$tournamentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TournamentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  registrations<T extends Prisma.WeightClass$registrationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WeightClass$registrationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FighterRegistrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2013,6 +2157,30 @@ export type WeightClass$tournamentsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.TournamentScalarFieldEnum | Prisma.TournamentScalarFieldEnum[]
+}
+
+/**
+ * WeightClass.registrations
+ */
+export type WeightClass$registrationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FighterRegistration
+   */
+  select?: Prisma.FighterRegistrationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FighterRegistration
+   */
+  omit?: Prisma.FighterRegistrationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FighterRegistrationInclude<ExtArgs> | null
+  where?: Prisma.FighterRegistrationWhereInput
+  orderBy?: Prisma.FighterRegistrationOrderByWithRelationInput | Prisma.FighterRegistrationOrderByWithRelationInput[]
+  cursor?: Prisma.FighterRegistrationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FighterRegistrationScalarFieldEnum | Prisma.FighterRegistrationScalarFieldEnum[]
 }
 
 /**

@@ -1,3 +1,41 @@
+## 2026-11-20 — Pendaftaran fighter: form website menggantikan Google Form, sinkron ke sheet TFN x PIMPOM
+
+Alur pendaftaran dipindah dari Google Form ke website: `/daftar-fighter` (publik, 5 bagian) →
+`POST /api/public/registrations` → DB (`FighterRegistration`) → baris otomatis di sheet
+**TFN x PIMPOM** → verifikasi admin di `/admin/registrations` (badge warna + konfirmasi/tolak).
+
+**Keputusan penyimpanan lampiran.** Bukti transfer dan KTP/KK disimpan **privat** di
+`storage/registrations/<kode>/` dan disajikan lewat endpoint admin ber-permission
+(`GET /api/admin/registrations/[id]/file/[kind]`). Yang masuk sheet hanya keterangan
+"Terlampir: <nama file>". Alasan: KTP = data pribadi, dan Drive API masih nonaktif di project
+service account.
+
+**Navigasi & popup promo.** Link `DAFTAR FIGHTER` ditambahkan ke navbar (`Navbar.tsx`,
+key i18n `navRegister`) dan footer. `EventPromoModal` kini **tidak dirender di halaman
+`/daftar-fighter`** (popup 700 ms sebelumnya menutupi form). Dependency effect-nya
+dikompakkan jadi satu boolean `promoAllowed` — jumlah entri dependency array harus konstan,
+kalau tidak React melempar *"The final argument passed to useEffect changed size between
+renders"*.
+
+**Bug yang ketemu saat E2E (penting).** Tab `Form Responses 1` punya **34 kolom**, bukan 18 —
+ada blok pertanyaan duplikat dari kolom S sampai AG. Versi pertama menulis status ke `S..V`
+(hardcode), sehingga **menimpa jawaban pertanyaan duplikat peserta**. Perbaikan:
+`resolveStatusColumnStart()` di `src/server/google/sheets.ts` mendeteksi header
+`Status (Sistem)`; bila belum ada, blok sistem diletakkan setelah header terakhir yang terisi
+(sekarang **AI..AL**). Baris ditulis dengan padding (`rowValues(input, statusStart)`) supaya
+tidak pernah menyentuh kolom form, dan baris yang terlanjur terkorupsi dibersihkan
+(`S2:V2` dikosongkan, status dipindah ke AI2).
+
+**Verifikasi (live, bukan stub).** `tsc --noEmit` exit 0; `prisma/seed.ts` menyisipkan
+`registrations.read` / `registrations.confirm` dan memetakannya ke role; submit publik
+→ **201** (`TFN-R-FEDMPW`, `sheetSynced:true`); sheet row 3 = 18 kolom form terisi benar +
+AI3:AL3 `Terkonfirmasi / TFN-R-FEDMPW / Super Admin / 2026-11-20 18:18:00`; warna baris pending
+`{1,0.949,0.8}` → setelah konfirmasi `{0.847,0.957,0.878}` (hijau); `POST /api/admin/registrations/<id>`
+action=confirm → 200, DB `CONFIRMED`, `sheetRowNumber` 2 dan 3 cocok dengan baris sheet nyata.
+
+**Belum diuji:** alur **tolak** (warna merah + `rejectionReason`) dan tombol **sync ulang**
+saat `sheetSyncError` terisi.
+
 ## 2026-11-17 — Akun demo lokal + tiga bug yang menghalangi login
 
 Audit "apakah ada akun demo untuk akses lokal" menemukan 8 akun `@boxing.local` sudah ada di seed,

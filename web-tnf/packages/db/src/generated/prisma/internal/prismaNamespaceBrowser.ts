@@ -93,7 +93,8 @@ export const ModelName = {
   OrganizationSetting: 'OrganizationSetting',
   GalleryCategory: 'GalleryCategory',
   GalleryItem: 'GalleryItem',
-  Article: 'Article'
+  Article: 'Article',
+  FighterRegistration: 'FighterRegistration'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -847,6 +848,52 @@ export const ArticleScalarFieldEnum = {
 export type ArticleScalarFieldEnum = (typeof ArticleScalarFieldEnum)[keyof typeof ArticleScalarFieldEnum]
 
 
+export const FighterRegistrationScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  fullName: 'fullName',
+  ringName: 'ringName',
+  address: 'address',
+  age: 'age',
+  divisionLabel: 'divisionLabel',
+  weightClassId: 'weightClassId',
+  rules: 'rules',
+  competitionClass: 'competitionClass',
+  bpjsStatus: 'bpjsStatus',
+  socialUrl: 'socialUrl',
+  instagramUrl: 'instagramUrl',
+  tiktokUrl: 'tiktokUrl',
+  facebookUrl: 'facebookUrl',
+  xUrl: 'xUrl',
+  paymentAmount: 'paymentAmount',
+  paymentMethod: 'paymentMethod',
+  paymentProofPath: 'paymentProofPath',
+  paymentProofName: 'paymentProofName',
+  paymentProofMime: 'paymentProofMime',
+  paymentProofBytes: 'paymentProofBytes',
+  idDocumentPath: 'idDocumentPath',
+  idDocumentName: 'idDocumentName',
+  idDocumentMime: 'idDocumentMime',
+  idDocumentBytes: 'idDocumentBytes',
+  consentAccepted: 'consentAccepted',
+  consentAcceptedAt: 'consentAcceptedAt',
+  status: 'status',
+  confirmedById: 'confirmedById',
+  confirmedAt: 'confirmedAt',
+  rejectionReason: 'rejectionReason',
+  reviewNotes: 'reviewNotes',
+  sheetRowNumber: 'sheetRowNumber',
+  sheetSyncedAt: 'sheetSyncedAt',
+  sheetSyncError: 'sheetSyncError',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FighterRegistrationScalarFieldEnum = (typeof FighterRegistrationScalarFieldEnum)[keyof typeof FighterRegistrationScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1402,4 +1449,35 @@ export const ArticleOrderByRelevanceFieldEnum = {
 } as const
 
 export type ArticleOrderByRelevanceFieldEnum = (typeof ArticleOrderByRelevanceFieldEnum)[keyof typeof ArticleOrderByRelevanceFieldEnum]
+
+
+export const FighterRegistrationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  code: 'code',
+  fullName: 'fullName',
+  ringName: 'ringName',
+  address: 'address',
+  divisionLabel: 'divisionLabel',
+  weightClassId: 'weightClassId',
+  socialUrl: 'socialUrl',
+  instagramUrl: 'instagramUrl',
+  tiktokUrl: 'tiktokUrl',
+  facebookUrl: 'facebookUrl',
+  xUrl: 'xUrl',
+  paymentMethod: 'paymentMethod',
+  paymentProofPath: 'paymentProofPath',
+  paymentProofName: 'paymentProofName',
+  paymentProofMime: 'paymentProofMime',
+  idDocumentPath: 'idDocumentPath',
+  idDocumentName: 'idDocumentName',
+  idDocumentMime: 'idDocumentMime',
+  confirmedById: 'confirmedById',
+  rejectionReason: 'rejectionReason',
+  reviewNotes: 'reviewNotes',
+  sheetSyncError: 'sheetSyncError',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent'
+} as const
+
+export type FighterRegistrationOrderByRelevanceFieldEnum = (typeof FighterRegistrationOrderByRelevanceFieldEnum)[keyof typeof FighterRegistrationOrderByRelevanceFieldEnum]
 

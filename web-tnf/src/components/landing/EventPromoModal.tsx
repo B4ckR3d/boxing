@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { X, Ticket, ArrowUpRight, Calendar, Sparkles } from "lucide-react";
 
 export interface EventPromoConfig {
@@ -17,6 +18,14 @@ export interface EventPromoConfig {
 
 export function EventPromoModal({ config }: { config?: EventPromoConfig }) {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+  const isFormPage = pathname?.startsWith("/daftar-fighter") ?? false;
+  /**
+   * Satu boolean dipakai sebagai dependency (bukan dua).
+   * Jumlah entri dependency array WAJIB konstan antar-render — menambah/mengurangi
+   * entri memicu error React "The final argument passed to useEffect changed size".
+   */
+  const promoAllowed = config?.isEnabled !== false && !isFormPage;
   const initialImg = config?.imageUrl || "/images/hero/boxing-ring-arena.jpg";
   const [imgSrc, setImgSrc] = useState(initialImg);
 
@@ -25,8 +34,8 @@ export function EventPromoModal({ config }: { config?: EventPromoConfig }) {
   }, [config?.imageUrl]);
 
   useEffect(() => {
-    // Jika dimatikan dari CMS, jangan tampilkan
-    if (config?.isEnabled === false) return;
+    // Dimatikan dari CMS atau sedang di halaman pendaftaran fighter → jangan tampilkan
+    if (!promoAllowed) return;
 
     // Periksa apakah pengunjung sudah pernah menutup popup pada sesi browser ini
     try {
@@ -42,7 +51,7 @@ export function EventPromoModal({ config }: { config?: EventPromoConfig }) {
     }, 700);
 
     return () => clearTimeout(timer);
-  }, [config?.isEnabled]);
+  }, [promoAllowed]);
 
   // Tutup dengan tombol Escape
   useEffect(() => {

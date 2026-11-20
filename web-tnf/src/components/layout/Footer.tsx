@@ -5,7 +5,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 
 export function Footer() {
   const { t, lang } = useLanguage();
-  const links = [{ href: "/events", label: t("navEvents") }, { href: "/fighters", label: t("navAthletes") }, { href: "/rankings", label: t("navRankings") }, { href: "/grand-prix", label: t("navGrandPrix") }, { href: "/belts", label: t("navBelts") }, { href: "/fights", label: t("navFightHistory") }];
+  const links = [{ href: "/events", label: t("navEvents") }, { href: "/fighters", label: t("navAthletes") }, { href: "/rankings", label: t("navRankings") }, { href: "/grand-prix", label: t("navGrandPrix") }, { href: "/belts", label: t("navBelts") }, { href: "/fights", label: t("navFightHistory") }, { href: "/daftar-fighter", label: t("navRegister") }];
   return (
     <footer className="border-t border-subtle bg-charcoal text-ink">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">

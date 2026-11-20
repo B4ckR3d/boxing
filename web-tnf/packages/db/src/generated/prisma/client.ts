@@ -256,3 +256,8 @@ export type GalleryItem = Prisma.GalleryItemModel
  * 
  */
 export type Article = Prisma.ArticleModel
+/**
+ * Model FighterRegistration
+ * 
+ */
+export type FighterRegistration = Prisma.FighterRegistrationModel
