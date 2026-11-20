@@ -11,7 +11,7 @@
 | Edisi | TFN VOL. 6 | — |
 | Lokasi | GOR BAMBU RUNCING | — |
 | Jam | 13.00 – 00.00 WIB | — |
-| Tanggal event | 9 Januari 2027 | UTC di DB, render `Asia/Jakarta` |
+| Tanggal event | 16 Januari 2027 | UTC di DB, render `Asia/Jakarta` |
 | Registrasi dibuka | 20 November 2026 | — |
 | Sponsorship dibuka | 20 November 2025 | ⚠️ **NEEDS CLARIFICATION** — tanggal sudah lewat saat proyek dikembangkan |
 | Final match fixing | 15 Desember 2026 | — |

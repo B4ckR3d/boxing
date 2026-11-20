@@ -58,7 +58,7 @@ const FIELD_SPECS: Record<SettingKey, FieldSpec[]> = {
     },
     { name: "badge", label: "Label / Badge", type: "text", placeholder: "LAGA MENDATANG · TIKET RESMI" },
     { name: "title", label: "Judul Event", type: "text", placeholder: "TEMANGGUNG FIGHT NIGHT VOL. 6" },
-    { name: "subtitle", label: "Jadwal & Lokasi", type: "text", placeholder: "SABTU, 9 JANUARI 2027 · GOR BAMBU RUNCING" },
+    { name: "subtitle", label: "Jadwal & Lokasi", type: "text", placeholder: "SABTU, 16 JANUARI 2027 · GOR BAMBU RUNCING" },
     { name: "description", label: "Deskripsi Promosi", type: "textarea", placeholder: "Perebutan sabuk emas kelas berat & welter. Dapatkan tiket Anda sebelum kehabisan!" },
     { name: "imageUrl", label: "URL Gambar Flyer / Poster", type: "text", placeholder: "/images/hero/boxing-ring-arena.jpg" },
     { name: "buttonLabel", label: "Label Tombol Beli Tiket", type: "text", placeholder: "BELI TIKET SEKARANG" },
@@ -188,11 +188,10 @@ export function SettingsForm({ settings }: { settings: SettingValues }) {
                 <button
                   onClick={() => save(key)}
                   disabled={pending || !dirty}
-                  className={`inline-flex items-center gap-1.5 font-mono-data text-[10px] font-bold px-3 py-1.5 uppercase transition-colors cursor-pointer shrink-0 ${
-                    dirty
+                  className={`inline-flex items-center gap-1.5 font-mono-data text-[10px] font-bold px-3 py-1.5 uppercase transition-colors cursor-pointer shrink-0 ${dirty
                       ? "bg-charcoal text-ink hover:bg-surface-elevated"
                       : "bg-surface-elevated text-ink-subtle cursor-not-allowed"
-                  }`}
+                    }`}
                 >
                   <Save className="w-3 h-3" /> SAVE
                 </button>
@@ -206,9 +205,8 @@ export function SettingsForm({ settings }: { settings: SettingValues }) {
                   return (
                     <label
                       key={spec.name}
-                      className={`font-mono-data text-[10px] uppercase text-ink-muted space-y-1 ${
-                        spec.type === "textarea" ? "md:col-span-2" : ""
-                      }`}
+                      className={`font-mono-data text-[10px] uppercase text-ink-muted space-y-1 ${spec.type === "textarea" ? "md:col-span-2" : ""
+                        }`}
                     >
                       {spec.label}
                       {spec.type === "boolean" ? (
@@ -218,15 +216,13 @@ export function SettingsForm({ settings }: { settings: SettingValues }) {
                             onClick={() =>
                               setValue(key, spec.name, !fieldValue)
                             }
-                            className={`relative w-10 h-5 transition-colors cursor-pointer ${
-                              fieldValue ? "bg-fight-red" : "bg-surface-elevated"
-                            }`}
+                            className={`relative w-10 h-5 transition-colors cursor-pointer ${fieldValue ? "bg-fight-red" : "bg-surface-elevated"
+                              }`}
                             aria-pressed={Boolean(fieldValue)}
                           >
                             <span
-                              className={`absolute top-0.5 w-4 h-4 bg-charcoal transition-all ${
-                                fieldValue ? "left-[22px]" : "left-0.5"
-                              }`}
+                              className={`absolute top-0.5 w-4 h-4 bg-charcoal transition-all ${fieldValue ? "left-[22px]" : "left-0.5"
+                                }`}
                             />
                           </button>
                           <span className="text-xs text-ink font-bold">

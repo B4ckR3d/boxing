@@ -67,7 +67,7 @@ export function EventPromoModal({ config }: { config?: EventPromoConfig }) {
 
   const badgeText = config?.badge || "LAGA MENDATANG · TIKET RESMI";
   const titleText = config?.title || "TEMANGGUNG FIGHT NIGHT VOL. 6";
-  const subtitleText = config?.subtitle || "SABTU, 9 JANUARI 2027 · GOR BAMBU RUNCING";
+  const subtitleText = config?.subtitle || "SABTU, 16 JANUARI 2027 · GOR BAMBU RUNCING";
   const descText =
     config?.description ||
     "Perebutan sabuk emas kelas berat & welter. Dapatkan tiket Anda sebelum kehabisan!";

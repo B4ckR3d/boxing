@@ -63,3 +63,6 @@ cred.md
 apps/*/dist/
 packages/*/dist/
 *.tsbuildinfo
+
+# google service account (jangan commit)
+.secrets/

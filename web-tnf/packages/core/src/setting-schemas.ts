@@ -41,7 +41,7 @@ export const SETTING_SCHEMAS = {
     isEnabled: z.boolean().default(true),
     badge: z.string().max(60).default("LAGA MENDATANG · TIKET RESMI"),
     title: z.string().max(120).default("TEMANGGUNG FIGHT NIGHT VOL. 6"),
-    subtitle: z.string().max(160).default("SABTU, 9 JANUARI 2027 · GOR BAMBU RUNCING"),
+    subtitle: z.string().max(160).default("SABTU, 16 JANUARI 2027 · GOR BAMBU RUNCING"),
     description: z
       .string()
       .max(350)
