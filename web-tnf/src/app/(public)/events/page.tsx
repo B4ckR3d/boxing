@@ -53,13 +53,18 @@ export default async function PublicEventsPage() {
             const dayNum = eventDate.getDate();
             const monthStr = eventDate.toLocaleString("id-ID", { month: "short" }).toUpperCase();
 
+            const ticketingUrl =
+              process.env.NEXT_PUBLIC_TICKETING_URL ||
+              process.env.TICKETING_URL ||
+              "https://tiket.pimpom.id";
+
             return (
               <div
                 key={evt.id}
                 className="bg-charcoal text-ink border-subtle overflow-hidden shadow-lg group hover:shadow-2xl transition-all flex flex-col justify-between"
               >
                 {/* Image Container with Red Date Badge (From Image 5) */}
-                <div className="relative h-60 w-full overflow-hidden bg-surface">
+                <Link href={`/events/${evt.slug}`} className="relative h-60 w-full overflow-hidden bg-surface block">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={evt.poster?.url || "/images/hero/boxing-ring-arena.jpg"}
@@ -78,7 +83,7 @@ export default async function PublicEventsPage() {
                   <div className="absolute top-4 right-4 bg-canvas/80 text-ink font-mono-data text-[10px] font-bold uppercase px-2 py-0.5">
                     {evt.status === "SCHEDULED" ? "TERJADWAL" : evt.status}
                   </div>
-                </div>
+                </Link>
 
                 {/* Content Container */}
                 <div className="p-6 flex flex-col justify-between flex-1 space-y-4">
@@ -89,9 +94,11 @@ export default async function PublicEventsPage() {
                       </span>
                     )}
 
-                    <h3 className="font-display text-xl sm:text-2xl font-black uppercase text-ink group-hover:text-fight-red transition-colors leading-snug">
-                      {evt.name}
-                    </h3>
+                    <Link href={`/events/${evt.slug}`}>
+                      <h3 className="font-display text-xl sm:text-2xl font-black uppercase text-ink group-hover:text-fight-red transition-colors leading-snug">
+                        {evt.name}
+                      </h3>
+                    </Link>
 
                     <div className="space-y-1 mt-3 font-mono-data text-xs text-ink-subtle">
                       <div className="flex items-center gap-1.5">
@@ -111,15 +118,21 @@ export default async function PublicEventsPage() {
                   {/* Red Action Link (Image 5 style: -> MORE) */}
                   <div className="pt-4 border-t border-subtle flex items-center justify-between">
                     <Link
-                      href="/events"
+                      href={`/events/${evt.slug}`}
                       className="inline-flex items-center gap-1.5 font-display text-xs font-black uppercase text-fight-red hover:underline"
                     >
                       <span>→ DETAIL LENGKAP</span>
                     </Link>
 
-                    <Button variant="crimson" size="sm" className="font-bold text-[10px] px-3 py-1">
-                      BELI TIKET
-                    </Button>
+                    <Link
+                      href={ticketingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button variant="crimson" size="sm" className="font-bold text-[10px] px-3 py-1">
+                        BELI TIKET
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
