@@ -10,14 +10,29 @@ import {
   Search,
   Trash2,
   Swords,
+  Pencil,
+  Ticket,
+  ExternalLink,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import {
   createEventAction,
+  updateEventAction,
   togglePublishEventAction,
   deleteEventAction,
+  type TicketTypeInput,
 } from "@/app/admin/(dashboard)/events/actions";
+
+export interface TicketTypeItem {
+  id?: string;
+  name: string;
+  price: number;
+  quota: number;
+  description?: string | null;
+}
 
 export interface EventItem {
   id: string;
@@ -30,8 +45,10 @@ export interface EventItem {
   startsAt: string | Date;
   status: "DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED" | "CANCELLED" | "POSTPONED" | string;
   isPublished: boolean;
+  posterId?: string | null;
   posterUrl?: string | null;
   fightsCount: number;
+  ticketTypes?: TicketTypeItem[];
 }
 
 export function EventManager({
@@ -46,29 +63,106 @@ export function EventManager({
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
 
-  // New Event Form State
+  // Form State
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [venue, setVenue] = useState("Gedung Pemuda Temanggung");
   const [city, setCity] = useState("Temanggung");
   const [startsAt, setStartsAt] = useState("2026-12-24T19:00");
-  const [status, setStatus] = useState<"DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED">("SCHEDULED");
+  const [status, setStatus] = useState<"DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED" | "CANCELLED" | "POSTPONED">("SCHEDULED");
   const [isPublished, setIsPublished] = useState(true);
   const [description, setDescription] = useState("");
   const [posterUrl, setPosterUrl] = useState("");
   const [posterId, setPosterId] = useState<string | undefined>(undefined);
 
-  const filteredEvents = events.filter((e) => {
-    const matchSearch =
-      e.name.toLowerCase().includes(search.toLowerCase()) ||
-      (e.venue && e.venue.toLowerCase().includes(search.toLowerCase())) ||
-      (e.city && e.city.toLowerCase().includes(search.toLowerCase()));
-    const matchStatus = statusFilter === "ALL" || e.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  // Ticket Categories State
+  const [ticketTypes, setTicketTypes] = useState<TicketTypeInput[]>([
+    { name: "VIP Ring Side", price: 250000, quota: 100, description: "Akses baris terdepan pinggir ring & snack" },
+    { name: "Tribun Barat", price: 100000, quota: 300, description: "Tempat duduk berjenjang dengan pandangan jelas ke arena" },
+    { name: "Festival", price: 50000, quota: 500, description: "Area berdiri festival umum" },
+  ]);
 
-  const handleCreate = (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setEditingEvent(null);
+    setName("");
+    setSlug("");
+    setVenue("Gedung Pemuda Temanggung");
+    setCity("Temanggung");
+    setStartsAt("2026-12-24T19:00");
+    setStatus("SCHEDULED");
+    setIsPublished(true);
+    setDescription("");
+    setPosterUrl("");
+    setPosterId(undefined);
+    setTicketTypes([
+      { name: "VIP Ring Side", price: 250000, quota: 100, description: "Akses baris terdepan pinggir ring & snack" },
+      { name: "Tribun", price: 100000, quota: 300, description: "Tempat duduk tribun dengan view jelas ke ring" },
+      { name: "Festival", price: 50000, quota: 500, description: "Area festival penonton umum" },
+    ]);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (evt: EventItem) => {
+    setEditingEvent(evt);
+    setName(evt.name);
+    setSlug(evt.slug);
+    setVenue(evt.venue || "Gedung Pemuda Temanggung");
+    setCity(evt.city || "Temanggung");
+
+    // Format ISO string to datetime-local input (YYYY-MM-DDTHH:mm)
+    const d = new Date(evt.startsAt);
+    const localIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16);
+    setStartsAt(localIso);
+
+    setStatus((evt.status as any) || "SCHEDULED");
+    setIsPublished(evt.isPublished);
+    setDescription(evt.description || "");
+    setPosterUrl(evt.posterUrl || "");
+    setPosterId(evt.posterId || undefined);
+
+    if (evt.ticketTypes && evt.ticketTypes.length > 0) {
+      setTicketTypes(
+        evt.ticketTypes.map((tt) => ({
+          id: tt.id,
+          name: tt.name,
+          price: tt.price,
+          quota: tt.quota,
+          description: tt.description || "",
+        }))
+      );
+    } else {
+      setTicketTypes([
+        { name: "VIP Ring Side", price: 250000, quota: 100, description: "Akses baris terdepan pinggir ring" },
+        { name: "Festival", price: 50000, quota: 500, description: "Area berdiri festival umum" },
+      ]);
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleAddTicketType = () => {
+    setTicketTypes([
+      ...ticketTypes,
+      { name: "", price: 50000, quota: 100, description: "" },
+    ]);
+  };
+
+  const handleRemoveTicketType = (index: number) => {
+    setTicketTypes(ticketTypes.filter((_, i) => i !== index));
+  };
+
+  const handleTicketChange = (index: number, field: keyof TicketTypeInput, value: any) => {
+    const updated = [...ticketTypes];
+    const current = updated[index];
+    if (!current) return;
+    updated[index] = { ...current, [field]: value } as TicketTypeInput;
+    setTicketTypes(updated);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
       toast.error("Nama event wajib diisi");
@@ -76,29 +170,58 @@ export function EventManager({
     }
 
     startTransition(async () => {
-      const res = await createEventAction({
-        name,
-        slug: slug.trim() || undefined,
-        venue,
-        city,
-        startsAt: new Date(startsAt).toISOString(),
-        status,
-        isPublished,
-        description: description.trim() || undefined,
-        posterId,
-      });
+      const validTickets = ticketTypes
+        .filter((t) => t.name.trim().length > 0)
+        .map((t) => ({
+          ...t,
+          price: Number(t.price) || 0,
+          quota: Number(t.quota) || 100,
+        }));
 
-      if (res.ok) {
-        toast.success("Event baru berhasil ditambahkan!");
-        setIsModalOpen(false);
-        setName("");
-        setSlug("");
-        setDescription("");
-        setPosterUrl("");
-        setPosterId(undefined);
-        router.refresh();
+      if (editingEvent) {
+        const res = await updateEventAction({
+          id: editingEvent.id,
+          name,
+          slug: slug.trim() || undefined,
+          venue,
+          city,
+          startsAt: new Date(startsAt).toISOString(),
+          status,
+          isPublished,
+          description: description.trim() || undefined,
+          posterId,
+          ticketTypes: validTickets,
+        });
+
+        if (res.ok) {
+          toast.success("Event dan kategori tiket berhasil diperbarui!");
+          setIsModalOpen(false);
+          setEditingEvent(null);
+          router.refresh();
+        } else {
+          toast.error(res.error || "Gagal memperbarui event");
+        }
       } else {
-        toast.error(res.error || "Gagal membuat event");
+        const res = await createEventAction({
+          name,
+          slug: slug.trim() || undefined,
+          venue,
+          city,
+          startsAt: new Date(startsAt).toISOString(),
+          status,
+          isPublished,
+          description: description.trim() || undefined,
+          posterId,
+          ticketTypes: validTickets,
+        });
+
+        if (res.ok) {
+          toast.success("Event baru dan kategori tiket berhasil ditambahkan!");
+          setIsModalOpen(false);
+          router.refresh();
+        } else {
+          toast.error(res.error || "Gagal membuat event");
+        }
       }
     });
   };
@@ -131,6 +254,15 @@ export function EventManager({
     });
   };
 
+  const filteredEvents = events.filter((e) => {
+    const matchSearch =
+      e.name.toLowerCase().includes(search.toLowerCase()) ||
+      (e.venue && e.venue.toLowerCase().includes(search.toLowerCase())) ||
+      (e.city && e.city.toLowerCase().includes(search.toLowerCase()));
+    const matchStatus = statusFilter === "ALL" || e.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
   return (
     <div className="space-y-6 text-ink select-none">
       {/* Header */}
@@ -145,10 +277,10 @@ export function EventManager({
             </span>
           </div>
           <h1 className="font-display text-3xl sm:text-4xl text-ink uppercase font-black">
-            JADWAL EVENT & FIGHT CARD
+            JADWAL EVENT & TIKET
           </h1>
           <p className="font-mono-data text-xs text-ink-muted mt-1">
-            Kelola kalender pertarungan resmi, jadwal laga tinju, venue pertandingan, dan status siaran langsung.
+            Kelola event pertandingan tinju, susunan laga (*fight card*), kategori harga tiket penonton, dan status tayang.
           </p>
         </div>
 
@@ -157,7 +289,7 @@ export function EventManager({
             <Button
               variant="crimson"
               size="sm"
-              onClick={() => setIsModalOpen(true)}
+              onClick={openCreateModal}
               className="font-bold tracking-wider"
             >
               <Plus className="w-4 h-4 mr-1.5" /> TAMBAH EVENT BARU
@@ -185,7 +317,7 @@ export function EventManager({
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-2.5 py-1 uppercase font-bold text-[10px] border transition-colors ${
+              className={`px-2.5 py-1 uppercase font-bold text-[10px] border transition-colors cursor-pointer ${
                 statusFilter === st
                   ? "bg-fight-red text-ink border-fight-red"
                   : "bg-canvas border-subtle text-ink-muted hover:text-ink"
@@ -218,19 +350,30 @@ export function EventManager({
               minute: "2-digit",
             });
 
+            const ticketsCount = evt.ticketTypes?.length ?? 0;
+
             return (
               <div
                 key={evt.id}
                 className="bg-charcoal border border-subtle flex flex-col justify-between shadow-xl hover:border-fight-red transition-all group overflow-hidden"
               >
                 {evt.posterUrl && (
-                  <div className="h-36 w-full bg-neutral-950 border-b border-subtle overflow-hidden">
+                  <div className="h-40 w-full bg-neutral-950 border-b border-subtle overflow-hidden relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={evt.posterUrl}
                       alt={evt.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                    <a
+                      href={`/events/${evt.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute top-2.5 right-2.5 bg-black/75 hover:bg-fight-red text-white p-1.5 rounded text-xs transition-colors shadow"
+                      title="Lihat Halaman Publik"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
                   </div>
                 )}
                 <div className="p-5 space-y-4">
@@ -283,7 +426,15 @@ export function EventManager({
                     </div>
                     <div className="flex items-center gap-2">
                       <Swords className="w-3.5 h-3.5 text-ink-subtle shrink-0" />
-                      <span>{evt.fightsCount} Laga Pertarungan Terjadwal</span>
+                      <span>{evt.fightsCount} Laga Terjadwal</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-ink">
+                      <Ticket className="w-3.5 h-3.5 text-fight-red shrink-0" />
+                      <span>
+                        {ticketsCount > 0
+                          ? `${ticketsCount} Kategori Tiket Dikonfigurasi`
+                          : "Belum Ada Kategori Tiket"}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -291,18 +442,33 @@ export function EventManager({
                 {/* Card Actions Footer */}
                 {canManage && (
                   <div className="p-3 bg-canvas border-t border-subtle flex items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      onClick={() => handleTogglePublish(evt.id, evt.isPublished)}
-                      className={`text-xs font-mono-data font-bold px-2.5 py-1 border transition-colors cursor-pointer ${
-                        evt.isPublished
-                          ? "border-subtle text-ink-muted hover:text-ink hover:bg-charcoal"
-                          : "bg-fight-red border-fight-red text-ink hover:opacity-90"
-                      }`}
-                    >
-                      {evt.isPublished ? "Tarik Publikasi" : "Publikasikan"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => openEditModal(evt)}
+                        className="inline-flex items-center gap-1.5 text-xs font-mono-data font-bold px-3 py-1 bg-surface border border-subtle text-ink hover:border-fight-red hover:text-fight-red transition-colors cursor-pointer"
+                        title="Edit Data Event & Kategori Tiket"
+                      >
+                        <Pencil className="w-3 h-3 text-fight-red" />
+                        <span>Edit Event</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={isPending}
+                        onClick={() => handleTogglePublish(evt.id, evt.isPublished)}
+                        className={`text-xs font-mono-data font-bold px-2.5 py-1 border transition-colors cursor-pointer inline-flex items-center gap-1 ${
+                          evt.isPublished
+                            ? "border-subtle text-ink-muted hover:text-ink hover:bg-charcoal"
+                            : "bg-fight-red border-fight-red text-ink hover:opacity-90"
+                        }`}
+                        title={evt.isPublished ? "Tarik dari halaman publik" : "Tayangkan ke publik"}
+                      >
+                        {evt.isPublished ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        <span>{evt.isPublished ? "Tarik" : "Publish"}</span>
+                      </button>
+                    </div>
 
                     <button
                       type="button"
@@ -321,127 +487,280 @@ export function EventManager({
         </div>
       )}
 
-      {/* Modal Tambah Event Baru */}
+      {/* Modal Tambah / Edit Event */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-charcoal border-2 border-fight-red w-full max-w-xl shadow-2xl p-6 sm:p-8 space-y-6 relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+          <div className="bg-charcoal border-2 border-fight-red w-full max-w-2xl shadow-2xl p-6 sm:p-8 space-y-6 relative max-h-[92vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-subtle pb-3">
               <div>
                 <span className="font-mono-data text-[10px] text-fight-red font-bold uppercase tracking-widest block">
-                  KALENDER RESMI TFN
+                  {editingEvent ? "EDIT EVENT & TIKET" : "EVENT BARU TFN"}
                 </span>
                 <h2 className="font-display text-2xl uppercase font-black text-ink">
-                  Tambah Event Baru
+                  {editingEvent ? `Edit Event: ${editingEvent.name}` : "Tambah Event Baru"}
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-ink-muted hover:text-ink font-mono-data text-sm p-1"
+                className="text-ink-muted hover:text-ink font-mono-data text-sm p-1 cursor-pointer"
               >
                 ✕ TUTUP
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-4 font-mono-data text-xs">
-              <div>
-                <label className="block text-ink font-bold uppercase mb-1">
-                  Nama Event Pertandingan *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Contoh: TFN 02 · TEMANGGUNG FIGHT NIGHT"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
-                />
-              </div>
+            <form onSubmit={handleSubmit} className="space-y-6 font-mono-data text-xs">
+              {/* Bagian 1: Informasi Dasar Event */}
+              <div className="space-y-4">
+                <div className="border-b border-subtle pb-1">
+                  <span className="text-[11px] font-bold text-fight-red uppercase">
+                    1. INFORMASI JADWAL & LOKASI
+                  </span>
+                </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-ink font-bold uppercase mb-1">
-                    Venue / Tempat
+                    Nama Event Pertandingan *
                   </label>
                   <input
                     type="text"
-                    value={venue}
-                    onChange={(e) => setVenue(e.target.value)}
-                    className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-ink font-bold uppercase mb-1">
-                    Kota
-                  </label>
-                  <input
-                    type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-ink font-bold uppercase mb-1">
-                    Tanggal & Waktu (WIB)
-                  </label>
-                  <input
-                    type="datetime-local"
                     required
-                    value={startsAt}
-                    onChange={(e) => setStartsAt(e.target.value)}
+                    placeholder="Contoh: TFN 02 · NIGHT OF CHAMPIONS"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
                   />
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-ink font-bold uppercase mb-1">
+                      Custom URL Slug (Opsional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="otomatis dari nama jika kosong"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-ink font-bold uppercase mb-1">
+                      Status Event
+                    </label>
+                    <select
+                      value={status}
+                      onChange={(e) =>
+                        setStatus(
+                          e.target.value as any
+                        )
+                      }
+                      className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
+                    >
+                      <option value="SCHEDULED">SCHEDULED (Terjadwal)</option>
+                      <option value="LIVE">LIVE (Sedang Berlangsung)</option>
+                      <option value="COMPLETED">COMPLETED (Selesai)</option>
+                      <option value="DRAFT">DRAFT (Konsep / Arsip)</option>
+                      <option value="POSTPONED">POSTPONED (Ditunda)</option>
+                      <option value="CANCELLED">CANCELLED (Dibatalkan)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-ink font-bold uppercase mb-1">
+                      Tanggal & Jam (WIB) *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      required
+                      value={startsAt}
+                      onChange={(e) => setStartsAt(e.target.value)}
+                      className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-ink font-bold uppercase mb-1">
+                      Venue / Tempat
+                    </label>
+                    <input
+                      type="text"
+                      value={venue}
+                      onChange={(e) => setVenue(e.target.value)}
+                      className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-ink font-bold uppercase mb-1">
+                      Kota
+                    </label>
+                    <input
+                      type="text"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <ImageUploader
+                  label="Upload Poster Event (Drag & Drop)"
+                  folder="events"
+                  value={posterUrl}
+                  onChange={({ url, mediaAssetId }) => {
+                    setPosterUrl(url);
+                    setPosterId(mediaAssetId);
+                  }}
+                  disabled={isPending}
+                />
+
                 <div>
                   <label className="block text-ink font-bold uppercase mb-1">
-                    Status Event
+                    Deskripsi / Catatan Event
                   </label>
-                  <select
-                    value={status}
-                    onChange={(e) =>
-                      setStatus(
-                        e.target.value as "DRAFT" | "SCHEDULED" | "LIVE" | "COMPLETED"
-                      )
-                    }
+                  <textarea
+                    rows={3}
+                    placeholder="Tuliskan deskripsi lengkap pertandingan, perebutan sabuk, atau info acara..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
-                  >
-                    <option value="SCHEDULED">SCHEDULED (Terjadwal)</option>
-                    <option value="LIVE">LIVE (Sedang Berlangsung)</option>
-                    <option value="COMPLETED">COMPLETED (Selesai)</option>
-                    <option value="DRAFT">DRAFT (Konsep)</option>
-                  </select>
+                  />
                 </div>
               </div>
 
-              <ImageUploader
-                label="Upload Poster Event (Opsional)"
-                folder="events"
-                value={posterUrl}
-                onChange={({ url, mediaAssetId }) => {
-                  setPosterUrl(url);
-                  setPosterId(mediaAssetId);
-                }}
-                disabled={isPending}
-              />
+              {/* Bagian 2: Kategori & Harga Tiket Event */}
+              <div className="space-y-4 pt-4 border-t border-subtle">
+                <div className="flex items-center justify-between border-b border-subtle pb-2">
+                  <div>
+                    <span className="text-[11px] font-bold text-fight-red uppercase block">
+                      2. KATEGORI & HARGA TIKET PENONTON
+                    </span>
+                    <p className="text-[10px] text-ink-muted">
+                      Kategori tiket ini akan muncul di halaman detail event (/events/[slug]). Pemesanan resmi diarahkan ke portal tiket.pimpom.id.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddTicketType}
+                    className="inline-flex items-center gap-1 bg-surface border border-subtle text-ink hover:text-fight-red px-2.5 py-1 text-[11px] font-bold cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-fight-red" />
+                    <span>+ Tambah Tiket</span>
+                  </button>
+                </div>
 
-              <div>
-                <label className="block text-ink font-bold uppercase mb-1">
-                  Deskripsi / Catatan Event
-                </label>
-                <textarea
-                  rows={3}
-                  placeholder="Duel akbar perebutan sabuk dan babak penyisihan turnamen Grand Prix..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-canvas border border-subtle px-3 py-2 text-ink focus:border-fight-red focus:outline-none"
-                />
+                {ticketTypes.length === 0 ? (
+                  <div className="bg-canvas/50 p-4 border border-subtle text-center text-ink-muted text-xs">
+                    Belum ada kategori tiket. Klik "+ Tambah Tiket" untuk menambahkan.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {ticketTypes.map((tt, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-canvas border border-subtle space-y-2 relative"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[10px] text-fight-red uppercase">
+                            Kategori #{idx + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTicketType(idx)}
+                            className="text-ink-muted hover:text-fight-red p-1 cursor-pointer"
+                            title="Hapus Kategori Tiket"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                          <div className="sm:col-span-5">
+                            <label className="block text-[10px] text-ink-muted uppercase mb-0.5">
+                              Nama Kategori *
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="mis. VIP Ring Side, Tribun Barat"
+                              value={tt.name}
+                              onChange={(e) =>
+                                handleTicketChange(idx, "name", e.target.value)
+                              }
+                              className="w-full bg-surface border border-subtle px-2 py-1 text-xs text-ink focus:border-fight-red focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="sm:col-span-4">
+                            <label className="block text-[10px] text-ink-muted uppercase mb-0.5">
+                              Harga (Rp) *
+                            </label>
+                            <input
+                              type="number"
+                              required
+                              min={0}
+                              step={5000}
+                              placeholder="mis. 150000"
+                              value={tt.price}
+                              onChange={(e) =>
+                                handleTicketChange(
+                                  idx,
+                                  "price",
+                                  parseFloat(e.target.value) || 0
+                                )
+                              }
+                              className="w-full bg-surface border border-subtle px-2 py-1 text-xs text-ink focus:border-fight-red focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="sm:col-span-3">
+                            <label className="block text-[10px] text-ink-muted uppercase mb-0.5">
+                              Kuota Kursi
+                            </label>
+                            <input
+                              type="number"
+                              min={1}
+                              placeholder="mis. 200"
+                              value={tt.quota}
+                              onChange={(e) =>
+                                handleTicketChange(
+                                  idx,
+                                  "quota",
+                                  parseInt(e.target.value, 10) || 100
+                                )
+                              }
+                              className="w-full bg-surface border border-subtle px-2 py-1 text-xs text-ink focus:border-fight-red focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[10px] text-ink-muted uppercase mb-0.5">
+                            Fasilitas / Keterangan Singkat
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="mis. Tempat duduk baris depan, free softdrink & lanyard resmi"
+                            value={tt.description || ""}
+                            onChange={(e) =>
+                              handleTicketChange(idx, "description", e.target.value)
+                            }
+                            className="w-full bg-surface border border-subtle px-2 py-1 text-[11px] text-ink focus:border-fight-red focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="flex items-center gap-2 pt-2">
+              {/* Status Publikasi */}
+              <div className="flex items-center gap-2 pt-2 border-t border-subtle">
                 <input
                   type="checkbox"
                   id="isPub"
@@ -450,7 +769,7 @@ export function EventManager({
                   className="accent-fight-red w-4 h-4 cursor-pointer"
                 />
                 <label htmlFor="isPub" className="text-ink font-bold cursor-pointer">
-                  Langsung Publikasikan ke Halaman Publik (/events)
+                  Tayangkan ke Publik di Halaman `/events` dan `/events/[slug]`
                 </label>
               </div>
 
@@ -468,7 +787,11 @@ export function EventManager({
                   disabled={isPending}
                   className="font-bold tracking-wider"
                 >
-                  {isPending ? "Menyimpan..." : "Simpan & Buat Event"}
+                  {isPending
+                    ? "Menyimpan..."
+                    : editingEvent
+                    ? "Simpan Perubahan Event"
+                    : "Simpan & Buat Event"}
                 </Button>
               </div>
             </form>

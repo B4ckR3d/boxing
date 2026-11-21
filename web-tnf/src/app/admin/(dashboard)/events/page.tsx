@@ -17,6 +17,10 @@ export default async function AdminEventsPage() {
   const rawEvents = await prisma.event.findMany({
     include: {
       poster: true,
+      ticketTypes: {
+        where: { isActive: true },
+        orderBy: { price: "asc" },
+      },
       _count: {
         select: { fights: true },
       },
@@ -35,10 +39,17 @@ export default async function AdminEventsPage() {
     startsAt: e.startsAt.toISOString(),
     status: e.status,
     isPublished: e.isPublished,
+    posterId: e.posterId,
     posterUrl: e.poster?.url ?? null,
     fightsCount: e._count.fights,
+    ticketTypes: e.ticketTypes.map((tt) => ({
+      id: tt.id,
+      name: tt.name,
+      price: Number(tt.price),
+      quota: tt.quota,
+      description: tt.description,
+    })),
   }));
 
   return <EventManager events={events} canManage={canManage} />;
 }
-
