@@ -344,7 +344,17 @@ export function SponsorMarquee({ sponsors = [] }: SponsorMarqueeProps) {
       {/* 4. PARTNER & MEDIA PARTNER — grid statis kompak */}
       {supporting.length > 0 && (
         <div className="mx-auto mt-5 max-w-7xl px-4 sm:mt-6 sm:px-6 lg:px-8">
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+          <ul
+            className={`grid grid-cols-1 gap-3 sm:gap-4 ${
+              supporting.length >= 4
+                ? "sm:grid-cols-2 lg:grid-cols-4"
+                : supporting.length === 3
+                  ? "sm:grid-cols-3 mx-auto max-w-4xl"
+                  : supporting.length === 2
+                    ? "sm:grid-cols-2 mx-auto max-w-2xl"
+                    : "mx-auto max-w-sm"
+            }`}
+          >
             {supporting.map((sponsor) => (
               <SponsorTile key={`supporting-${sponsor.id}`} sponsor={sponsor} lang={lang} size="compact" />
             ))}
