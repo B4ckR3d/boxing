@@ -7,6 +7,7 @@ import {
   Ban,
   CheckCircle2,
   Clock,
+  Download,
   ExternalLink,
   FileText,
   Loader2,
@@ -127,6 +128,7 @@ export function RegistrationManager({
   const [query, setQuery] = React.useState("");
   const [detailId, setDetailId] = React.useState<string | null>(null);
   const [busyId, setBusyId] = React.useState<string | null>(null);
+  const [isPulling, setIsPulling] = React.useState(false);
   const [banner, setBanner] = React.useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [rejectFor, setRejectFor] = React.useState<RegistrationRow | null>(null);
   const [rejectReason, setRejectReason] = React.useState("");
@@ -146,6 +148,36 @@ export function RegistrationManager({
   }, [registrations, filter, query]);
 
   const detail = registrations.find((row) => row.id === detailId) ?? null;
+
+  async function handlePullFromSheet() {
+    setIsPulling(true);
+    setBanner(null);
+    try {
+      const response = await fetch("/api/admin/registrations/pull-sheet", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+      });
+      const payload = (await response.json().catch(() => null)) as {
+        ok?: boolean;
+        data?: { totalRows: number; imported: number; updated: number; errors: string[] };
+        error?: string;
+      } | null;
+
+      if (!response.ok || !payload?.ok) {
+        setBanner({ kind: "err", text: payload?.error ?? "Gagal menarik data dari Google Sheets" });
+        return;
+      }
+
+      const d = payload.data;
+      const msg = `Sinkronisasi selesai! ${d?.imported ?? 0} data baru ditarik, ${d?.updated ?? 0} diperbarui dari total ${d?.totalRows ?? 0} baris spreadsheet.`;
+      setBanner({ kind: "ok", text: msg });
+      router.refresh();
+    } catch {
+      setBanner({ kind: "err", text: "Terjadi kesalahan koneksi saat menarik data" });
+    } finally {
+      setIsPulling(false);
+    }
+  }
 
   async function act(id: string, body: Record<string, unknown>, successText: string) {
     setBusyId(id);
@@ -181,20 +213,40 @@ export function RegistrationManager({
             Pendaftaran Fighter
           </h1>
           <p className="mt-1 text-xs text-ink-muted">
-            Verifikasi pendaftar dari form publik. Baris terkirim otomatis ke Google Sheet{" "}
+            Verifikasi pendaftar dari form publik & sinkronisasi Google Sheets{" "}
             <span className="text-ink">TFN x PIMPOM</span>.
           </p>
         </div>
-        <span
-          className={`inline-flex w-fit items-center gap-1.5 border px-2.5 py-1 font-mono-data text-[10px] font-bold uppercase ${
-            sheetsConfigured
-              ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
-              : "border-amber-500/40 bg-amber-500/10 text-amber-500"
-          }`}
-        >
-          <RefreshCw className="h-3 w-3" />
-          {sheetsConfigured ? "Google Sheets Aktif" : "Google Sheets Nonaktif"}
-        </span>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="crimson"
+            size="sm"
+            disabled={isPulling || !sheetsConfigured}
+            onClick={handlePullFromSheet}
+            className="font-mono-data text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+            title={sheetsConfigured ? "Tarik pendaftar baru dari spreadsheet" : "Google Sheets belum dikonfigurasi"}
+          >
+            {isPulling ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Download className="h-3.5 w-3.5" />
+            )}
+            <span>{isPulling ? "Menarik..." : "Tarik dari Spreadsheet"}</span>
+          </Button>
+
+          <span
+            className={`inline-flex w-fit items-center gap-1.5 border px-2.5 py-1 font-mono-data text-[10px] font-bold uppercase ${
+              sheetsConfigured
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
+                : "border-amber-500/40 bg-amber-500/10 text-amber-500"
+            }`}
+          >
+            <RefreshCw className="h-3 w-3" />
+            {sheetsConfigured ? "Google Sheets Aktif" : "Google Sheets Nonaktif"}
+          </span>
+        </div>
       </header>
 
       {/* Stat cards */}
@@ -276,6 +328,7 @@ export function RegistrationManager({
               <th className="px-4 py-2.5">Divisi / Rules</th>
               <th className="px-4 py-2.5">Kelas</th>
               <th className="px-4 py-2.5">Status</th>
+              <th className="px-4 py-2.5">Gambar / Berkas</th>
               <th className="px-4 py-2.5">Masuk</th>
               <th className="px-4 py-2.5 text-right">Aksi</th>
             </tr>
@@ -283,7 +336,7 @@ export function RegistrationManager({
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-xs text-ink-muted">
+                <td colSpan={7} className="px-4 py-10 text-center text-xs text-ink-muted">
                   Belum ada pendaftaran pada filter ini.
                 </td>
               </tr>
@@ -325,6 +378,28 @@ export function RegistrationManager({
                         <AlertTriangle className="h-3 w-3" /> sheet gagal
                       </p>
                     )}
+                  </td>
+                  <td className="px-4 py-3 font-mono-data text-[10px]">
+                    <div className="flex flex-col gap-1">
+                      <span
+                        className={`inline-flex items-center w-fit px-1.5 py-0.5 rounded font-bold uppercase ${
+                          row.paymentProof
+                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                            : "bg-neutral-800 text-neutral-400 border border-neutral-700"
+                        }`}
+                      >
+                        Bukti: {row.paymentProof ? "YES" : "NO"}
+                      </span>
+                      <span
+                        className={`inline-flex items-center w-fit px-1.5 py-0.5 rounded font-bold uppercase ${
+                          row.idDocument
+                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                            : "bg-neutral-800 text-neutral-400 border border-neutral-700"
+                        }`}
+                      >
+                        KTP: {row.idDocument ? "YES" : "NO"}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-4 py-3 font-mono-data text-[11px] text-ink-muted">{formatDateTime(row.createdAt)}</td>
                   <td className="px-4 py-3">
@@ -411,20 +486,26 @@ export function RegistrationManager({
               </section>
 
               <section className="space-y-2">
-                <p className="font-mono-data text-[10px] uppercase tracking-widest text-ink-muted">Lampiran</p>
+                <p className="font-mono-data text-[10px] uppercase tracking-widest text-ink-muted">Lampiran Berkas (Gambar)</p>
                 {[
-                  { key: "payment", label: "Bukti Transfer", file: detail.paymentProof },
-                  { key: "id", label: "KTP / Kartu Keluarga", file: detail.idDocument },
-                ].map(({ key, label, file }) => (
+                  { key: "payment", label: "Bukti Transfer", file: detail.paymentProof, hasFile: Boolean(detail.paymentProof) },
+                  { key: "id", label: "KTP / Kartu Keluarga", file: detail.idDocument, hasFile: Boolean(detail.idDocument) },
+                ].map(({ key, label, file, hasFile }) => (
                   <div key={key} className="flex items-center justify-between gap-3 border border-border-subtle bg-canvas px-3 py-2">
                     <div className="flex min-w-0 items-center gap-2">
                       <FileText className="h-4 w-4 shrink-0 text-fight-red" />
                       <div className="min-w-0">
                         <p className="text-xs text-ink">{label}</p>
-                        <p className="truncate font-mono-data text-[10px] text-ink-muted">{file?.name ?? "tidak ada"}</p>
+                        <p className="font-mono-data text-[10px]">
+                          {hasFile ? (
+                            <span className="text-emerald-400 font-bold uppercase">YES (Tersedia)</span>
+                          ) : (
+                            <span className="text-neutral-400 uppercase">NO (Tidak Ada)</span>
+                          )}
+                        </p>
                       </div>
                     </div>
-                    {file && (
+                    {file?.url ? (
                       <a
                         href={file.url}
                         target="_blank"
@@ -433,7 +514,7 @@ export function RegistrationManager({
                       >
                         Buka <ExternalLink className="h-3 w-3" />
                       </a>
-                    )}
+                    ) : null}
                   </div>
                 ))}
               </section>

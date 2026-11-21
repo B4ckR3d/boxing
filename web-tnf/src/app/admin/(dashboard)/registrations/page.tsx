@@ -46,10 +46,26 @@ export default async function AdminRegistrationsPage() {
     xUrl: row.xUrl,
     paymentAmount: Number(row.paymentAmount),
     paymentProof: row.paymentProofPath
-      ? { name: row.paymentProofName, mime: row.paymentProofMime, url: `/api/admin/registrations/${row.id}/file/payment-proof` }
+      ? {
+          name: row.paymentProofName ?? (row.paymentProofPath === "yes" ? "yes" : "Ada"),
+          mime: row.paymentProofMime,
+          url: row.paymentProofPath.startsWith("http")
+            ? row.paymentProofPath
+            : row.paymentProofPath === "yes"
+            ? ""
+            : `/api/admin/registrations/${row.id}/file/payment-proof`,
+        }
       : null,
     idDocument: row.idDocumentPath
-      ? { name: row.idDocumentName, mime: row.idDocumentMime, url: `/api/admin/registrations/${row.id}/file/id-document` }
+      ? {
+          name: row.idDocumentName ?? (row.idDocumentPath === "yes" ? "yes" : "Ada"),
+          mime: row.idDocumentMime,
+          url: row.idDocumentPath.startsWith("http")
+            ? row.idDocumentPath
+            : row.idDocumentPath === "yes"
+            ? ""
+            : `/api/admin/registrations/${row.id}/file/id-document`,
+        }
       : null,
     status: row.status,
     confirmedByName: row.confirmedBy?.name ?? null,

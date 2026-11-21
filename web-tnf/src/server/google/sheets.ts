@@ -446,10 +446,10 @@ export async function updateRegistrationStatusRow(
   }
 }
 
-/** Baca jumlah baris terpakai (untuk keperluan diagnosa admin). */
+/** Baca baris spreadsheet (untuk diagnosa admin dan tarik data / pull sync). */
 export async function readRegistrationTabValues(): Promise<string[][]> {
   const response = await sheetsFetch(
-    `/${env().REGISTRATION_SHEET_ID}/values/${encodeURIComponent(a1("A1:V2000"))}`,
+    `/${env().REGISTRATION_SHEET_ID}/values/${encodeURIComponent(a1("A1:BZ2000"))}`,
   );
   if (!response.ok) {
     throw new SheetsWriteError(`Baca sheet gagal (${response.status}): ${await readErrorBody(response)}`, "API");

@@ -10,6 +10,7 @@ import {
   formatSheetDate,
   isSheetsConfigured,
   paintStatusRow,
+  readRegistrationTabValues,
   SheetsWriteError,
   updateRegistrationStatusRow,
 } from "@/server/google/sheets";
@@ -450,4 +451,184 @@ export async function getRegistrationStats() {
 
 export function sheetsConfigured(): boolean {
   return isSheetsConfigured();
+}
+
+/**
+ * Tarik data pendaftaran dari Google Sheets ke database lokal TFN.
+ * Untuk lampiran gambar (bukti transfer & KTP): diset string "yes" jika ada link/isi, "no" / null jika kosong.
+ */
+export async function pullRegistrationsFromSheet(): Promise<{
+  totalRows: number;
+  imported: number;
+  updated: number;
+  errors: string[];
+}> {
+  if (!isSheetsConfigured()) {
+    throw new Error("Google Sheets belum dikonfigurasi (service account atau REGISTRATION_SHEET_ID kosong)");
+  }
+
+  const rawValues = await readRegistrationTabValues();
+  if (rawValues.length < 2) {
+    return { totalRows: 0, imported: 0, updated: 0, errors: [] };
+  }
+
+  // Baris pertama (index 0) adalah header
+  const header = rawValues[0]?.map((h) => (h ?? "").trim().toLowerCase()) ?? [];
+
+  // Cari kolom sistem jika ada
+  const statusCol = header.findIndex((h) => h.includes("status (sistem)") || h === "status");
+  const codeCol = header.findIndex(
+    (h) => h.includes("kode (sistem)") || h.includes("kode referensi") || h === "kode" || h.includes("code")
+  );
+
+  let imported = 0;
+  let updated = 0;
+  const errors: string[] = [];
+
+  for (let i = 1; i < rawValues.length; i++) {
+    const row = rawValues[i];
+    const rowNumber = i + 1; // 1-based index di Google Sheets
+
+    if (!row || row.every((c) => !c || c.trim() === "")) continue;
+
+    try {
+      const fullName = (row[1] ?? "").trim();
+      if (!fullName) continue;
+
+      const ringName = (row[2] ?? "").trim() || fullName;
+      const address = (row[3] ?? "").trim() || "Temanggung";
+      const ageNum = parseInt((row[4] ?? "").trim(), 10);
+      const age = Number.isNaN(ageNum) || ageNum <= 0 ? 20 : ageNum;
+      const divisionLabel = (row[5] ?? "").trim() || "Bebas";
+
+      const rulesRaw = (row[6] ?? "").trim().toUpperCase();
+      const rules = rulesRaw.includes("KICK") ? "KICKBOXING" : "BOXING";
+
+      const classRaw = (row[7] ?? "").trim().toUpperCase();
+      const competitionClass = classRaw.includes("PEMULA")
+        ? "PEMULA"
+        : classRaw.includes("NON")
+          ? "NON_ATLET"
+          : "ATLET";
+
+      const bpjsRaw = (row[8] ?? "").trim().toUpperCase();
+      const bpjsStatus = bpjsRaw.includes("TIDAK") || bpjsRaw.includes("NON")
+        ? "TIDAK_AKTIF"
+        : "AKTIF";
+
+      const socialUrl = (row[9] ?? "").trim() || null;
+      const instagramUrl = (row[10] ?? "").trim() || null;
+      const tiktokUrl = (row[11] ?? "").trim() || null;
+      const facebookUrl = (row[12] ?? "").trim() || null;
+      const xUrl = (row[13] ?? "").trim() || null;
+
+      // Lampiran gambar: jika ada isi diset string "yes", jika kosong diset "no" / null
+      const proofRaw = (row[15] ?? "").trim();
+      const hasProof =
+        proofRaw.length > 0 &&
+        !["-", "tidak", "tidak ada", "no", "false"].includes(proofRaw.toLowerCase());
+      const paymentProofPath = hasProof ? (proofRaw.startsWith("http") ? proofRaw : "yes") : null;
+      const paymentProofName = hasProof ? "yes" : "no";
+
+      const idDocRaw = (row[17] ?? "").trim();
+      const hasIdDoc =
+        idDocRaw.length > 0 &&
+        !["-", "tidak", "tidak ada", "no", "false"].includes(idDocRaw.toLowerCase());
+      const idDocumentPath = hasIdDoc ? (idDocRaw.startsWith("http") ? idDocRaw : "yes") : null;
+      const idDocumentName = hasIdDoc ? "yes" : "no";
+
+      // Kode pendaftaran
+      let code = "";
+      if (codeCol >= 0 && row[codeCol]?.trim()) {
+        code = row[codeCol]!.trim();
+      } else {
+        const found = row.find((c) => c && c.trim().startsWith("TFN-R-"));
+        if (found) code = found.trim();
+      }
+      if (!code) {
+        code = `TFN-R-${randomCode(6)}`;
+      }
+
+      // Status
+      let status: "PENDING" | "CONFIRMED" | "REJECTED" = "PENDING";
+      if (statusCol >= 0 && row[statusCol]?.trim()) {
+        const sRaw = row[statusCol]!.trim().toUpperCase();
+        if (sRaw.includes("CONFIRM") || sRaw.includes("KONFIRMASI")) status = "CONFIRMED";
+        else if (sRaw.includes("REJECT") || sRaw.includes("TOLAK")) status = "REJECTED";
+      }
+
+      // Timestamp
+      let createdAt = new Date();
+      if (row[0]?.trim()) {
+        const d = new Date(row[0].trim());
+        if (!Number.isNaN(d.getTime())) createdAt = d;
+      }
+
+      const weightClassId = await resolveWeightClassId(divisionLabel);
+
+      const existing = await prisma.fighterRegistration.findFirst({
+        where: {
+          OR: [
+            { code },
+            { fullName, ringName, divisionLabel },
+          ],
+        },
+      });
+
+      if (existing) {
+        await prisma.fighterRegistration.update({
+          where: { id: existing.id },
+          data: {
+            sheetRowNumber: rowNumber,
+            sheetSyncedAt: new Date(),
+            sheetSyncError: null,
+            ...(paymentProofPath && !existing.paymentProofPath ? { paymentProofPath, paymentProofName } : {}),
+            ...(idDocumentPath && !existing.idDocumentPath ? { idDocumentPath, idDocumentName } : {}),
+          },
+        });
+        updated += 1;
+      } else {
+        await prisma.fighterRegistration.create({
+          data: {
+            code,
+            fullName,
+            ringName,
+            address,
+            age,
+            divisionLabel,
+            weightClassId,
+            rules: rules as any,
+            competitionClass: competitionClass as any,
+            bpjsStatus: bpjsStatus as any,
+            socialUrl,
+            instagramUrl,
+            tiktokUrl,
+            facebookUrl,
+            xUrl,
+            paymentAmount: 200000,
+            paymentProofPath,
+            paymentProofName,
+            idDocumentPath,
+            idDocumentName,
+            consentAccepted: true,
+            consentAcceptedAt: createdAt,
+            status,
+            sheetRowNumber: rowNumber,
+            sheetSyncedAt: new Date(),
+            createdAt,
+          },
+        });
+        imported += 1;
+      }
+    } catch (rowErr) {
+      errors.push(`Baris ${rowNumber}: ${(rowErr as Error).message}`);
+    }
+  }
+
+  return {
+    totalRows: rawValues.length - 1,
+    imported,
+    updated,
+    errors,
+  };
 }
