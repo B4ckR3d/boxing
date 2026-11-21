@@ -270,12 +270,12 @@ export function SponsorMarquee({ sponsors = [] }: SponsorMarqueeProps) {
   const silver = byTier("SILVER");
   const supporting = [...byTier("PARTNER"), ...byTier("MEDIA_PARTNER")];
 
-  // WhatsApp TFN Admin (Kontak 2 resmi: +62 858-4800-0639)
+  // WhatsApp Partnership & Sponsorship TFN (+62 857-1488-3551)
   const waMessage =
     lang === "id"
       ? encodeURIComponent("Halo Admin TFN, saya tertarik untuk menjadi partner / sponsor Temanggung Fight Night.")
       : encodeURIComponent("Hello TFN Admin, I am interested in becoming a partner / sponsor for Temanggung Fight Night.");
-  const waUrl = `https://wa.me/6285848000639?text=${waMessage}`;
+  const waUrl = `https://wa.me/6285714883551?text=${waMessage}`;
 
   return (
     <section
